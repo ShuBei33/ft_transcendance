@@ -1,0 +1,18 @@
+# docker compose qui run la base de donnee PostgreSQL
+
+version: '3.8'
+services:
+
+  postgres:
+    image: postgres:13.5          # image existante provenant de dockerHub
+    restart: always
+    environment:
+      - POSTGRES_USER=myuser      # Variable qu'on envoie dans la base de donnee (comme dans inception)
+      - POSTGRES_PASSWORD=mypassword
+    volumes:
+      - postgres:/var/lib/postgresql/data     # Volumes pour permettre de garder les data dans notre host systeme
+    ports:
+      - '5432:5432'               # Port utilise habituellement par PostgreSQL (donc pas un port au hasard)
+
+volumes:
+  postgres:
