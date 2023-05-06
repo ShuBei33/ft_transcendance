@@ -2,17 +2,42 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 
-
 // 1. Set the DATABASE_URL in the .env file to point to your existing database. If your database has no tables yet, read https://pris.ly/d/getting-started
 // 2. Set the provider of the datasource block in schema.prisma to match your database: postgresql, mysql, sqlite, sqlserver, mongodb or cockroachdb.
 // 3. Run prisma db pull to turn your database schema into a Prisma schema.
 // 4. Run prisma generate to generate the Prisma Client. You can then start querying your database.
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" //	indique a prisma quel type de requete il va envoyer a la base de donnee pour communiquer avec la base de donnees, en javascript comme on utilise un application en javascript
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL")	// on dit qu'on utilise prisma et que pour y acceder on utilise l'url du .env
 }
+
+model	User {
+		id Int	@id @default(autoincrement())	// @id est un attribut qui configure le champ id comme etant une cle primaire c'est a dire que il n'y aura pas de doublon de ce champ la et qu'en plus, de faire en sorte que chaque user soit unique
+		name String @unique 					// nom de l'utisateur unique
+		createAt DateTime @default(now())		// date de creation @default set la date de creation par default a la date de creation
+		updateAt DateTime  @updatedAt 			// updatedAt update automatiquement la date de creation
+		
+		// Bien evidement il manque des champs mais on les rajoutera au fur et a mesure de l'avance
+		
+}
+
+// model message
+// {
+	// model User
+	// heure Int "heure du message"
+// }
+
+// model Chat {
+	// model messages
+// }
+
+// model parties
+// {
+	// users
+	// scores
+// }
