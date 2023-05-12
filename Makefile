@@ -6,11 +6,11 @@
 #    By: ychibani <ychibani@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/04/26 16:41:45 by estoffel          #+#    #+#              #
-#    Updated: 2023/05/03 16:01:53 by ychibani         ###   ########.fr        #
+#    Updated: 2023/05/08 13:41:37 by ychibani         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-COMPOSE	= docker-compose -f ./docker-compose.yml
+COMPOSE	= docker compose -f ./docker-compose.yml
 
 _END=$'\e[0m
 _BOLD=$'\e[1m

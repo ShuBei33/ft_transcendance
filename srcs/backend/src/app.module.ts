@@ -1,5 +1,5 @@
 /*
-**			Module principal de l'application
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs**			Module principal de l'application
 */
 
 import { Module } from '@nestjs/common';
@@ -7,12 +7,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 
 @Module({ 			/* Decorateur : Fonction qui rajoute des metadata a la classe en dessous.
-					** Chaque module peut importer des provideurs ou des controlleurs (on verra ca plus tard), ou d'autre module
+					** Chaque module peut importer des provideurs ou des controlleurs (on verra ca plus tard), ou juste d'autre modules
 					*/
-  imports: [AuthModule, UserModule], /* On peut importer notre module d'authenfication*/
+  imports: [AuthModule, UserModule, PrismaModule], /* On peut importer notre module d'authenfication*/ /*Et la celui de prisma*/
 })
 
 /*
