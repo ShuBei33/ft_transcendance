@@ -8,12 +8,13 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ArticlesModule } from './articles/articles.module';
 
 
 @Module({ 			/* Decorateur : Fonction qui rajoute des metadata a la classe en dessous.
 					** Chaque module peut importer des provideurs ou des controlleurs (on verra ca plus tard), ou juste d'autre modules
 					*/
-  imports: [AuthModule, UserModule, PrismaModule], /* On peut importer notre module d'authenfication*/ /*Et la celui de prisma*/
+  imports: [AuthModule, UserModule, PrismaModule, ArticlesModule], /* On peut importer notre module d'authenfication*/ /*Et la celui de prisma*/
 })
 
 /*

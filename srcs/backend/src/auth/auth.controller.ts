@@ -21,7 +21,8 @@ export class AuthController {
 			console.log(req);
 			return this.authService.login();
 		}
-
-	@Post('signin')
-		signin() {}
+	@Post('signup')
+		signup() {
+			return this.authService.signup();
+		}
 }
