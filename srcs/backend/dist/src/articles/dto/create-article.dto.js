@@ -11,24 +11,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateArticleDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_validator_1 = require("class-validator");
 class CreateArticleDto {
     constructor() {
         this.published = false;
     }
 }
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.MinLength)(5),
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "title", void 0);
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.MaxLength)(300),
     (0, swagger_1.ApiProperty)({ required: false }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "description", void 0);
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsNotEmpty)(),
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "body", void 0);
 __decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
     (0, swagger_1.ApiProperty)({ required: false, default: false }),
     __metadata("design:type", Boolean)
 ], CreateArticleDto.prototype, "published", void 0);

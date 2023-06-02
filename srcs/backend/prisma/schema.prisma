@@ -17,11 +17,14 @@ datasource db {
 }
 
 model	User {
-		id Int	@id @default(autoincrement())	// @id est un attribut qui configure le champ id comme etant une cle primaire c'est a dire que il n'y aura pas de doublon de ce champ la et qu'en plus, de faire en sorte que chaque user soit unique
+
+		id Int	@id @unique @default(autoincrement())	// @id est un attribut qui configure le champ id comme etant une cle primaire c'est a dire que il n'y aura pas de doublon de ce champ la et qu'en plus, de faire en sorte que chaque user soit unique
 		name String @unique 					// nom de l'utisateur unique
+
 		createAt DateTime @default(now())		// date de creation @default set la date de creation par default a la date de creation
 		updateAt DateTime  @updatedAt 			// updatedAt update automatiquement la date de creation
 		
+		hash_passwd String
 		// Bien evidement il manque des champs mais on les rajoutera au fur et a mesure de l'avance
 	
 }
