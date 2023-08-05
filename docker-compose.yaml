@@ -21,7 +21,7 @@ services:
     depends_on:
       - postgres
     ports: 
-      - "${BACKEND_PORT:-5000}:${BACKEND_PORT:-5000}"
+      - "${BACK_PORT:-5000}:${BACK_PORT:-5000}"
       - "5555:5555"
     restart: always
     command: "tail -f"
