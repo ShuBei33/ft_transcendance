@@ -12,12 +12,12 @@ Pour appliquer les migrations à votre base de données de développement, utili
 
 #Push le schéma dans la base de données
 Dans le cas ou vous avais deja votre migration. il faut directement push le schéma dans la base de données, utilisez :
-<code>npx prisma NOM_DE_LA_BDD push<code>
+<code>npx prisma NOM_DE_LA_BDD push</code>
 
 #Insérer les données initiales
 Pour lancer la seed initiales dans la base de données afin de la remplire de nos donne par default, utilisez :
-<code>npx prisma NOM_DE_LA_BDD NOM_DU_FICHER_SEED<code>
+<code>npx prisma NOM_DE_LA_BDD NOM_DU_FICHER_SEED</code>
 
 #Ouvrir Prisma Studio
 Prisma Studio est une interface graphique pour explorer et gérer vos données. Pour l'ouvrir, utilisez :
-<code>npx prisma studio<code>
+<code>npx prisma studio</code>
