@@ -24,8 +24,8 @@ services:
       - "${BACK_PORT:-5000}:${BACK_PORT:-5000}"
       - "5555:5555"
     restart: always
-    command: "tail -f"
-    # command: /bin/sh -c "apk add bash; npm install; npm run studio ; npm run start:dev"
+    # command: "tail -f"
+    command: /bin/sh -c "apk add bash; npm install; npm run start:dev"
     environment:
       DATABASE_URL: ${DATABASE_URL}
     volumes:
@@ -41,3 +41,11 @@ volumes:
 networks:
   postgres:
     driver: bridge
+
+
+# La ligne ci dessous sert a cree une boucle inf afin de maintenir le container ouvert
+# pour installer des packages a la main. ( utile pour le back et le front ).
+# Ainsi vous n'avais pas de probleme d'installation a l'ecole!
+# Attention a ne laisser qu'une balise command active.
+
+# command: "tail -f"
