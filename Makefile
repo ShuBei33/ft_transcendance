@@ -13,7 +13,7 @@ all:
 	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
 
 .PHONY: re
-re: stop all
+re: clean all
 
 .PHONY: clean
 clean:
@@ -21,7 +21,7 @@ clean:
 	@echo "$(_GREEN) Docker Container was stoped $(_ENDL)"
 
 .PHONY: fclean
-fclean: stop
+fclean: clean
 	@docker system prune -af
 	@echo "$(_GREEN) Docker Container was removed $(_ENDL)"
 
