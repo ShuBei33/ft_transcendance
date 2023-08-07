@@ -7,6 +7,6 @@ if [ -z "$1" ]; then
 fi
 
 # Exécuter les commandes NestJS
-nest g module "$1"
-nest g controller "$1"
-nest g service "$1"
+nest g module "$1" 
+nest g controller "$1" --no-spec
+nest g service "$1" --no-spec
