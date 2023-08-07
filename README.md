@@ -8,4 +8,7 @@ Class validator:
 <code>npm i --save class-validator class-transformer</code>
 
 Swagger:
-<code>npm i --save @nestjs/swagger</code> 
+<code>npm i --save @nestjs/swagger</code>
+
+Socket:
+<code>npm i --save @nestjs/websockets @nestjs/platform-socket.io</code>

@@ -27,6 +27,7 @@ services:
     # command: "tail -f"
     command: /bin/sh -c "apk add bash; npm install; npm run start:dev"
     environment:
+      BACK_PORT: ${BACK_PORT:-5500}
       DATABASE_URL: ${DATABASE_URL}
     volumes:
         - "./back:/app"
