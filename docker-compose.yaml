@@ -29,6 +29,11 @@ services:
     environment:
       BACK_PORT: ${BACK_PORT:-5500}
       DATABASE_URL: ${DATABASE_URL}
+      API_UID42: ${API_UID42}
+      API_SECRET42: ${API_SECRET42}
+      API_AUTH_URL: ${API_AUTH_URL}
+      API_TOKEN_URL: ${API_TOKEN_URL}
+      RED_URI: ${RED_URI}
     volumes:
         - "./back:/app"
     working_dir: /app
