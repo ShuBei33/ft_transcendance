@@ -18,7 +18,7 @@ model User {
 
 	login String @unique
   	pseudo String @unique
-	avatar String? 
+	avatar String?
 	twoFA Boolean @default(false)
 
 	sent Invitation[] @relation("sender")
@@ -26,6 +26,10 @@ model User {
 
 	asUser1 Discussion[] @relation("userOne")
 	asUser2 Discussion[] @relation("userTwo")
+	discussionsMsgs DiscussionMsg[]
+
+	channelsMSgs ChannelMsg[]
+	channelMember ChanUsr[]
 
 	rank Int
 	achievements Achievement[]
@@ -47,8 +51,8 @@ model Invitation {
 }
 
 enum StatusInv {
-	ACCEPTED
 	PENDING
+	ACCEPTED
 	REJECT
 }
 
@@ -64,8 +68,8 @@ model Game {
 	rhsPlayerId Int
 	rhsScore Int
 
-	// texture1 Type @unique
-	// texture2 Type @unique
+	texture1 String @unique
+	texture2 String @unique
 }
 
 model Achievement {
@@ -87,6 +91,8 @@ model Discussion {
 	userId1 Int
 	user2 User @relation("userTwo", fields:[userId2], references: [id])
 	userId2 Int
+
+	discussionsMsgs DiscussionMsg[]
 }
 
 model DiscussionMsg {
@@ -95,7 +101,10 @@ model DiscussionMsg {
 	updateAt DateTime @updatedAt
 
 	content String
-	usrId Int
+
+	user User @relation(fields: [userId], references: [id])
+	userId Int
+	discussion Discussion @relation(fields: [discussionId], references: [id])
 	discussionId Int
 }
 
@@ -109,6 +118,9 @@ model Channel {
   	private Boolean @default(false)
 	protected Boolean @default(false)
 
+	channelUsers ChanUsr[]
+	channelMsgs ChannelMsg[]
+
 	hash String? // hash?
 }
 
@@ -117,17 +129,23 @@ model ChannelMsg {
 	createdAt DateTime @default(now())
 
 	content String
-	usrId Int
-	ChannelId Int
+
+	user User @relation(fields: [userId], references: [id])
+	userId Int
+	channel Channel @relation(fields: [channelId], references: [id])
+	channelId Int
 }
 
 // CHAT - USER
 model ChanUsr {
 	id Int @id @default(autoincrement())
-	userId 
-	chanId 
 	createdAt DateTime @default(now())
 	updateAt DateTime @updatedAt
+
+	user User @relation(fields: [userId], references: [id])
+	userId Int
+	channel Channel @relation(fields: [chanId], references: [id])
+	chanId Int
 
 	role ChanUsrRole
 	status ChanUsrStatus
