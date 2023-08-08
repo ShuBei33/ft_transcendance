@@ -10,12 +10,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// TEST DE CONNECTION AVEC LA BDD
+// USER
 model User {
+	id Int @id @default(autoincrement())
+	
+	createdAt DateTime @default(now())
+	updateAt DateTime @updatedAt
+
+	login String @unique
+  	pseudo String @unique
+	avatar String? 
+
+	twoFA Boolean @default(false)
+
+	rank Int
+}
+
+// FRIENDS 
+model Invitation {
+	id Int @id @default(autoincrement())
+
+	userId1 Int
+	userId2 Int
+	inviteStatus StatusInv 
+}
+
+enum StatusInv {
+	ACCEPTED
+	PENDING
+	REJECT
+}
+
+// GAME 
+model Game {
+	id Int @id @default(autoincrement())
+	
+	userId1 Int // string for pseudo?
+	userId2 Int // string for pseudo?
+	score1 Int
+	score2 Int
+
+	//texture1 Type @unique
+	// texture2 Type @unique
+}
+
+model Achievement {
+	id Int @id @default(autoincrement())
+
+	title String @unique
+	desc String @unique
+	icon String @unique
+}
+
+// CHAT - DISCUSSIONS
+model Discussion {
+	id Int @id @default(autoincrement())
+	createdAt DateTime @default(now())
+
+	userId1 Int
+	userId2 Int
+}
+
+model DiscussionMsg {
 	id Int @id @default(autoincrement())
 	createdAt DateTime @default(now())
 	updateAt DateTime @updatedAt
 
-	firstName String?
-	lastName String?
+	content String
+	usrId Int
+	discussionId Int
+}
+
+// CHAT - CHANNELS
+model Channel {
+	id Int @id @default(autoincrement())
+	name String @unique
+	createdAt DateTime @default(now())
+	updateAt DateTime @updatedAt
+
+  	private Boolean @default(false)
+	protected Boolean @default(false)
+
+	hash String? // hash?
+}
+
+model ChannelMsg {
+	id Int @id @default(autoincrement())
+	createdAt DateTime @default(now())
+
+	content String
+	usrId Int
+	ChannelId Int
+}
+
+// CHAT - USER
+model ChanUsr {
+	id Int @id @default(autoincrement())
+	userId Int @unique
+	chanId Int @unique
+	createdAt DateTime @default(now())
+	updateAt DateTime @updatedAt
+
+	role ChanUsrRole
+	status ChanUsrStatus
+	statusDuration DateTime
+}
+
+enum ChanUsrStatus {
+	NORMAL
+	MUTED
+	BANNED
+}
+
+enum ChanUsrRole {
+	NORMAL
+	ADMIN
+	OWNER
 }
