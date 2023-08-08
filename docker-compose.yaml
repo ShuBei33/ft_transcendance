@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   postgres:
     container_name: ${DB_NAME:-db}
@@ -35,16 +35,16 @@ services:
       API_TOKEN_URL: ${API_TOKEN_URL}
       RED_URI: ${RED_URI}
     volumes:
-        - "./back:/app"
+      - "./back:/app"
     working_dir: /app
     networks:
       - postgres
-  
+
   front:
     container_name: front
     image: node:latest
     volumes:
-      - ./front/front:/app
+      - ./front/:/app
     working_dir: /app
     command: sh -c "npm install && npm run dev"
     environment:
@@ -59,8 +59,6 @@ volumes:
 networks:
   postgres:
     driver: bridge
-
-
 # La ligne ci dessous sert a cree une boucle inf afin de maintenir le container ouvert
 # pour installer des packages a la main. ( utile pour le back et le front ).
 # Ainsi vous n'avais pas de probleme d'installation a l'ecole!

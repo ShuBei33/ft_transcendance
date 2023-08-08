@@ -7,6 +7,11 @@ _ENDL  = \033[0m
 
 DB_NAME= db
 
+.PHONY: no-detach
+no-detach:
+	@docker-compose up --build
+	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
+
 .PHONY: all
 all:
 	@docker-compose up --build -d
