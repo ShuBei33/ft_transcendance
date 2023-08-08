@@ -13,26 +13,37 @@ datasource db {
 // USER
 model User {
 	id Int @id @default(autoincrement())
-	
 	createdAt DateTime @default(now())
 	updateAt DateTime @updatedAt
 
 	login String @unique
   	pseudo String @unique
 	avatar String? 
-
 	twoFA Boolean @default(false)
 
+	sent Invitation[] @relation("sender")
+	received Invitation[] @relation("receiver")
+	
+	asUser1 Discussion[] @relation("userOne")
+	asUser2 Discussion[] @relation("userTwo")
+
 	rank Int
-}
+	achievements Achievement[]
+	asPlayer1 Game[] @relation("first")
+	asPlayer2 Game[] @relation("second")
+}	
 
 // FRIENDS 
 model Invitation {
-	id Int @id @default(autoincrement())
 
-	userId1 Int
-	userId2 Int
-	inviteStatus StatusInv 
+	sender User @relation("sender", fields:[senderId], references: [id])
+	senderId Int
+	receiver User @relation("receiver", fields:[receiverId], references: [id])
+	receiverId Int
+	
+	inviteStatus StatusInv
+	
+	@@id([senderId, receiverId])
 }
 
 enum StatusInv {
@@ -44,13 +55,15 @@ enum StatusInv {
 // GAME 
 model Game {
 	id Int @id @default(autoincrement())
-	
-	userId1 Int // string for pseudo?
-	userId2 Int // string for pseudo?
+
+	playerOne User @relation("first", fields:[playerOneId], references: [id])
+	playerOneId Int
+	playerTwo User @relation("second", fields:[playerTwoId], references: [id])
+	playerTwoId Int
 	score1 Int
 	score2 Int
 
-	//texture1 Type @unique
+	// texture1 Type @unique
 	// texture2 Type @unique
 }
 
@@ -60,6 +73,8 @@ model Achievement {
 	title String @unique
 	desc String @unique
 	icon String @unique
+
+	users User[]
 }
 
 // CHAT - DISCUSSIONS
@@ -67,7 +82,9 @@ model Discussion {
 	id Int @id @default(autoincrement())
 	createdAt DateTime @default(now())
 
+	user1 User @relation("userOne", fields:[userId1], references: [id])
 	userId1 Int
+	user2 User @relation("userTwo", fields:[userId2], references: [id])
 	userId2 Int
 }
 
