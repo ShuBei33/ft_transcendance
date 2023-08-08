@@ -11,9 +11,9 @@ DB_NAME= db
 all:
 	@docker-compose up --build -d
 	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
-
+	
 .PHONY: re
-re: clean all
+re: fclean all
 
 .PHONY: clean
 clean:
