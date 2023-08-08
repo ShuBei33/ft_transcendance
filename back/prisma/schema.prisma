@@ -23,14 +23,14 @@ model User {
 
 	sent Invitation[] @relation("sender")
 	received Invitation[] @relation("receiver")
-	
+
 	asUser1 Discussion[] @relation("userOne")
 	asUser2 Discussion[] @relation("userTwo")
 
 	rank Int
 	achievements Achievement[]
-	asPlayer1 Game[] @relation("first")
-	asPlayer2 Game[] @relation("second")
+	leftPlayer Game[] @relation("left")
+	rightPlayer Game[] @relation("right")
 }	
 
 // FRIENDS 
@@ -56,12 +56,13 @@ enum StatusInv {
 model Game {
 	id Int @id @default(autoincrement())
 
-	playerOne User @relation("first", fields:[playerOneId], references: [id])
-	playerOneId Int
-	playerTwo User @relation("second", fields:[playerTwoId], references: [id])
-	playerTwoId Int
-	score1 Int
-	score2 Int
+	lhsPlayer User @relation("left", fields:[lhsPlayerId], references: [id])
+	lhsPlayerId Int
+	lhsScore Int
+	
+	rhsPlayer User @relation("right", fields:[rhsPlayerId], references: [id])
+	rhsPlayerId Int
+	rhsScore Int
 
 	// texture1 Type @unique
 	// texture2 Type @unique
@@ -123,8 +124,8 @@ model ChannelMsg {
 // CHAT - USER
 model ChanUsr {
 	id Int @id @default(autoincrement())
-	userId Int @unique
-	chanId Int @unique
+	userId 
+	chanId 
 	createdAt DateTime @default(now())
 	updateAt DateTime @updatedAt
 
