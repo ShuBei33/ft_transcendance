@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle Falling Animation</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = 200;
+  canvas.height = 100;
+
+  const particles = [];
+  const numParticles = 10;
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.xDirection = Math.random() < 0.5 ? -1 : 1; // -1 for left, 1 for right
+      this.y = 0;
+      this.speed = Math.random() * 1 + 1;
+      this.radius = Math.random() * 1 + 2;
+      this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`;
+    }
+
+    update() {
+      this.y += this.speed;
+      this.x += this.xDirection * (Math.random() * 2); // Adjust this factor for the horizontal movement
+      if (this.y > canvas.height) {
+        this.y = 0;
+        this.x = Math.random() * canvas.width;
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+    }
+  }
+
+  function createParticles() {
+    for (let i = 0; i < numParticles; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(particle => {
+      particle.update();
+      particle.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  createParticles();
+  animate();
+</script>
+</body>
+</html>
