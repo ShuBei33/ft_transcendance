@@ -18,7 +18,7 @@ no-detach:
 	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
 
 .PHONY: re
-re: clean all
+re: fclean all
 
 .PHONY: clean
 clean:
