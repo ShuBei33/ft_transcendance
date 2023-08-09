@@ -55,5 +55,10 @@
       font-size: 2em;
       width: 200px * 2;
     }
+    &:focus {
+      + label {
+        color: red;
+      }
+    }
   }
 </style>

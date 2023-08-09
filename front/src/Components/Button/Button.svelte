@@ -25,7 +25,10 @@
     on:mouseenter={() => {
       diffuseParticles = invertBoolean(diffuseParticles);
     }}
-    on:mouseleave={() => (diffuseParticles = invertBoolean(diffuseParticles))}
+    on:mouseleave={() => {
+      diffuseParticles = invertBoolean(diffuseParticles);
+      buttonPressed = false;
+    }}
     on:click|preventDefault
     on:mousedown={() => (buttonPressed = invertBoolean(buttonPressed))}
     on:mouseup={() => (buttonPressed = invertBoolean(buttonPressed))}
