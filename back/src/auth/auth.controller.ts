@@ -15,7 +15,8 @@ export class AuthController {
 	async checkJWT(@GetUser() user, @GetToken() tokens) {
 		console.log("user: ", user);
 		console.log("tokens: ", tokens);
-		return ({ user: user });
+		const { createdAt, updateAt, twoFA, ...rest } = user;
+		return ({ user: rest });
 	}
 
 	@UseGuards(FtGuard)
@@ -30,4 +31,7 @@ export class AuthController {
 		return this.authService.signin42( data.username, data.access_token, data.refresh_token );
 	}
 
+
+
+	
 }
