@@ -1,0 +1,1 @@
+export const invertBoolean = (value: boolean) => !value;

@@ -1,30 +1,8 @@
-// const canvas = document.getElementById("canvas");
-// const ctx = canvas.getContext("2d");
-
-// canvas.width = 200;
-// canvas.height = 100;
-
-// <script>
-//   import { onMount } from 'svelte';
-
-//   let canvas;
-
-//   onMount(() => {
-//     const ctx = canvas.getContext('2d');
-//     // your canvas drawing code goes here
-//     // for example:
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-//     ctx.fillStyle = '#FF0000';
-//     ctx.fillRect(0, 0, canvas.width, canvas.height);
-//   });
-// </script>
-
-// <canvas bind:this={canvas} width="640" height="480"></canvas>
-
 const particles: Particle[] = [];
-const numParticles = 10;
+const numParticles = 80;
 
 class Particle {
+  isStar: boolean = false;
   canvas: any = undefined;
   ctx: any = undefined;
   x: number = -1;
@@ -32,9 +10,11 @@ class Particle {
   y: number = -1;
   speed: number = -1;
   radius: number = -1;
+  sizeVariation: number = -1;
   color: string = "";
   constructor(canvas: any, ctx: any) {
     if (!canvas || !ctx) return;
+    this.isStar = Math.random() < 0.5;
     this.canvas = canvas;
     this.canvas.width = 331;
     this.canvas.height = 105;
@@ -42,12 +22,10 @@ class Particle {
     this.x = Math.random() * canvas.width;
     this.xDirection = Math.random() < 0.5 ? -1 : 1; // -1 for left, 1 for right
     this.y = 0;
-    this.speed = Math.random() * 1 + 0.05;
-    console.log("speed", this.speed);
-    this.radius = Math.random() * 1 + 2;
-    this.color = `rgb(${Math.random() * 255},${Math.random() * 255},${
-      Math.random() * 255
-    })`;
+    this.speed = Math.random() * 0.2 + 0.1;
+    this.radius = Math.random() * 0.0001 + 0.0001;
+    this.sizeVariation = Math.random() * 2 + 1;
+    this.color = "rgb(255, 255, 255)";
   }
 
   update() {
@@ -60,10 +38,8 @@ class Particle {
   }
 
   draw() {
-    this.ctx.beginPath();
-    this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     this.ctx.fillStyle = this.color;
-    this.ctx.fill();
+    this.ctx.fillRect(this.x, this.y, 1, 1); // Draw a single pixel
   }
 }
 
@@ -82,6 +58,3 @@ export function animate(canvas: any, ctx: any) {
   });
   requestAnimationFrame(() => animate(canvas, ctx));
 }
-
-// createParticles();
-// animate();
