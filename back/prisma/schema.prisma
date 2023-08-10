@@ -132,7 +132,7 @@ model ChannelMsg {
 
 	user User @relation(fields: [userId], references: [id])
 	userId Int
-	channel Channel @relation(fields: [channelId], references: [id])
+	channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 	channelId Int
 }
 
