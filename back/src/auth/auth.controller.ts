@@ -18,7 +18,7 @@ export class AuthController {
 		const { createdAt, updateAt, twoFA, ...rest } = user;
 		return ({ user: rest });
 	}
-
+0
 	@UseGuards(FtGuard)
 	@HttpCode(HttpStatus.OK)
 	@Get('signin42')
