@@ -45,18 +45,18 @@ export class FriendController {
 		}
 	}
 
-	@Get('remove/:id')
+	@Get('remove/:uid')
     @ApiOperation({ summary: 'Suppresion d\'un utilisateur de votre liste d\'amis' })
     @ApiResponse({ status: 200, description: 'Succes de la suppresion ' })
     @ApiResponse({ status: 400, description: 'Echec de la suppresion' })
 	async remove(
-		@Param('id', ParseIntPipe) uid_cible: number, 
+		@Param('uid', ParseIntPipe) uid: number, 
 		@GetUser() user: User,
 		@Res() res: Response,
 	) { try {
 			console.log('FUNCTION Remove Friend was called');
 			console.log('JWT User: ', user);
-			console.log('User Id Cible: ', uid_cible);
+			console.log('User Id Cible: ', uid);
 
 			// CODE ICI
 

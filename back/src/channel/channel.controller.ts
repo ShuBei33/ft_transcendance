@@ -18,7 +18,7 @@ export class ChannelController {
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
-		@Param('id', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
 		@Res() res: Response 
 	) { try {

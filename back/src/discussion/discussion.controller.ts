@@ -18,7 +18,7 @@ export class DiscussionController {
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
-		@Param('id', ParseIntPipe) discId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+		@Param('discId', ParseIntPipe) discId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
 		@Res() res: Response 
 	) { try {
