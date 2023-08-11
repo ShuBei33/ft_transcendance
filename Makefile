@@ -12,8 +12,13 @@ all:
 	@docker-compose up --build -d
 	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
 
+.PHONY: no-detach
+no-detach:
+	@docker-compose up --build
+	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
+
 .PHONY: re
-re: stop all
+re: fclean all
 
 .PHONY: clean
 clean:
@@ -21,7 +26,7 @@ clean:
 	@echo "$(_GREEN) Docker Container was stoped $(_ENDL)"
 
 .PHONY: fclean
-fclean: stop
+fclean: clean
 	@docker system prune -af
 	@echo "$(_GREEN) Docker Container was removed $(_ENDL)"
 
