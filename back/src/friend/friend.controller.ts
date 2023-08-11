@@ -30,10 +30,12 @@ export class FriendController {
 			console.log('JWT User: ', user);
 
 			// CODE ICI
-
+			// const data = service. 
+			
 			return res.status(200).json({
 				success: true,
 				message: "La recuperation de la liste d'amis c'est bien passe",
+				// data: data,
 			});
 		} catch (err: any) {
 			return res.status(400).json({
