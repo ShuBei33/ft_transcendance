@@ -1,9 +1,9 @@
 import { Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { FtGuard, JwtGuard } from './guard';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 import { AuthService } from './auth.service';
-import { FTUser } from './dto';
 import { GetToken, GetUser } from './decorator';
+import { FTAuth } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,11 +27,7 @@ export class AuthController {
 	@UseGuards(FtGuard)
 	@Get('callback')
 	async callback(@Req() req: Request) {
-		const data = req.user as FTUser;
+		const data = req.user as FTAuth;
 		return this.authService.signin42( data.username, data.access_token, data.refresh_token );
 	}
-
-
-
-	
 }

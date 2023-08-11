@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, Profile } from 'passport-42';
-import { FTUser } from "../dto/";
 
 // Grace a passport-42 l'autentification est faite automatiquement
 // Il suffit de respecter le format de la strategie: clientID clientSecret callbackURL
@@ -17,7 +16,7 @@ export class FtStrategy extends PassportStrategy(Strategy){
 		});
 	}
 
-	async validate( access_token: string, refresh_token: string, profile: Profile ): Promise<FTUser> {
+	async validate( access_token: string, refresh_token: string, profile: Profile ) {
 		return ({
 			access_token: access_token,
 			refresh_token: refresh_token,

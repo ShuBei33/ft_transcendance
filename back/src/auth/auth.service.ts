@@ -51,5 +51,4 @@ export class AuthService {
 			this.signup( login );
 		return await this.signToken( refresh_token, access_token, login) ;
 	}
-
 }
