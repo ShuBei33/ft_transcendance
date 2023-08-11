@@ -35,6 +35,12 @@ fclean: clean
 # - vous permez de rentrer dans votre container.
 # - utile pour faire les installations de packages.
 
+.PHONY: enter-file_service
+enter-file_service:
+	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du FileService $(_ENDL)"
+	@docker exec -it file_service sh
+	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du FileService $(_ENDL)"
+
 .PHONY: enter-back
 enter-back:
 	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du BackEnd $(_ENDL)"
@@ -61,6 +67,10 @@ enter-front:
 .PHONY: log-back
 log-back:
 	@docker logs back -f
+
+.PHONY: log-file_service
+log-file_service:
+	@docker logs file_service -f
 
 .PHONY: log-db
 log-db:
