@@ -23,7 +23,7 @@ re: fclean all
 .PHONY: clean
 clean:
 	@docker-compose stop
-	@echo "$(_GREEN) Docker Container was stoped $(_ENDL)"
+	@echo "$(_GREEN) Docker Container was stopped $(_ENDL)"
 
 .PHONY: fclean
 fclean: clean
@@ -37,26 +37,26 @@ fclean: clean
 
 .PHONY: enter-back
 enter-back:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du BackEnd $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_GREEN)Entre$(_CYAN) dans le container du BackEnd $(_ENDL)"
 	@docker exec -it back sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du BackEnd $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) du container du BackEnd $(_ENDL)"
 
 .PHONY: enter-db
 enter-db:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container de la BDD $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_GREEN)Entre$(_CYAN) dans le container de la BDD $(_ENDL)"
 	@docker exec -it ${DB_NAME} sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container de la BDD $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) du container de la BDD $(_ENDL)"
 
 .PHONY: enter-front
 enter-front:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du FrontEnd $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_GREEN)Entre$(_CYAN) dans le container du FrontEnd $(_ENDL)"
 	@docker exec -it front sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du FrontEnd $(_ENDL)"
+	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) du container du FrontEnd $(_ENDL)"
 
 
 # SHORTCUT 
 # - vous permez d'afficher les logs d'un container.
-# - utile les tests preliminaire et debug.
+# - utile les tests preliminaires et debug.
 
 .PHONY: log-back
 log-back:
