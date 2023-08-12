@@ -53,8 +53,6 @@ model Friendship {
 //   receiverHasBlocked  Boolean   @default(false)
 }
 
-
-
 enum StatusInv {
 	PENDING
 	ACCEPTED
@@ -119,8 +117,7 @@ model Channel {
 	createdAt			DateTime @default(now())
 	updateAt			DateTime @updatedAt
 
-  	private				Boolean @default(false)
-	protected			Boolean @default(false)
+	visibility			ChanVisibility
 
 	channelUsers		ChanUsr[]
 	channelMsgs			ChannelMsg[]
@@ -154,6 +151,12 @@ model ChanUsr {
 	role				ChanUsrRole
 	status				ChanUsrStatus
 	statusDuration		DateTime
+}
+
+enum ChanVisibility {
+	PUBLIC
+	PROTECTED
+	PRIVATE
 }
 
 enum ChanUsrStatus {

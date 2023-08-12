@@ -20,9 +20,9 @@ export class ChannelController {
 	async get(
 		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
-		@Res() res: Response 
+		@Res() res: Response
 	) { try {
-			console.log('FUNCTION Get Friend was called');
+			console.log('FUNCTION GetChanId was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', chanId);
 
