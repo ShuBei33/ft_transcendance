@@ -1,0 +1,64 @@
+TESTING BACK FUNCTIONS
+
+- database is seeded and updated
+- server is launched
+- do [make log-back]
+- if no compilation errors:
+    - get valid token with http://172.17.0.1:5500/auth/signin42
+    - now, on Insomnia, put it into [authorization] + [bearer [token]]
+    - put tested route, such as http://172.17.0.1:5500/[src_name]/[function_name]
+    - sent and check log-back
+
+model user {
+    id					Int @id @default(autoincrement())
+    login				String @unique
+  	pseudo				String @unique
+}
+
+AJOUTER DANS LA DB
+    // note: id non renseignee car cree automatiquement par la db (@default(autoincrement()))
+    const userCreated = await this.prisma.user.create({
+        data: {
+            login: "mon super login",
+            pseudo: "I am Groot"
+        }
+    })
+
+MODIFIER DANS LA DB
+const userIdToUpdate = 1;
+
+//note: renseignee quel utilisateur a mettre a jour via un indentifiant,
+dans ce cas ce sera l'id mais ca peut egalement etre l'email ou pseudo
+
+const userUpdated = await this.prisma.user.update({
+    where: {
+        id: userIdToUpdate,
+    },
+    data: {
+        pseudo:"I just changed my nickname",
+    }
+})
+
+SUPPRIMER DE LA DB
+
+const userIdToDelete = 1;
+
+const userDeleted = await this.prisma.user.delete({
+    where: {
+        id: userIdToDelete,
+    }
+})
+
+
+RECUPERER DONNEES
+
+// trouver un seul element
+const userIdToFind = 1;
+
+const userFound = await this.prisma.findUnique({
+    where: {
+        id: userIdToFind
+    }
+});
+
+INCLURE RELATIONS
