@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DiscussionService } from './discussion.service';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
@@ -17,12 +17,13 @@ export class DiscussionController {
 	@ApiOperation({ summary: 'Recuperation de l\'historique de messages Discussion' })
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	async get(
+	@ApiParam({ name: 'discId', description: 'ID de la discussion', type: 'number', example: 1 })
+	async getMessage(
 		@Param('discId', ParseIntPipe) discId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
 		@Res() res: Response 
 	) { try {
-			console.log('FUNCTION Get Friend was called');
+			console.log('FUNCTION Get Message was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', discId);
 
