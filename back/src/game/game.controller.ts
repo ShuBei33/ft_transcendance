@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GetUser } from 'src/auth/decorator';
@@ -13,12 +13,13 @@ import { Response } from 'express';
 export class GameController {
 	constructor(private gameService: GameService) {}
 
-	@Get('getHistory/:id')
+	@Get('getHistory/:uid')
     @ApiOperation({ summary: 'Recuperation de la liste des parti effectuee d\'un utilisateur' })
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	async get(
-		@Param('id', ParseIntPipe) uid_cible: number, 
+	@ApiParam({ name: 'uid', description: 'Id de l\'user cible', type: 'number', example: 1 })
+	async getHistory(
+		@Param('uid', ParseIntPipe) uid_cible: number, 
 		@GetUser() user: User,
 		@Res() res: Response 
 	) { try {
