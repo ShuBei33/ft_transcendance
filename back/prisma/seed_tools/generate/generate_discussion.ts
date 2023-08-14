@@ -29,7 +29,7 @@ export async function check_discussion(uid1: number, uid2: number) {
 export async function generate_disc_msgs( discid: number, uid1: number, uid2: number, limit: number) {
 	for ( let i = 0; i < limit; i++ ) {
 		const content = LIST_RAND_MSG[ rand( LIST_RAND_MSG.length )];
-		console.log(content);
+		// console.log(content);
 		await prisma.discussionMsg.create({
 			data: {
 				content: content,
@@ -52,6 +52,6 @@ export async function generate_discussion( uid1: number, uid2: number ) {
 			user2: {connect: {id: uid2}},
 		}
 	});
-	console.log("Creation des messages:")
+	// console.log("Creation des messages:")
 	await generate_disc_msgs( data.id, uid1, uid2, rand(20) + 2);
 }

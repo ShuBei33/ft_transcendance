@@ -150,7 +150,7 @@ model ChanUsr {
 
 	role				ChanUsrRole
 	status				ChanUsrStatus
-	statusDuration		DateTime
+	statusDuration		DateTime?
 }
 
 enum ChanVisibility {
