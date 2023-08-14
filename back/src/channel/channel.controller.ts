@@ -5,13 +5,20 @@ import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { User } from '@prisma/client';
 import { Response } from 'express';
+import { FTChannel } from './dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Logger } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { success } from 'src/success_utils';
+
+const logger = new Logger();
 
 @UseGuards(JwtGuard)
 @ApiTags('Channel')
 @ApiBearerAuth()
 @Controller('channel')
 export class ChannelController {
-	constructor(private channelService: ChannelService) {}
+	constructor(private channelService: ChannelService, private prisma: PrismaService) { }
 
 	@Get('get')
 	@ApiOperation({ summary: 'Recuperation de la List de vos Channels' })
@@ -19,8 +26,9 @@ export class ChannelController {
 	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
+		@Res() res: Response
+	) {
+		try {
 			console.log('FUNCTION Get Channel was called');
 			console.log('JWT User: ', user);
 
@@ -46,8 +54,9 @@ export class ChannelController {
 	async getMessage(
 		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
+		@Res() res: Response
+	) {
+		try {
 			console.log('FUNCTION Get Message was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', chanId);
@@ -69,39 +78,28 @@ export class ChannelController {
 
 	@Post('create')
 	@ApiOperation({ summary: 'Creation d\'un nouveau Channel' })
-    @ApiResponse({ status: 200, description: 'Succes de Creation du channel' })
-    @ApiResponse({ status: 400, description: 'Echec de Creation du channel' })
+	@ApiResponse({ status: 200, description: 'Succes de Creation du channel' })
+	@ApiResponse({ status: 400, description: 'Echec de Creation du channel' })
 	async create(
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
-			console.log('FUNCTION CreateChannel was called');
-			console.log('JWT User: ', user);
-
-			// CODE ICI
-
-			return res.status(200).json({
-				success: true,
-				message: "Succes de Creation du channel",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
+		@Body() channelToCreate: FTChannel,
+		@Res() res: Response
+	) {
+		this.channelService.createChannel(channelToCreate);
+		return success.general(res, "Channel created successfully.");
 	}
 
 	@Delete('delete/:chanId')
 	@ApiOperation({ summary: 'Suppression d\'un channel ou vous etez owner' })
-    @ApiResponse({ status: 200, description: 'Succes de la Suppression du channel' })
-    @ApiResponse({ status: 400, description: 'Echec de la Suppression du channel' })
+	@ApiResponse({ status: 200, description: 'Succes de la Suppression du channel' })
+	@ApiResponse({ status: 400, description: 'Echec de la Suppression du channel' })
 	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
 	async delete(
 		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
+		@Res() res: Response
+	) {
+		try {
 			console.log('FUNCTION Delete Channel was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', chanId);
@@ -124,14 +122,15 @@ export class ChannelController {
 
 	@Delete('leave/:chanId')
 	@ApiOperation({ summary: 'Sortir de la liste user Channel' })
-    @ApiResponse({ status: 200, description: 'Succes de la Requete' })
-    @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
 	async leave(
 		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
+		@Res() res: Response
+	) {
+		try {
 			console.log('FUNCTION leave Channel was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', chanId);
@@ -153,14 +152,15 @@ export class ChannelController {
 
 	@Post('join/:chanId')
 	@ApiOperation({ summary: 'Connection avec un channel, avec ou sans password' })
-    @ApiResponse({ status: 200, description: 'Succes de la Requete' })
-    @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
 	async join(
 		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
+		@Res() res: Response
+	) {
+		try {
 			console.log('FUNCTION Join Channel was called');
 			console.log('JWT User: ', user);
 			console.log('Disc Id Cible: ', chanId);
