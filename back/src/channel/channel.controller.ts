@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Query, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChannelService } from './channel.service';
 import { GetUser } from 'src/auth/decorator';
@@ -75,18 +75,17 @@ export class ChannelController {
 		}
 	}
 
-
 	@Post('create')
-	@ApiOperation({ summary: 'Creation d\'un nouveau Channel' })
-	@ApiResponse({ status: 200, description: 'Succes de Creation du channel' })
-	@ApiResponse({ status: 400, description: 'Echec de Creation du channel' })
+	@ApiOperation({ summary: 'Create a new channel' })
+	@ApiResponse({ status: 200, description: 'Channel successfully created.' })
+	@ApiResponse({ status: 400, description: 'Bad request' })
 	async create(
 		@GetUser() user: User,
 		@Body() channelToCreate: FTChannel,
 		@Res() res: Response
 	) {
-		this.channelService.createChannel(channelToCreate);
-		return success.general(res, "Channel created successfully.");
+		const newChannel = await this.channelService.createChannel(user.id, channelToCreate);
+		return success.general(res, "Channel created successfully.", newChannel);
 	}
 
 	@Delete('delete/:chanId')
