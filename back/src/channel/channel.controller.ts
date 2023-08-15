@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Res, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChannelService } from './channel.service';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
-import { User } from '@prisma/client';
+import { User, Channel } from '@prisma/client';
 import { Response } from 'express';
 import { FTChannel } from './dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -20,6 +20,22 @@ const logger = new Logger();
 export class ChannelController {
 	constructor(private channelService: ChannelService, private prisma: PrismaService) { }
 
+	@Get('channels/:visibility')
+	@ApiOperation({ summary: 'Recuperation de la liste de tous les channels publics' })
+	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	async getChannel(
+		@GetUser() user: User,
+		@Res() res: Response,
+		@Query('visibility') visibility: "PUBLIC" | "PRIVATE" | "PROTECTED"
+		) {
+			const channels: Channel[] = await this.channelService.retrieveChannels(visibility);
+	
+      		const channelNames = channels.map(channel => channel.name);
+      		console.log('Channel Names:', channelNames);
+			return success.general(res, "c bon"); // -> a changer pour que ca renvoie les channels et pas une reponse.
+	}
+
 	@Get('get')
 	@ApiOperation({ summary: 'Recuperation de la List de vos Channels' })
 	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
@@ -32,7 +48,7 @@ export class ChannelController {
 			console.log('FUNCTION Get Channel was called');
 			console.log('JWT User: ', user);
 
-			// CODE ICI
+			// CODE ICIz
 
 			return res.status(200).json({
 				success: true,
@@ -74,7 +90,6 @@ export class ChannelController {
 			});
 		}
 	}
-
 
 	@Post('create')
 	@ApiOperation({ summary: 'Creation d\'un nouveau Channel' })
@@ -179,6 +194,25 @@ export class ChannelController {
 		}
 	}
 }
+// CHAT {
+//     - createChan 				OK
+//     - chanSettings				
+//         - renameChan				-> SERVICE
+//         - changeChanPwd			-> SERVICE
+//         - changeVisibility		-> SERVICE
+//     - deleteChan					OK
+//         - disconnectAllUsrs		-> SERVICE
+//     - showSubscribedChans		OK
+//     - leaveChan					OK
+//     - showMsgs					OK
+//         - showDMs				
+//         - showChanMsgs
+//     - addUsr
+//     - changeUsrStatus
+//         - muteUsr
+//         - banUsr
+//         - setPriv
+// }
 
 
 // CHAT {

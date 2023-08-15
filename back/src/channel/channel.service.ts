@@ -33,4 +33,16 @@ export class ChannelService {
                 throw "Unexpected error."
         }
     }
+
+	async retrieveChannels(visibility: "PUBLIC" | "PRIVATE" | "PROTECTED"): Promise<Channel[]> {        try {
+            const newChannel = await this.prisma.channel.findMany({
+                where: {
+                    visibility,
+                },
+            });
+            return newChannel;
+        } catch (e) {
+                throw "Unexpected error."
+        }
+    }
 }

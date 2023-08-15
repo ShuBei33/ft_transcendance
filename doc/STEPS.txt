@@ -1,0 +1,38 @@
+HOW TO CREATE BACK FUNCTIONS
+
+1. Launch containers with the .env:
+	- make enter-back
+	- open a new terminal, make log-back
+
+[NOW IN ENTER-BACK]
+2. Create database, if not already created:
+	- see prisma/README.md
+	- if you already have a migration
+		-> fill your database with seed (npx prisma db seed)
+		-> launch prisma studio
+
+3. Write your functions:
+	- do you need a DTO?
+		-> is there a form?
+	- modify controller
+		-> simplify it to use error and success utils 
+		-> you should only return the service in your controller
+	- code your service
+		-> import what you need
+		-> create your service class, ex: class FriendshipService
+		-> add the constructor
+		-> start coding the utils functions! (get, create, remove, etc)
+
+4. Body of your utils functions:
+	- try
+		-> display / create / delete what you need /HEART OF YOUR CODE\
+		-> return what you need
+	- catch
+		-> return error
+
+5. Testing your function
+	- go to Insomnia
+		-> get a valid token at http://172.17.0.1:5500/auth/signin42
+		-> put it in Authorization  | Bearer  [token]
+		-> choose your type ([POST/GET etc]) and add your route: http://172.17.0.1:5500/[src_name]/[function_name]
+		-> check output in log-back and insomnia
