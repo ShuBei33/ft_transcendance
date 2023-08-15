@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { JwtGuard } from 'src/auth/guard';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DTO_AnswerInvitation } from './dto';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { DTO_AnswerInvitation, DTO_AnswerInvitationSchema } from './dto';
 
 // FRIENDS {
 //     - addFriend // SEULEMENT EN SERVICE
@@ -45,10 +45,11 @@ export class FriendController {
 		}
 	}
 
-	@Get('remove/:uid')
+	@Delete('remove/:uid')
     @ApiOperation({ summary: 'Suppresion d\'un utilisateur de votre liste d\'amis' })
     @ApiResponse({ status: 200, description: 'Succes de la suppresion ' })
     @ApiResponse({ status: 400, description: 'Echec de la suppresion' })
+	@ApiParam({ name: 'uid', description: 'ID de l\'user cible', type: 'number', example: 1 })
 	async remove(
 		@Param('uid', ParseIntPipe) uid: number, 
 		@GetUser() user: User,
@@ -86,7 +87,7 @@ export class FriendController {
 		}	
 	}
 
-	@Get('sendInvitation')
+	@Post('sendInvitation')
     @ApiOperation({ summary: 'Envoie D\'une invitation Ami' })
     @ApiResponse({ status: 200, description: 'Succes de l\'envoie de l\'invitation' })
     @ApiResponse({ status: 400, description: 'Echec de l\'envoie de l\'invitation' })
@@ -105,18 +106,20 @@ export class FriendController {
 		}
 	}
 
-	@Get('resolveInvitation')
+	@Post('resolveInvitation')
     @ApiOperation({ summary: 'Envoi de la Resolution d\'une requete d\'ami' })
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	@ApiBody({ type: DTO_AnswerInvitation, description: 'Description de la requête d\'ami', schema: DTO_AnswerInvitationSchema  })
 	async resolveInvitation(
+		// LE DTO EST PEUT ETRE A CHANGER EN FONCTION DE LA NOUVELLE TABLE FRIENDS
 		@Body() answer: DTO_AnswerInvitation,
 		@GetUser() user: User,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION ResolveInvitation Friend was called');
-			console.log('DTO Answer Invitation: ', answer);
 			console.log('JWT User: ', user);
+			console.log('DTO Answer Invitation: ', answer);
 
 			// CODE ICI
 

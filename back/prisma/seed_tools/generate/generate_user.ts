@@ -25,12 +25,47 @@ export async function generate_users( users: GEN_CreateUser[] ): Promise<User[]>
 //		Creation D'un User							 										//
 //																							//
 //////////////////////////////////////////////////////////////////////////////////////////////
-export async function generate_user( user: GEN_CreateUser ): Promise<User> {
-	const data = await prisma.user.create({
-		data: {
-			...user,
-		}
-	})
-	return data;
-}
+// export async function generate_user( user: GEN_CreateUser ): Promise<User> {
+// 	const data = await prisma.user.create({
+// 		data: {
+// 			...user,
+// 		}
+// 	})
+// 	return data;
+// }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Verifier que le login n'est pas deja pris			 										//
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+// async function isLoginTaken(login: string) {
+// 	const existingUser = await prisma.user.findFirst({
+// 	  where: {
+// 		login: login
+// 	  }
+// 	});
+// 	return !!existingUser;
+//   }
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Creation De Plusieurs Users					 										//
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+// export async function generate_users( users: GEN_CreateUser[] ): Promise<User[]> {
+// 	const data: User[] = [];
+// 	for (const user of users) {
+// 		let login = user.login;
+// 		while (wait isLoginTaken(login)) {
+// 			login = 
+// 		}
+// 		data.push( await prisma.user.create({
+// 			data: {
+// 				...user,
+// 				login: login
+// 			}
+// 		}))
+// 	}
+// 	return data;
+// }
