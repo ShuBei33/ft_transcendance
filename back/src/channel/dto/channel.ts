@@ -1,11 +1,19 @@
 import { IsNotEmpty, IsEnum, Length } from 'class-validator';
-import { ChanVisibility } from '@prisma/client';
+import { ChanVisibility, Channel, User } from '@prisma/client';
 
-export class FTChannel {
+export class DTOCreateChan {
 	@IsNotEmpty()
 	@Length(1, 50)
-	name: string;
+	name: Channel['name'];
 	
 	@IsEnum(ChanVisibility)
-	visibility: ChanVisibility;
+	visibility: Channel['visibility'];
+}
+
+export class DTOJoinChan {
+	hash?: Channel['hash'];
+}
+
+export class DTOInviteChan {
+	userId: User['id'];
 }

@@ -151,6 +151,10 @@ model ChanUsr {
 	role				ChanUsrRole
 	status				ChanUsrStatus
 	statusDuration		DateTime?
+
+	isConfirmed			Boolean @default(true)
+
+	@@unique([userId, chanId])
 }
 
 enum ChanVisibility {
