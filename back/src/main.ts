@@ -7,7 +7,7 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	const config = new DocumentBuilder()
-		.setTitle('Ft_transendence')
+		.setTitle('Ft_transcendence')
 		.setDescription('42 project API')
 		.setVersion('1.0')
 		.build();

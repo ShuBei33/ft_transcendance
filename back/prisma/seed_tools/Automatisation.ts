@@ -10,17 +10,18 @@ import { PrismaClient } from "@prisma/client";
 
 export async function seed_dfl() {
 
-	// Reset de la database pour eviter probleme de doublons lors de seedings successifs... 
 	const prisma = new PrismaClient();
-	await prisma.game.deleteMany({});
-	await prisma.achievement.deleteMany({});
-	await prisma.discussionMsg.deleteMany({});
-	await prisma.discussion.deleteMany({});
-	await prisma.channelMsg.deleteMany({});
-	await prisma.channel.deleteMany({});
-	await prisma.chanUsr.deleteMany({});
-	await prisma.friendship.deleteMany({});
-	await prisma.user.deleteMany({});
+	
+	// Reset de la database pour eviter probleme de doublons lors de seedings successifs... 
+	// await prisma.game.deleteMany({});
+	// await prisma.achievement.deleteMany({});
+	// await prisma.discussionMsg.deleteMany({});
+	// await prisma.discussion.deleteMany({});
+	// await prisma.channelMsg.deleteMany({});
+	// await prisma.channel.deleteMany({});
+	// await prisma.chanUsr.deleteMany({});
+	// await prisma.friendship.deleteMany({});
+	// await prisma.user.deleteMany({});
 
 	// Creation de nos profils.
 	const user_dfl: User[] = await generate_users( USER_DFL );

@@ -1,9 +1,9 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DTOCreateChan, DTOInviteChan, DTOJoinChan } from './dto';
-import { ChanUsr, ChanUsrRole, ChanUsrStatus, Channel } from '@prisma/client';
+import { Prisma, ChanUsr, ChanUsrRole, ChanUsrStatus, ChanVisibility, Channel, StatusInv } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { error } from 'src/error_utils';
+import { error } from 'src/utils_error';
 
 const logger = new Logger();
 
@@ -13,7 +13,13 @@ export class ChannelService {
         private prisma: PrismaService,
     ) { }
 
-    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, isConfirmed: boolean = true): Promise<ChanUsr> {
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Creation		                                                                    //
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
         try {
             const newChanUsr = await this.prisma.chanUsr.create({
                 data: {
@@ -21,7 +27,7 @@ export class ChannelService {
                     channel: { connect: { id: chanId } },
                     role,
                     status,
-                    isConfirmed
+                    invitedToChan
                 }
             });
             return newChanUsr;
@@ -33,9 +39,9 @@ export class ChannelService {
         }
     }
 
-    async createChannel(userId: number, myChanDto: DTOCreateChan): Promise<Channel> {
+    async createChannel(userId: number, newChanDto: DTOCreateChan): Promise<Channel> {
         try {
-            const { name, visibility } = myChanDto;
+            const { name, visibility } = newChanDto;
             const newChannel = await this.prisma.channel.create({
                 data: {
                     name,
@@ -48,11 +54,17 @@ export class ChannelService {
 
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
-                error.hasConflict(`Channel ${myChanDto.name} already exists.`);
+                error.hasConflict(`Channel ${newChanDto.name} already exists.`);
             } else
                 error.unexpected('Unexpected error.')
         }
     }
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Deletion		                                                                    //
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
 
     async deleteChannel(userId: number, chanId: number): Promise<void> {
         try {
@@ -82,6 +94,65 @@ export class ChannelService {
         }
     }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Retriever		                                                                    //
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+async getAllChannels(): Promise<Channel[]> {
+    try {
+        let allChannels;
+        return allChannels;
+    }
+    catch (e) {
+        error.unexpected('Unexpected error.');
+    }
+}
+
+    async getMyChannels(userId: number, visibility?: ChanVisibility, role?: ChanUsrRole): Promise<Channel[]> {
+        try {
+            // using a whereclause to handle options, if provided
+            let whereClause: Prisma.ChanUsrWhereInput = {
+                userId,
+                invitedToChan: { in: ['ACCEPTED', null] }
+              };
+            if (visibility) {
+                whereClause = {
+                    ...whereClause,
+                    channel: { visibility }
+                };
+            }
+            if (role) {
+                whereClause = {
+                    ...whereClause,
+                    role
+                };
+            }
+            // retrieve all of our channelMemberships 
+            const myChanUsers = await this.prisma.chanUsr.findMany({
+                where: whereClause,
+                include: {
+                      channel: true,
+                    },
+                });
+            
+            const myChannels = myChanUsers.map(chanUsr => chanUsr.channel);
+            return myChannels;
+        }
+        catch (e) {
+            error.unexpected('Unexpected error.');
+        }
+    }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//																							//
+//		Updates		                                                                        //
+//																							//
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
     async leaveChannel(userId: number, chanId: number): Promise<void> {
         try {
             const chanUsr = await this.prisma.chanUsr.findFirstOrThrow({
@@ -107,43 +178,75 @@ export class ChannelService {
                 error.unexpected('Unexpected error.')
         }
     }
-
-    async joinChannel(userId: number, chanId: number, myChanDto: DTOJoinChan): Promise<void> {
+    
+    async inviteToChannel(userId: number, chanId: number, invitedUser: DTOInviteChan) {
         try {
-            const { hash } = myChanDto;
+            const userHasRights = await this.prisma.chanUsr.findFirstOrThrow({
+                where: {
+                    userId,
+                    chanId,
+                    role: { in: ['ADMIN', 'OWNER'] }
+                }
+            })
+            const areFriends = await this.prisma.friendship.findFirst({
+                where: {
+                    AND: [
+                        { senderId: userId },
+                        { receiverId: invitedUser.userId },
+                        { inviteStatus: 'ACCEPTED' },
+                    ]
+                }
+            })
+            if (!areFriends)
+                error.notFound('You can only send an invitation to a friend.');
+            
+            const chanUsr = await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
+        } 
+        catch (e) {
+            if (e instanceof PrismaClientKnownRequestError)
+                error.notAuthorized("Not admin or owner.");
+            else if (e instanceof HttpException)
+                throw e;
+            else {
+                error.unexpected('Unexpected error.');
+            }
+        }
+    }
 
+    async joinChannel(userId: number, chanId: number, joinChanDto?: DTOJoinChan): Promise<void> {
+        try {
+            // check that channel exists
             const channel = await this.prisma.channel.findUniqueOrThrow({
                 where: { id: chanId },
             });
+
             switch (channel.visibility) {
-                case 'PUBLIC':
-                    await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
-                    break;
                 case 'PROTECTED':
+                    const { hash } = joinChanDto;
                     if (hash != channel.hash)
                         error.notAuthorized(`Password mismatch.`);
+                case 'PRIVATE':
+                    // check that user has been invited
+                    const invitation = await this.prisma.chanUsr.findFirstOrThrow({
+                        where: {
+                            userId,
+                            chanId: chanId,
+                            invitedToChan: 'PENDING'
+                        },       
+                    });
+                    if (!invitation)
+                        error.notAuthorized(`You have not been invited to this channel.`);
                     else
-                        await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
-                    break;
+                        // we don't recreate a new chanUsr, we just update it
+                        await this.prisma.chanUsr.update({
+                            where: { id: invitation.id },
+                            data: { invitedToChan: 'ACCEPTED'}
+                    });
+                break;
                 default:
-                    error.notAuthorized(`You have not been invited to this channel.`);
-            }
-            // if (channel.visibility == 'PROTECTED') {
-            //     if (channel.hash != hash)
-            //         await this.prisma.chanUsr.delete( {
-            //             where: { id: newChanUsr.id}
-            //         })
-            //         error.notAuthorized(`Password mismatch.`);
-            // }
-            // else if (channel.visibility == 'PRIVATE') {
-            //     if (invited == false) {
-            //         await this.prisma.chanUsr.delete( {
-            //             where: { id: newChanUsr.id}
-            //         })
-            //         error.notAuthorized(`You have not been invited to this channel.`);
-            //     }
-            // const newChanUsr = await this.createChanUsr(userId, id, 'NORMAL', 'NORMAL');
-            // }
+                    await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
+                    break;
+                }
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
                 error.notFound(`Channel not found.`);
@@ -152,24 +255,5 @@ export class ChannelService {
             else
                 error.unexpected('Unexpected error.')
         }
-    }
-    
-    async inviteToChannel(userId: number, chanId: number, userToInviteId: DTOInviteChan) {
-        const userHasRights = await this.prisma.chanUsr.findFirst({
-            where: {
-                userId,
-                chanId,
-                role: {
-                    in: ['ADMIN', 'OWNER']
-                }
-            }
-        })
-        if (!userHasRights) {
-            error.notAuthorized("Not admin or owner.");
-        } else {
-            const chanUsr = await this.createChanUsr(userToInviteId.userId, chanId, 'NORMAL', 'NORMAL', false);
-            logger.log(chanUsr);
-        }
-        
     }
 }

@@ -9,7 +9,7 @@ import { DTOCreateChan, DTOJoinChan, DTOInviteChan } from './dto';
 import { User } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { success } from 'src/success_utils';
+import { success } from 'src/utils_success';
 
 const logger = new Logger();
 
@@ -196,7 +196,7 @@ export class ChannelController {
 		@Res() res: Response
 	) {
 		const channelJoined = await this.channelService.inviteToChannel(user.id, chanId, userToInvite);
-		return success.general(res, "Channel joined successfully.", channelJoined);
+		return success.general(res, "User invited successfully.", channelJoined);
 	}
 }
 
