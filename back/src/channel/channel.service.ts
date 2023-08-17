@@ -108,25 +108,6 @@ export class ChannelService {
         }
     }
 
-    async inviteToChannel(userId: number, chanId: number, userToInviteId: DTOInviteChan) {
-        const userHasRights = await this.prisma.chanUsr.findFirst({
-            where: {
-                userId,
-                chanId,
-                role: {
-                    in: ['ADMIN', 'OWNER']
-                }
-            }
-        })
-        if (!userHasRights) {
-            error.notAuthorized("Not admin or owner.");
-        } else {
-            const chanUsr = await this.createChanUsr(userToInviteId.userId, chanId, 'NORMAL', 'NORMAL', false);
-            logger.log(chanUsr);
-        }
-        
-    }
-
     async joinChannel(userId: number, chanId: number, myChanDto: DTOJoinChan): Promise<void> {
         try {
             const { hash } = myChanDto;
@@ -171,5 +152,24 @@ export class ChannelService {
             else
                 error.unexpected('Unexpected error.')
         }
+    }
+    
+    async inviteToChannel(userId: number, chanId: number, userToInviteId: DTOInviteChan) {
+        const userHasRights = await this.prisma.chanUsr.findFirst({
+            where: {
+                userId,
+                chanId,
+                role: {
+                    in: ['ADMIN', 'OWNER']
+                }
+            }
+        })
+        if (!userHasRights) {
+            error.notAuthorized("Not admin or owner.");
+        } else {
+            const chanUsr = await this.createChanUsr(userToInviteId.userId, chanId, 'NORMAL', 'NORMAL', false);
+            logger.log(chanUsr);
+        }
+        
     }
 }
