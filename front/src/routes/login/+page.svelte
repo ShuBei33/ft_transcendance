@@ -36,6 +36,9 @@
     }}
     setter={password.set}
   />
+  <a href="http://localhost:5500/auth/signin42">
+    <h1>test42</h1>
+  </a>
   <button
     on:click={() =>
       alert("login not implemented yet." + JSON.stringify($loginForm.summary))}
