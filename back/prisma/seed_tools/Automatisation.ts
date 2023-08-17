@@ -10,7 +10,7 @@ import { PrismaClient } from "@prisma/client";
 
 export async function seed_dfl() {
 
-	// Reset de la database pour eviter probleme de doublons lors de seedings successifs
+	// Reset de la database pour eviter probleme de doublons lors de seedings successifs... 
 	const prisma = new PrismaClient();
 	await prisma.game.deleteMany({});
 	await prisma.achievement.deleteMany({});

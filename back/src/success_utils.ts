@@ -1,10 +1,14 @@
 import { Response } from 'express';
-export const successTemplate = (res: Response, status: number, message: string) =>
-    res.status(200).json({
+export const successTemplate = <T>(res: Response, status: number, message: string, data?: T) =>
+    res.status(status).json(data && {
+        success: true,
+        message,
+        data
+    } || {
         success: true,
         message,
     });
 
 export namespace success {
-    export const general = (res: Response, message: string) => successTemplate(res, 200, message);
+    export const general = <T = {}>(res: Response, message: string, data?: T) => successTemplate(res, 200, message, data);
 }

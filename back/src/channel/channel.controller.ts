@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Query, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChannelService } from './channel.service';
 import { GetUser } from 'src/auth/decorator';
@@ -20,164 +20,199 @@ const logger = new Logger();
 export class ChannelController {
 	constructor(private channelService: ChannelService, private prisma: PrismaService) { }
 
-	@Get('get')
-	@ApiOperation({ summary: 'Recuperation de la List de vos Channels' })
-	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
-	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	async get(
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		try {
-			console.log('FUNCTION Get Channel was called');
-			console.log('JWT User: ', user);
+	// @Get('get')
+	// @ApiOperation({ summary: 'Recuperation de la List de vos Channels' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// async get(
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION Get Channel was called');
+	// 		console.log('JWT User: ', user);
 
-			// CODE ICI
+	// 		// CODE ICI
 
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation de la list c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
-	}
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation de la list c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,
+	// 		});
+	// 	}
+	// }
 
-	@Get('get/:chanId')
-	@ApiOperation({ summary: 'Recuperation de l\'historique de messages Channel' })
-	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
-	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
-	async getMessage(
-		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		try {
-			console.log('FUNCTION Get Message was called');
-			console.log('JWT User: ', user);
-			console.log('Disc Id Cible: ', chanId);
+	// @Get('get/:chanId')
+	// @ApiOperation({ summary: 'Recuperation de l\'historique de messages Channel' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// @ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
+	// async getMessage(
+	// 	@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION Get Message was called');
+	// 		console.log('JWT User: ', user);
+	// 		console.log('Disc Id Cible: ', chanId);
 
-			// CODE ICI
+	// 		// CODE ICI
 
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation des messages c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
-	}
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation des messages c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,@Get('get')
+	// @ApiOperation({ summary: 'Recuperation de la List de vos Channels' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// async get(
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION Get Channel was called');
+	// 		console.log('JWT User: ', user);
 
+	// 		// CODE ICI
+
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation de la list c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,
+	// 		});
+	// 	}
+	// }
+
+	// @Get('get/:chanId')
+	// @ApiOperation({ summary: 'Recuperation de l\'historique de messages Channel' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// @ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
+	// async getMessage(
+	// 	@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION Get Message was called');
+	// 		console.log('JWT User: ', user);
+	// 		console.log('Disc Id Cible: ', chanId);
+
+	// 		// CODE ICI
+
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation des messages c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,
+	// 		});
+	// 	}
+	// }
+	// 		});
+	// 	}
+	// }
 
 	@Post('create')
-	@ApiOperation({ summary: 'Creation d\'un nouveau Channel' })
-	@ApiResponse({ status: 200, description: 'Succes de Creation du channel' })
-	@ApiResponse({ status: 400, description: 'Echec de Creation du channel' })
+	@ApiOperation({ summary: 'Create a new channel' })
+	@ApiResponse({ status: 200, description: 'Channel successfully created.' })
+	@ApiResponse({ status: 400, description: 'Bad request' })
 	async create(
 		@GetUser() user: User,
 		@Body() channelToCreate: FTChannel,
 		@Res() res: Response
 	) {
-		this.channelService.createChannel(channelToCreate);
-		return success.general(res, "Channel created successfully.");
+		const newChannel = await this.channelService.createChannel(user.id, channelToCreate);
+		return success.general(res, "Channel created successfully.", newChannel);
 	}
 
 	@Delete('delete/:chanId')
-	@ApiOperation({ summary: 'Suppression d\'un channel ou vous etez owner' })
-	@ApiResponse({ status: 200, description: 'Succes de la Suppression du channel' })
-	@ApiResponse({ status: 400, description: 'Echec de la Suppression du channel' })
-	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
+	@ApiOperation({ summary: 'Delete a channel that you own' })
+	@ApiResponse({ status: 200, description: 'Channel successfully deleted.' })
+	@ApiResponse({ status: 400, description: 'Could not delete channel' })
+	@ApiParam({ name: 'chanId', description: 'Channel Id', type: 'number', example: 1 })
 	async delete(
-		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+		@Param('chanId', ParseIntPipe) chanId: number,
 		@GetUser() user: User,
 		@Res() res: Response
 	) {
-		try {
-			console.log('FUNCTION Delete Channel was called');
-			console.log('JWT User: ', user);
-			console.log('Disc Id Cible: ', chanId);
-
-			// CODE ICI
-
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation des messages c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
+		const channelDeleted = await this.channelService.deleteChannel(user.id, chanId);
+		return success.general(res, "Channel deleted successfully.", channelDeleted);
 	}
 
+	// @Delete('leave/:chanId')
+	// @ApiOperation({ summary: 'Leave a channel' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// @ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
+	// async leave(
+	// 	@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION leave Channel was called');
+	// 		console.log('JWT User: ', user);
+	// 		console.log('Disc Id Cible: ', chanId);
+
+	// 		// CODE ICI
+
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation des messages c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,
+	// 		});
+	// 	}
+	// }
 
 
-	@Delete('leave/:chanId')
-	@ApiOperation({ summary: 'Sortir de la liste user Channel' })
-	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
-	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
-	async leave(
-		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		try {
-			console.log('FUNCTION leave Channel was called');
-			console.log('JWT User: ', user);
-			console.log('Disc Id Cible: ', chanId);
+	// @Post('join/:chanId')
+	// @ApiOperation({ summary: 'Connection avec un channel, avec ou sans password' })
+	// @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	// @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	// @ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
+	// async join(
+	// 	@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+	// 	@GetUser() user: User,
+	// 	@Res() res: Response
+	// ) {
+	// 	try {
+	// 		console.log('FUNCTION Join Channel was called');
+	// 		console.log('JWT User: ', user);
+	// 		console.log('Disc Id Cible: ', chanId);
 
-			// CODE ICI
+	// 		// CODE ICI
 
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation des messages c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
-	}
-
-
-	@Post('join/:chanId')
-	@ApiOperation({ summary: 'Connection avec un channel, avec ou sans password' })
-	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
-	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	@ApiParam({ name: 'chanId', description: 'ID du Channel', type: 'number', example: 1 })
-	async join(
-		@Param('chanId', ParseIntPipe) chanId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		try {
-			console.log('FUNCTION Join Channel was called');
-			console.log('JWT User: ', user);
-			console.log('Disc Id Cible: ', chanId);
-
-			// CODE ICI
-
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation des messages c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
-	}
+	// 		return res.status(200).json({
+	// 			success: true,
+	// 			message: "La recuperation des messages c'est bien passe",
+	// 		});
+	// 	} catch (err: any) {
+	// 		return res.status(400).json({
+	// 			success: false,
+	// 			message: err.message,
+	// 		});
+	// 	}
+	// }
 }
 
 
