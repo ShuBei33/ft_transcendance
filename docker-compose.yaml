@@ -20,7 +20,7 @@ services:
     image: node:lts-alpine
     depends_on:
       - postgres
-    ports: 
+    ports:
       - "${BACK_PORT:-5500}:${BACK_PORT:-5500}"
       - "5555:5555"
     restart: always
@@ -28,6 +28,7 @@ services:
     command: /bin/sh -c "apk add bash; npm install; npm run start:dev"
     environment:
       BACK_PORT: ${BACK_PORT:-5500}
+      CORS: ${CORS}
       DATABASE_URL: ${DATABASE_URL}
       API_UID42: ${API_UID42}
       API_SECRET42: ${API_SECRET42}
