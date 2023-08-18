@@ -29,6 +29,13 @@ export class AuthController {
     return { user: rest };
   }
 
+  @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('test')
+  async test(@GetUser() user) {
+    return user;
+  }
+
   @UseGuards(FtGuard)
   @HttpCode(HttpStatus.OK)
   @Get('signin42')
@@ -47,7 +54,7 @@ export class AuthController {
       data.access_token,
       data.refresh_token,
     );
-    const frontEndUrl = `http://localhost:5000/callback`; // Replace with your actual front-end URL
+    const frontEndUrl = `http://localhost:5000/callback`;
     const redirectUrl = `${frontEndUrl}?token=${token.token}`;
     res.redirect(redirectUrl);
   }
