@@ -7,6 +7,7 @@ import { GameModule } from './game/game.module';
 import { DiscussionModule } from './discussion/discussion.module';
 import { ChannelModule } from './channel/channel.module';
 import { UserController } from './user/user.controller';
+import { UserModule } from './user/user.module';
 
 @Module({
 	imports: [
@@ -16,8 +17,8 @@ import { UserController } from './user/user.controller';
 		GameModule,
 		DiscussionModule,
 		ChannelModule,
+		UserModule
 	],
-	controllers: [UserController],
 	providers: [AppGateway],
 })
 export class AppModule {}

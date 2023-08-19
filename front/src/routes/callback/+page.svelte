@@ -2,17 +2,17 @@
   import { page } from "$app/stores";
   import { onMount } from "svelte";
   import { token, user } from "$lib/stores";
-  import axios from "axios";
-  import { axiosInstance } from "$lib/stores/api";
+  import type { CreateAxiosDefaults } from "axios";
+  import { axiosInstance, axiosConfig } from "$lib/stores/api";
   import { goto } from "$app/navigation";
 
   onMount(async () => {
     const retrivedToken = $page.url.searchParams.get("token");
-    if (!retrivedToken) {
-      goto("/login");
-    }
+    const redirect = $page.url.searchParams.get("redirect");
 
-    const userApiInstance = axios.create({
+    if (!retrivedToken) goto("/login");
+
+    const config: CreateAxiosDefaults = {
       baseURL: "http://localhost:5500",
       withCredentials: true,
       timeout: 10000,
@@ -20,17 +20,21 @@
         "Content-Type": "application/json",
         Authorization: `Bearer ${retrivedToken}`,
       },
+    };
+    axiosConfig.set(config);
+    axiosInstance.subscribe((_axios) => {
+      _axios
+        .get("/auth/checkJWT")
+        .then((res) => {
+          user.set(res.data.user);
+          $token != retrivedToken && token.set(retrivedToken!);
+          goto((redirect && redirect) || `/profile/${res.data.user.id}`);
+        })
+        .catch(() => {
+          goto("/login");
+        });
     });
-
-    userApiInstance
-      .get("/auth/checkJWT")
-      .then((res) => {
-        user.set(res.data.user);
-        axiosInstance.set(userApiInstance);
-      })
-      .catch(() => {
-        goto("/login");
-      });
+    // const userApiInstance = axios.create(config);
   });
 </script>
 
