@@ -7,7 +7,7 @@
 
   /**
    * This script manages page navigation and slot permission based on user authentication
-   * and the current page in a SvelteKit application. It checks authentication status,
+   * and the current page in the SvelteKit application. It checks authentication status,
    * retrieves tokens from cookies, and redirects users as necessary, setting slot permissions
    * accordingly.
    */

@@ -6,6 +6,8 @@
   import { axiosInstance, axiosConfig } from "$lib/stores/api";
   import { goto } from "$app/navigation";
 
+  console.log("callback");
+
   onMount(async () => {
     const retrivedToken = $page.url.searchParams.get("token");
     const redirect = $page.url.searchParams.get("redirect");
@@ -27,7 +29,7 @@
         .get("/auth/checkJWT")
         .then((res) => {
           user.set(res.data.user);
-          $token != retrivedToken && token.set(retrivedToken!);
+          token.set(retrivedToken!);
           goto((redirect && redirect) || `/profile/${res.data.user.id}`);
         })
         .catch(() => {

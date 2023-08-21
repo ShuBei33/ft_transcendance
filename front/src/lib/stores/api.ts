@@ -10,8 +10,3 @@ export const axiosConfig = writable<CreateAxiosDefaults<any> | undefined>(
 export const axiosInstance = derived(axiosConfig, ($axiosConfig) =>
   axios.create($axiosConfig)
 );
-// export const axiosInstance = writable<AxiosInstance>(axios.create());
-// export const readonlyAxiosInstance = derived(
-//   axiosInstance,
-//   ($axiosInstance) => $axiosInstance
-// );
