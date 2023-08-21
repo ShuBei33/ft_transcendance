@@ -53,13 +53,6 @@ model Friendship {
 //   receiverHasBlocked  Boolean   @default(false)
 }
 
-enum StatusInv {
-	PENDING
-	ACCEPTED
-	REJECT
-	BLOCKED
-}
-
 // GAME 
 model Game {
 	id					Int @id @default(autoincrement())
@@ -145,12 +138,23 @@ model ChanUsr {
 
 	user				User @relation(fields: [userId], references: [id])
 	userId				Int
-	channel				Channel? @relation(fields: [chanId], references: [id], onDelete: Cascade)
+	channel				Channel @relation(fields: [chanId], references: [id], onDelete: Cascade)
 	chanId				Int
 
 	role				ChanUsrRole
 	status				ChanUsrStatus
 	statusDuration		DateTime?
+
+	invitedToChan       StatusInv?
+
+	@@unique([userId, chanId])
+}
+
+enum StatusInv {
+	PENDING
+	ACCEPTED
+	REJECT
+	BLOCKED
 }
 
 enum ChanVisibility {
