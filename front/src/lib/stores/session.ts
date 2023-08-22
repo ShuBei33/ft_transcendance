@@ -10,8 +10,8 @@ export const token = writableHook<string>({
   onSet(value) {
     Cookies.set(COOKIE_TOKEN_NAME, value, { expires: TOKEN_EXPIRATION });
   },
-  onUpdate(value) {
-    Cookies.set(COOKIE_TOKEN_NAME, value, { expires: TOKEN_EXPIRATION });
+  onUpdate(_, newValue) {
+    Cookies.set(COOKIE_TOKEN_NAME, newValue, { expires: TOKEN_EXPIRATION });
   },
   onClear() {
     Cookies.remove(COOKIE_TOKEN_NAME);

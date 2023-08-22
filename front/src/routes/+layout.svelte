@@ -1,58 +1,43 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
-  import { token, user, axiosConfig } from "$lib/stores";
-  import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
-  import { page } from "$app/stores";
-  import Cookies from "js-cookie";
+  import Nav from "../components/nav/nav.svelte";
+  import AuthRouter from "$lib/utils/authRouter.svelte";
+  import { onMount, type ComponentProps } from "svelte";
+  import type NavButton from "../components/nav/navButton.svelte";
+  import { user } from "$lib/stores";
+  import { get } from "svelte/store";
 
-  /**
-   * This script manages page navigation and slot permission based on user authentication
-   * and the current page in the SvelteKit application. It checks authentication status,
-   * retrieves tokens from cookies, and redirects users as necessary, setting slot permissions
-   * accordingly.
-   */
+  onMount(() => {
+    console.log($user);
+  });
 
-  const currentPage = $page.url.pathname.split("/")[1];
-
-  let isAuthenticated = $token.length && $user && $axiosConfig;
-  let allowSlot = false;
-
-  const retrivedToken = Cookies.get(COOKIE_TOKEN_NAME);
-  switch (currentPage) {
-    case "login":
-      if (isAuthenticated) goto(`/profile/${$user?.id}`);
-      else if (retrivedToken) {
-        goto(`/callback?token=${retrivedToken}`)
-          .then(() => (allowSlot = true))
-          .catch(() => (allowSlot = false));
-      } else allowSlot = true;
-      break;
-    case "callback":
-      if (!isAuthenticated && retrivedToken)
-        goto(`/callback?token=${retrivedToken}`)
-          .then(() => (allowSlot = true))
-          .catch(() => (allowSlot = false));
-      else allowSlot = true;
-      break;
-    default:
-      if (!isAuthenticated) {
-        if (retrivedToken)
-          goto(
-            `/callback?token=${retrivedToken}&redirect=${$page.url.pathname}`
-          )
-            .then(() => (allowSlot = true))
-            .catch(() => (allowSlot = false));
-        else
-          goto("/login")
-            .then(() => (allowSlot = true))
-            .catch(() => (allowSlot = false));
-      }
-  }
+  let navItems: ComponentProps<NavButton>[];
+  $: navItems = [
+    {
+      name: "profile",
+      href: "/profile/" + $user?.id,
+    },
+    {
+      name: "play",
+      href: "/play",
+    },
+    {
+      name: "store",
+      href: "/store",
+    },
+    {
+      name: "leaderboard",
+      href: "/leaderboard",
+    },
+    {
+      name: "inventory",
+      href: "/inventory",
+    },
+  ];
 </script>
 
-{#if allowSlot}
+<AuthRouter>
+  <span slot="nav">
+    <Nav {navItems} />
+  </span>
   <slot />
-{:else}
-  <h1>not connected</h1>
-  <!-- content here -->
-{/if}
+</AuthRouter>

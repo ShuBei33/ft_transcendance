@@ -2,7 +2,7 @@
 import { writable, type Writable } from "svelte/store";
 
 type OnSetCallback<T> = (value: T) => void;
-type OnUpdateCallback<T> = (value: T) => void;
+type OnUpdateCallback<T> = (previousValue: T, newValue: T) => void;
 type OnClearCallback = () => void;
 
 export interface WritableHookOptions<T> {
@@ -43,7 +43,7 @@ export function writableHook<T>({
     update((currentValue) => {
       const updatedValue = updater(currentValue);
       if (onUpdate) {
-        onUpdate(updatedValue);
+        onUpdate(currentValue, updatedValue);
       }
       return updatedValue;
     });
