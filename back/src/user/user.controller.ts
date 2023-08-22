@@ -3,8 +3,8 @@ import { Response } from 'express';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { success } from 'src/success_utils';
-import { error } from 'src/error_utils';
+import { success } from 'src/utils/utils_success';
+import { error } from 'src/utils/utils_error';
 import { UserService } from './user.service';
 import { Param } from '@nestjs/common';
 

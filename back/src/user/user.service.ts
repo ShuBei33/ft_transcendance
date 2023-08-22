@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { error } from 'src/error_utils';
+import { error } from '../utils/utils_error';
 import { Prisma } from '@prisma/client';
 import { Logger } from '@nestjs/common';
 const logger = new Logger();
