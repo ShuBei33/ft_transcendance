@@ -15,6 +15,9 @@ import { GetToken, GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 
+
+const logger = new Logger();
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -49,6 +52,7 @@ export class AuthController {
     );
     const frontEndUrl = `http://localhost:5000/callback`; // Replace with your actual front-end URL
     const redirectUrl = `${frontEndUrl}?token=${token.token}`;
+    logger.log(token);
     res.redirect(redirectUrl);
   }
 }

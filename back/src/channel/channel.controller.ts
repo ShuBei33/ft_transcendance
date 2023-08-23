@@ -42,10 +42,8 @@ export class ChannelController {
 	async getMine(
 		@GetUser() user: User,
 		@Res() res: Response,
-		@Query('visibility') visibility?: ChanVisibility,
-    	@Query('role') role?: ChanUsrRole,
 	) {
-		const channelList = await this.channelService.getMyChannels(user.id, visibility, role);
+		const channelList = await this.channelService.getMyChannels(user.id);
 		return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
 	}
 
@@ -59,8 +57,8 @@ export class ChannelController {
 		@GetUser() user: User,
 		@Res() res: Response
 	) {
-		const channelDeleted = await this.channelService.getChannelMsgs(user.id, chanId);
-		return success.general(res, "Channel messages retrieved successfully.", channelDeleted);
+		const channelMsgs = await this.channelService.getChannelMsgs(user.id, chanId);
+		return success.general(res, "Channel messages retrieved successfully.", channelMsgs);
 	}
 	
 	@Post('create')
