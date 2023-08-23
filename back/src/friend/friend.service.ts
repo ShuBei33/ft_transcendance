@@ -6,32 +6,36 @@ import { User } from '@prisma/client';
 export class FriendService {
   constructor(private prisma: PrismaService) {}
 
-  async getFriendsList(userId: number) : Promise<User[]> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        sentInvites: {
-          where: { inviteStatus: 'ACCEPTED' }, // Filter for accepted friend requests
-          include: { receiver: true },
-        },
-        receivedInvites: {
-          where: { inviteStatus: 'ACCEPTED' }, // Filter for accepted friend requests
-          include: { sender: true },
-        },
-      },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    // Combine sent and received friend requests into a single array
-    const friends = [
-      ...user.sentInvites.map((invite) => invite.receiver),
-    //   ...user.receivedInvites.map((invite) => invite.sender),
-    ];
-
-    return friends;
+  async getFriendsList(userId: number): Promise<User[]> {
+	const user = await this.prisma.user.findUnique({
+	  where: { id: userId },
+	  include: {
+		sentInvites: {
+		  where: { inviteStatus: 'ACCEPTED' },
+		  include: { receiver: true },
+		},
+		receivedInvites: {
+		  where: { inviteStatus: 'ACCEPTED' },
+		  include: { sender: true },
+		},
+	  },
+	});
+  
+	if (!user) {
+	  throw new Error('User not found');
+	}
+  
+	// Find mutual friends by iterating through accepted invites
+	const friends = user.sentInvites
+	  .filter((sentInvite) =>
+		user.receivedInvites.some(
+		  (receivedInvite) =>
+			receivedInvite.senderId === sentInvite.receiverId
+		)
+	  )
+	  .map((sentInvite) => sentInvite.receiver);
+  
+	return friends;
   }
 
   async deleteFriend(userId: number, friendId: number) {
