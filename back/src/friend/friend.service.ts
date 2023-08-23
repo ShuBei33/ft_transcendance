@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
+import { Friendship } from '@prisma/client';
 
 @Injectable()
 export class FriendService {
@@ -61,4 +62,19 @@ export class FriendService {
 
     return 'Friend deleted successfully';
   }
+
+  async getReceivedPendingInvites(userId: number): Promise<Friendship[]> {
+	const receivedPendingInvites = await this.prisma.friendship.findMany({
+	  where: {
+		receiverId: userId,
+		inviteStatus: 'PENDING',
+	  },
+	  include: {
+		sender: true,
+	  },
+	});
+  
+	return receivedPendingInvites;
+  }
+
 }
