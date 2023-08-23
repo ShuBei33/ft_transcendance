@@ -5,6 +5,14 @@
   import { token, user, axiosConfig } from "$lib/stores";
   import Cookies from "js-cookie";
   import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
+  import { io } from "socket.io-client";
+  const events = io("http://localhost:5500");
+  $: myEvent = String($user?.id) || "";
+
+  events.on(myEvent, (data: any) => {
+    console.log("received", data);
+  });
+  events.on("test", (data) => console.log(data));
   /**
    * This script manages page navigation and slot permission based on user authentication
    * and the current page in the SvelteKit application. It checks authentication status,

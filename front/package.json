@@ -25,8 +25,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@types/express-serve-static-core": "^4.17.36",
 		"js-cookie": "^3.0.5",
 		"path": "^0.12.7",
+		"socket.io": "^4.7.2",
+		"socket.io-client": "^4.7.2",
 		"svelte-forms": "^2.3.1"
 	}
 }
