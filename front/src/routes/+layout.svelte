@@ -5,6 +5,8 @@
   import type NavButton from "../components/nav/navButton.svelte";
   import { user } from "$lib/stores";
   import { get } from "svelte/store";
+  import SocialModal from "../components/nav/social/socialModal.svelte";
+  import { ui } from "$lib/stores/ui";
 
   onMount(() => {
     console.log($user);
@@ -32,6 +34,10 @@
       name: "inventory",
       href: "/inventory",
     },
+    {
+      name: "game",
+      href: "/game",
+    },
   ];
 </script>
 
@@ -40,4 +46,21 @@
     <Nav {navItems} />
   </span>
   <slot />
-</AuthRouter>
+  <SocialModal />
+  <div class="bottom-acion-section">
+    <button
+      class="chat-toggle"
+      on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
+      >chat {(!$ui.chat.toggle && "+") || "-"}</button
+    >
+    <div />
+  </div></AuthRouter
+>
+
+<style lang="scss">
+  .chat-toggle {
+    position: absolute;
+    bottom: 1em;
+    right: 1em;
+  }
+</style>

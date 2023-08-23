@@ -14,6 +14,7 @@
 		"@sveltejs/kit": "^1.20.4",
 		"@tsconfig/svelte": "^5.0.0",
 		"@types/js-cookie": "^3.0.3",
+		"@types/node": "^20.5.3",
 		"axios": "^1.4.0",
 		"sass": "^1.65.1",
 		"svelte": "^4.0.5",
@@ -25,6 +26,7 @@
 	"type": "module",
 	"dependencies": {
 		"js-cookie": "^3.0.5",
+		"path": "^0.12.7",
 		"svelte-forms": "^2.3.1"
 	}
 }

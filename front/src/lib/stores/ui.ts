@@ -3,14 +3,20 @@ import { writableHook, type WritableHook } from "./hooks";
 interface ui {
   chat: {
     toggle: boolean;
-    selected: "DM" | "ROOM" | "FRIENDS";
+    selected: "DM" | "ROOM" | "FRIEND";
+  };
+  game: {
+    state: "NONE" | "PLAYING" | "QUEUE";
   };
 }
 
-const uiInitialValue: ui = {
+export const uiInitialValue: ui = {
   chat: {
     toggle: false,
-    selected: "ROOM",
+    selected: "FRIEND",
+  },
+  game: {
+    state: "NONE",
   },
 };
 

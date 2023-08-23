@@ -43,6 +43,7 @@ export function writableHook<T>({
     update((currentValue) => {
       const updatedValue = updater(currentValue);
       if (onUpdate) {
+        // currentValue is previousValue in this context
         onUpdate(currentValue, updatedValue);
       }
       return updatedValue;

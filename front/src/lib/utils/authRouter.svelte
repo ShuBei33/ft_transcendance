@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
+  import { browser } from "$app/environment";
   import { token, user, axiosConfig } from "$lib/stores";
   import Cookies from "js-cookie";
   import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
@@ -49,13 +50,23 @@
 </script>
 
 <main>
-  {#if allowSlot}
-    {#if $user && $axiosConfig}
-    <slot name="nav" />
+  <div class="app-container">
+    {#if allowSlot}
+      {#if $user && $axiosConfig}
+        <slot name="nav" />
+      {/if}
+      <slot />
+    {:else}
+      <h1>not connected</h1>
+      <!-- content here -->
     {/if}
-    <slot />
-  {:else}
-    <h1>not connected</h1>
-    <!-- content here -->
-  {/if}
+  </div>
 </main>
+
+<style lang="scss">
+  .app-container {
+    height: calc(100vh - 2em);
+    padding: 1em;
+  }
+  /* your styles go here */
+</style>
