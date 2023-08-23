@@ -14,9 +14,8 @@ export class GameService {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
     for (let i = 0; i < userIds.length; i++) {
       this.event.serv.emit(String(userIds[i]), {
-        game: {
-          id: gameId,
-        },
+        expect: 'GAME_ID',
+        data: gameId,
       });
     }
     logger.log('Users in game' + JSON.stringify(userIds));
