@@ -1,3 +1,14 @@
 :global(body) {
     margin: 0;
+    background-color: #2C2C33;
+}
+
+.small-square {
+    width: 57px;
+    height: 57px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background-color: rgba(255, 255, 255, 0.20);
+    // display: none;
 }
