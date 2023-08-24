@@ -12,7 +12,7 @@ import { DTO_AnswerInvitation, DTO_AnswerInvitationSchema } from './dto';
 // }
 
 const user1 = {
-	id: 1,
+	id: 3,
 };
 
 
@@ -64,8 +64,8 @@ export class FriendController {
 			console.log('JWT User: ', user); 
 			console.log('User Id Cible: ', uid);
 
-			await this.friendService.deleteFriend(user.id, uid);
-			await this.friendService.deleteFriend(uid, user.id);
+			await this.friendService.deleteFriend(user.id, uid); //! Maybe change uid to a string ? idk...
+			await this.friendService.deleteFriend(uid, user.id); //! Cause the user is not going to give an id right ? Or maybe we show id in the front ?
 
             return res.status(200).json({success: true });
 		} catch (err: any) {
@@ -99,15 +99,16 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de l\'envoie de l\'invitation' })
     @ApiResponse({ status: 400, description: 'Echec de l\'envoie de l\'invitation' })
 	async sendInvitation(
+		@Body('usernameToAdd') usernameToAdd: string,
 		@GetUser() user: User,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION SendInvitation Friend was called');
 			console.log('JWT User: ', user);
 
-			// CODE ICI
+			const response = await this.friendService.sendFriendInvitation(user, 'Fantomas'); // Hamtaro id 3
 
-            return res.status(200).json({success: true });
+            return res.status(200).json({success: true, response: response });
 		} catch (err: any) {
             return res.status(400).json({success: false, message: err.message});
 		}
@@ -117,18 +118,17 @@ export class FriendController {
     @ApiOperation({ summary: 'Envoi de la Resolution d\'une requete d\'ami' })
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	@ApiBody({ type: DTO_AnswerInvitation, description: 'Description de la requête d\'ami', schema: DTO_AnswerInvitationSchema  })
 	async resolveInvitation(
-		// LE DTO EST PEUT ETRE A CHANGER EN FONCTION DE LA NOUVELLE TABLE FRIENDS
-		@Body() answer: DTO_AnswerInvitation,
+		@Body() answer: boolean,
+		@Body() fromUser: string,
 		@GetUser() user: User,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION ResolveInvitation Friend was called');
 			console.log('JWT User: ', user);
-			console.log('DTO Answer Invitation: ', answer);
+			console.log('Answer Invitation: ', answer);
 
-			// CODE ICI
+			const response = await this.friendService.acceptFriendInvitation(user.id, true, 'Hamtaro');
 
             return res.status(200).json({success: true });
 		} catch (err: any) {
