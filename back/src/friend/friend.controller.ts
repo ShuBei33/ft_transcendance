@@ -11,7 +11,12 @@ import { DTO_AnswerInvitation, DTO_AnswerInvitationSchema } from './dto';
 //     - addFriend // SEULEMENT EN SERVICE
 // }
 
-@UseGuards(JwtGuard)
+const user1 = {
+	id: 1,
+};
+
+
+// @UseGuards(JwtGuard) //! A DECOMMENTER
 @ApiTags('Friend')
 @ApiBearerAuth()
 @Controller('friend')
@@ -23,19 +28,19 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
-		@GetUser() user: User,
+		// @GetUser() user: User, //! A DECOMMENTER
 		@Res() res: Response 
 	) { try {
-			console.log('FUNCTION Get Friend was called');
-			console.log('JWT User: ', user);
+			console.log('FUNCTION Get Friend was called and retrieved friends list for user of id ' + user1.id);
+			// console.log('JWT User: ', user); //! A DECOMMENTER
 
 			// CODE ICI
-			// const data = service. 
+			const data = await this.friendService.getFriendsList(user1.id);
 			
 			return res.status(200).json({
 				success: true,
 				message: "La recuperation de la liste d'amis c'est bien passe",
-				// data: data,
+				data: data,
 			});
 		} catch (err: any) {
 			return res.status(400).json({
@@ -52,14 +57,15 @@ export class FriendController {
 	@ApiParam({ name: 'uid', description: 'ID de l\'user cible', type: 'number', example: 1 })
 	async remove(
 		@Param('uid', ParseIntPipe) uid: number, 
-		@GetUser() user: User,
+		// @GetUser() user: User, //! A DECOMMENTER
 		@Res() res: Response,
 	) { try {
 			console.log('FUNCTION Remove Friend was called');
-			console.log('JWT User: ', user);
+			// console.log('JWT User: ', user); //! A DECOMMENTER
 			console.log('User Id Cible: ', uid);
 
-			// CODE ICI
+			await this.friendService.deleteFriend(user1.id, uid); // ! A CHANGER AVEC LE USER EN COURS
+			await this.friendService.deleteFriend(uid, user1.id); // ! A CHANGER AVEC LE USER EN COURS
 
             return res.status(200).json({success: true });
 		} catch (err: any) {
@@ -73,15 +79,16 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de la Recuperation' })
     @ApiResponse({ status: 400, description: 'Echec de la Recuperation' })
 	async getInvitation(
-		@GetUser() user: User,
+		// @GetUser() user: User,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION GetInvitation Friend was called');
-			console.log('JWT User: ', user);
+			// console.log('JWT User: ', user);
 
 			// CODE ICI
+			const data = await this.friendService.getReceivedPendingInvites(user1.id); // ! A CHANGER AVEC LE USER EN COURS
 
-            return res.status(200).json({success: true });
+            return res.status(200).json({success: true, data: data });
 		} catch (err: any) {
             return res.status(400).json({success: false, message: err.message});
 		}	
