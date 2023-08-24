@@ -16,6 +16,9 @@
   let ballSpeedX = 5;
   let ballSpeedY = -5;
 
+  const trailLength = 10; // Number of trail segments to draw
+  const trailOpacity = 0.08; // Opacity of each trail segment
+
   // Paddle properties
   const paddleWidth = 100;
   const paddleHeight = 10;
@@ -149,6 +152,21 @@
   function draw() {
     if (!context) return;
     context.clearRect(0, 0, _canvas.width, _canvas.height);
+
+    // Draw ball effect
+    for (let i = 0; i < trailLength; i++) {
+      const opacity = (trailOpacity * (trailLength - i)) / trailLength; // Adjusted opacity calculation
+      context.fillStyle = `rgba(8, 0, 255, ${opacity})`;
+      context.beginPath();
+      context.arc(
+        ballX - i * ballSpeedX,
+        ballY - i * ballSpeedY,
+        ballRadius,
+        0,
+        Math.PI * 2
+      ); // Adjusted position based on speed
+      context.fill();
+    }
 
     // Draw ball
     context.beginPath();
