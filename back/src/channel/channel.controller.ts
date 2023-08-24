@@ -47,7 +47,7 @@ export class ChannelController {
 		return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
 	}
 
-	@Get('get/:chanId')
+	@Get('msgs/:chanId')
 	@ApiOperation({ summary: 'Retrieve a channel\'s messages' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
@@ -88,20 +88,6 @@ export class ChannelController {
 		return success.general(res, "Channel deleted successfully.", channelDeleted);
 	}
 
-	@Delete('leave/:chanId')
-	@ApiOperation({ summary: 'Leave a channel' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async leave(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
-		return success.general(res, "Channel left successfully.", channelLeft);
-	}
-
 	@Post('join/:chanId')
 	@ApiOperation({ summary: 'Join any kind of channels' })
 	@ApiResponse({ status: 200, description: 'Success' })
@@ -115,6 +101,20 @@ export class ChannelController {
 	) {
 		const channelJoined = await this.channelService.joinChannel(user.id, chanId, channelToJoin);
 		return success.general(res, "Channel joined successfully.", channelJoined);
+	}
+
+	@Delete('leave/:chanId')
+	@ApiOperation({ summary: 'Leave a channel' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	async leave(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
+		return success.general(res, "Channel left successfully.", channelLeft);
 	}
 
 	@Post('invite/:chanId')

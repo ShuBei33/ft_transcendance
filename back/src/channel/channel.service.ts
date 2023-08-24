@@ -164,49 +164,12 @@ export class ChannelService {
                 error.unexpected(e);
         }
     }
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Channel traffic		                                                                //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
     
-    async inviteToChannel(userId: number, chanId: number, invitedUser: DTOInviteChan): Promise<void> {
-        try {
-            // check current's users rights
-            await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
-                    NOT: {  role: { in: ['NORMAL'] },
-                            status: 'BANNED' } 
-                }
-            })
-            // check if there is already a friendship 
-            const areFriends = await this.prisma.friendship.findFirst({
-                where: {
-                    AND: [
-                        { senderId: userId },
-                        { receiverId: invitedUser.userId },
-                        { inviteStatus: 'ACCEPTED' },
-                    ]
-                }
-            })
-            if (!areFriends)
-                error.notFound('You can only send an invitation to a friend.');
-            
-            const chanUsr = await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
-        } 
-        catch (e) {
-            if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized("Not admin or owner.");
-            else if (e instanceof HttpException)
-                throw e;
-            else {
-                error.unexpected(e);
-            }
-        }
-    }
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Channel traffic		                                                                //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     async joinChannel(userId: number, chanId: number, joinChanDto?: DTOJoinChan): Promise<void> {
         try {
@@ -214,7 +177,7 @@ export class ChannelService {
             const channel = await this.prisma.channel.findUniqueOrThrow({
                 where: { id: chanId },
             });
-
+    
             // check that you are not already in the channel
             const chanUsr = await this.prisma.chanUsr.findFirst({
                 where: { userId,
@@ -222,12 +185,15 @@ export class ChannelService {
             })
             if (chanUsr)
                 error.hasConflict('You are already a member of this channel.')
-
+    
             switch (channel.visibility) {
                 case 'PROTECTED':
                     const { hash } = joinChanDto;
                     if (hash != channel.hash)
                         error.notAuthorized(`Password mismatch.`);
+                    else
+                        await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
+                    break;
                 case 'PRIVATE':
                     // check that user has been invited
                     const invitation = await this.prisma.chanUsr.findFirstOrThrow({
@@ -245,18 +211,57 @@ export class ChannelService {
                             where: { id: invitation.id },
                             data: { invitedToChan: 'ACCEPTED'}
                     });
-                break;
+                    break;
                 default:
                     await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
                     break;
-                }
+            }
         } catch (e) {
-            if (e instanceof PrismaClientKnownRequestError)
+            if (e instanceof PrismaClientKnownRequestError) // you will also have this error if trying to access a private channel without invite
                 error.notFound(`Channel not found.`);
             else if (e instanceof HttpException)
                 throw e;
             else
                 error.unexpected(e)
+        }
+    }
+    
+    async inviteToChannel(userId: number, chanId: number, invitedUser: DTOInviteChan): Promise<void> {
+        try {
+            // check current user's rights
+            await this.prisma.chanUsr.findFirstOrThrow({
+                where: {
+                    userId,
+                    chanId,
+                    NOT: {  role: { in: ['NORMAL'] },
+                            status: 'BANNED' } 
+                }
+            })
+            // check if there is already a friendship 
+            const areFriends = await this.prisma.friendship.findFirst({
+                where: {
+                    // AND: [
+                    //     { senderId: userId },
+                    //     { receiverId: invitedUser.userId },
+                    //     { inviteStatus: 'ACCEPTED' },
+                    // ]
+                    senderId: userId,
+                    receiverId: invitedUser.userId,
+                    inviteStatus: 'ACCEPTED',
+                }
+            })
+            if (!areFriends)
+                error.notFound('You can only send an invitation to a friend.');
+            const chanUsr = await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
+        } 
+        catch (e) {
+            if (e instanceof PrismaClientKnownRequestError)
+                error.notAuthorized("Not admin or owner.");
+            else if (e instanceof HttpException)
+                throw e;
+            else {
+                error.unexpected(e);
+            }
         }
     }
 
@@ -299,7 +304,7 @@ export class ChannelService {
                 data: { name }
             });
           } catch (e) {
-            error.unexpected('Unexpected error while updating channel name.');
+            error.unexpected(e + ' Unexpected error while updating channel name.');
         }
     }
 
@@ -310,7 +315,7 @@ export class ChannelService {
                 data: { hash }
             });
           } catch (e) {
-            error.unexpected('Unexpected error while updating channel password.');
+            error.unexpected(e + ' Unexpected error while updating channel password.');
         }
     }
 
@@ -321,7 +326,7 @@ export class ChannelService {
                 data: { visibility }
             });
           } catch (e) {
-            error.unexpected('Unexpected error while updating channel visibility.');
+            error.unexpected(e + ' Unexpected error while updating channel visibility.');
         }
     }
 
