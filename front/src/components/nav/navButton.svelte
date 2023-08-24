@@ -2,7 +2,6 @@
   export let name = "";
   export let href = "";
 
-  console.log(href);
 </script>
 
 <main>
