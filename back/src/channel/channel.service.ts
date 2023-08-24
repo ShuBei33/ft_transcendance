@@ -188,15 +188,20 @@ export class ChannelService {
                 where: { id: chanId },
             });
 
-            // check that you are not already in the channel
+            // check that you are not already a member/have already interacted with it
             const chanUsr = await this.prisma.chanUsr.findFirst({
                 where: {
                     userId,
-                    chanId
+                    chanId,
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: 'REJECT' },
+                        { invitedToChan: 'BLOCKED' },
+                    ],
                 },
             })
             if (chanUsr)
-                error.hasConflict('You are already a member of this channel.');
+                error.hasConflict('You are already a member / you have already interacted with this channel.');
 
             switch (channel.visibility) {
                 case 'PROTECTED':
@@ -256,10 +261,16 @@ export class ChannelService {
                 }
             })
             // check that invitedUser is not already a member
-            const invited = await this.prisma.chanUsr.findUnique({
+            const invited = await this.prisma.chanUsr.findFirst({
                 where: {
-                    userId_chanId: { userId: invitedUser.userId,
-                                     chanId: chanId } }
+                    userId,
+                    chanId,
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: 'REJECT' },
+                        { invitedToChan: 'BLOCKED' },
+                    ],
+                },
             })
             if (invited) {
                 if (invited.invitedToChan == 'PENDING')
@@ -275,8 +286,6 @@ export class ChannelService {
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized("Not admin or owner.");
-            // else if (e instanceof HttpException)
-            //     throw e;
             else {
                 error.unexpected(e);
             }
@@ -292,7 +301,7 @@ export class ChannelService {
                                  chanId: chanId }
                 }
             });
-            if (chanUsr.role == 'OWNER') // if owner, we delete the whole channel. Must check on-cascade deletion in prisma.
+            if (chanUsr.role == 'OWNER') // if owner, we delete the whole channel
                 await this.prisma.channel.delete({
                     where: { id: chanId },
                 })
