@@ -5,10 +5,13 @@
   import type { CreateAxiosDefaults } from "axios";
   import { axiosInstance, axiosConfig } from "$lib/stores/api";
   import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
 
   console.log("callback");
 
   onMount(async () => {
+    if (!browser)
+      return ;
     const retrivedToken = $page.url.searchParams.get("token");
     const redirect = $page.url.searchParams.get("redirect");
 

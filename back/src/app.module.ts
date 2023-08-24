@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppGateway } from './app.gateway';
+import { EventsGateway } from './events.gateway';
+import { PongGateway } from './pong.gateway';
 import { FriendModule } from './friend/friend.module';
 import { GameModule } from './game/game.module';
 import { DiscussionModule } from './discussion/discussion.module';
@@ -10,15 +12,15 @@ import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 
 @Module({
-	imports: [
-		AuthModule,
-		PrismaModule,
-		FriendModule,
-		GameModule,
-		DiscussionModule,
-		ChannelModule,
-		UserModule
-	],
-	providers: [AppGateway],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    FriendModule,
+    GameModule,
+    DiscussionModule,
+    ChannelModule,
+    UserModule,
+  ],
+  providers: [AppGateway, EventsGateway, PongGateway],
 })
 export class AppModule {}
