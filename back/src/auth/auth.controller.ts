@@ -15,7 +15,6 @@ import { GetToken, GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 
-
 const logger = new Logger();
 
 @Controller('auth')
