@@ -3,6 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppGateway } from './app.gateway';
 import { EventsGateway } from './events.gateway';
+import { PongGateway } from './pong.gateway';
 import { FriendModule } from './friend/friend.module';
 import { GameModule } from './game/game.module';
 import { DiscussionModule } from './discussion/discussion.module';
@@ -20,6 +21,6 @@ import { UserModule } from './user/user.module';
     ChannelModule,
     UserModule,
   ],
-  providers: [AppGateway, EventsGateway],
+  providers: [AppGateway, EventsGateway, PongGateway],
 })
 export class AppModule {}

@@ -4,8 +4,6 @@
   import { io } from "socket.io-client";
   import { ui } from "$lib/stores/ui";
 
-  type expectGameId = string;
-
   onMount(() => {
     const events = io("http://localhost:5500");
     events.on(String($user?.id!), (data: { expect: string; data: any }) => {
