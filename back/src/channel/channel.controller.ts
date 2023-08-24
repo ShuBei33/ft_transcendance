@@ -103,20 +103,6 @@ export class ChannelController {
 		return success.general(res, "Channel joined successfully.", channelJoined);
 	}
 
-	@Delete('leave/:chanId')
-	@ApiOperation({ summary: 'Leave a channel' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async leave(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
-		return success.general(res, "Channel left successfully.", channelLeft);
-	}
-
 	@Post('invite/:chanId')
 	@ApiOperation({ summary: 'Send an invitation to a user to join a channel' })
 	@ApiResponse({ status: 200, description: 'Success' })
@@ -130,6 +116,20 @@ export class ChannelController {
 	) {
 		const channelJoined = await this.channelService.inviteToChannel(user.id, chanId, userToInvite);
 		return success.general(res, "User invited successfully.", channelJoined);
+	}
+
+	@Delete('leave/:chanId')
+	@ApiOperation({ summary: 'Leave a channel' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	async leave(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
+		return success.general(res, "Channel left successfully.", channelLeft);
 	}
 
 	@Patch('adminOptions/:chanId')
@@ -161,7 +161,6 @@ export class ChannelController {
 		const channelModified = await this.channelService.updateChanUsr(user.id, chanId, usrToModify);
 		return success.general(res, "Channel settings updated successfully.", channelModified);
 	}
-	
 }
 
 // updateCHannel(dto: nom, vibiliste mdp)

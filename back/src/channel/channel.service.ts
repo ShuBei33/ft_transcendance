@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DTOCreateChan, DTOInviteChan, DTOJoinChan, DTOUpdateChan, DTOChanUsr  } from './dto';
+import { DTOCreateChan, DTOInviteChan, DTOJoinChan, DTOUpdateChan, DTOChanUsr } from './dto';
 import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
 import { ChanUsrRole, ChanUsrStatus, ChanVisibility, StatusInv } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -14,11 +14,11 @@ export class ChannelService {
         private prisma: PrismaService,
     ) { }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Creation		                                                                    //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Creation		                                                                    //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     private async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
         try {
@@ -61,11 +61,11 @@ export class ChannelService {
         }
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Deletion		                                                                    //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Deletion		                                                                    //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     async deleteChannel(userId: number, chanId: number): Promise<void> {
         try {
@@ -95,11 +95,11 @@ export class ChannelService {
         }
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Retriever		                                                                    //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Retriever		                                                                    //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     async getAllChannels(): Promise<Channel[]> {
         try {
@@ -119,10 +119,15 @@ export class ChannelService {
         try {
             // only get channels to which we've subscribed and in which user is not banned
             const memberships = await this.prisma.chanUsr.findMany({
-                where: { 
+                where: {
                     userId,
-                    NOT: { invitedToChan: { in: ['PENDING', 'REJECT', 'BLOCKED'] },
-                           status: 'BANNED' } 
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    NOT: {
+                        status: 'BANNED'
+                    }
                 }
             })
             if (memberships.length === 0) // strict equality operator
@@ -143,8 +148,13 @@ export class ChannelService {
             await this.prisma.chanUsr.findFirstOrThrow({
                 where: {
                     userId,
-                    NOT: {  invitedToChan: { in: ['PENDING', 'REJECT', 'BLOCKED'] },
-                            status: 'BANNED' } 
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    NOT: {
+                        status: 'BANNED'
+                    }
                 }
             })
             const messages = await this.prisma.channelMsg.findMany({
@@ -157,14 +167,14 @@ export class ChannelService {
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized('You are not allowed to access this channel.')
-            else 
-            if (e instanceof HttpException)
-                throw e;
             else
-                error.unexpected(e);
+                if (e instanceof HttpException)
+                    throw e;
+                else
+                    error.unexpected(e);
         }
     }
-    
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     //																							//
     //		Channel traffic		                                                                //
@@ -177,17 +187,20 @@ export class ChannelService {
             const channel = await this.prisma.channel.findUniqueOrThrow({
                 where: { id: chanId },
             });
-    
+
             // check that you are not already in the channel
             const chanUsr = await this.prisma.chanUsr.findFirst({
-                where: { userId,
-                         chanId },
+                where: {
+                    userId,
+                    chanId
+                },
             })
             if (chanUsr)
-                error.hasConflict('You are already a member of this channel.')
-    
+                error.hasConflict('You are already a member of this channel.');
+
             switch (channel.visibility) {
                 case 'PROTECTED':
+                    // check that user provided correct password
                     const { hash } = joinChanDto;
                     if (hash != channel.hash)
                         error.notAuthorized(`Password mismatch.`);
@@ -201,7 +214,7 @@ export class ChannelService {
                             userId,
                             chanId: chanId,
                             invitedToChan: 'PENDING'
-                        },       
+                        },
                     });
                     if (!invitation)
                         error.notAuthorized(`You have not been invited to this channel.`);
@@ -209,8 +222,8 @@ export class ChannelService {
                         // we don't recreate a new chanUsr, we just update it
                         await this.prisma.chanUsr.update({
                             where: { id: invitation.id },
-                            data: { invitedToChan: 'ACCEPTED'}
-                    });
+                            data: { invitedToChan: 'ACCEPTED' }
+                        });
                     break;
                 default:
                     await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
@@ -225,7 +238,7 @@ export class ChannelService {
                 error.unexpected(e)
         }
     }
-    
+
     async inviteToChannel(userId: number, chanId: number, invitedUser: DTOInviteChan): Promise<void> {
         try {
             // check current user's rights
@@ -233,32 +246,37 @@ export class ChannelService {
                 where: {
                     userId,
                     chanId,
-                    NOT: {  role: { in: ['NORMAL'] },
-                            status: 'BANNED' } 
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    NOT: {
+                        status: 'BANNED'
+                    }
                 }
             })
-            // check if there is already a friendship 
-            const areFriends = await this.prisma.friendship.findFirst({
+            // check that invitedUser is not already a member
+            const invited = await this.prisma.chanUsr.findUnique({
                 where: {
-                    // AND: [
-                    //     { senderId: userId },
-                    //     { receiverId: invitedUser.userId },
-                    //     { inviteStatus: 'ACCEPTED' },
-                    // ]
-                    senderId: userId,
-                    receiverId: invitedUser.userId,
-                    inviteStatus: 'ACCEPTED',
-                }
+                    userId_chanId: { userId: invitedUser.userId,
+                                     chanId: chanId } }
             })
-            if (!areFriends)
-                error.notFound('You can only send an invitation to a friend.');
-            const chanUsr = await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
-        } 
+            if (invited) {
+                if (invited.invitedToChan == 'PENDING')
+                    error.hasConflict('This person has already been invited.')
+                else if (invited.invitedToChan == 'REJECT')
+                    error.hasConflict('This person has already refused your invitation.')
+                else if (invited.invitedToChan == 'BLOCKED')
+                    error.hasConflict('You cannot send invitations to this person.')
+                error.hasConflict('This person is already a member of this channel.');
+            }
+            await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
+        }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized("Not admin or owner.");
-            else if (e instanceof HttpException)
-                throw e;
+            // else if (e instanceof HttpException)
+            //     throw e;
             else {
                 error.unexpected(e);
             }
@@ -267,13 +285,14 @@ export class ChannelService {
 
     async leaveChannel(userId: number, chanId: number): Promise<void> {
         try {
-            const chanUsr = await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
+            // check that user is a member of the channel
+            const chanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
+            where: {
+                userId_chanId: { userId: userId,
+                                 chanId: chanId }
                 }
             });
-            if (chanUsr.role == 'OWNER') // if Owner, we delete the whole channel. Must check on-cascade deletion in prisma.
+            if (chanUsr.role == 'OWNER') // if owner, we delete the whole channel. Must check on-cascade deletion in prisma.
                 await this.prisma.channel.delete({
                     where: { id: chanId },
                 })
@@ -291,11 +310,11 @@ export class ChannelService {
         }
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Channel settings	                                                                //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Channel settings	                                                                //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     private async set_chanName(chanId: number, name: string) {
         try {
@@ -303,7 +322,7 @@ export class ChannelService {
                 where: { id: chanId },
                 data: { name }
             });
-          } catch (e) {
+        } catch (e) {
             error.unexpected(e + ' Unexpected error while updating channel name.');
         }
     }
@@ -314,7 +333,7 @@ export class ChannelService {
                 where: { id: chanId },
                 data: { hash }
             });
-          } catch (e) {
+        } catch (e) {
             error.unexpected(e + ' Unexpected error while updating channel password.');
         }
     }
@@ -325,12 +344,12 @@ export class ChannelService {
                 where: { id: chanId },
                 data: { visibility }
             });
-          } catch (e) {
+        } catch (e) {
             error.unexpected(e + ' Unexpected error while updating channel visibility.');
         }
     }
 
-    async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan ): Promise<void> {
+    async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan): Promise<void> {
         try {
             // check that the user can access that channel
             const hasAccess = await this.prisma.chanUsr.findFirstOrThrow({
@@ -338,18 +357,18 @@ export class ChannelService {
                     userId,
                     chanId,
                     invitedToChan: { in: ['ACCEPTED', null] },
-                    NOT: { status: 'BANNED'}
+                    NOT: { status: 'BANNED' }
                 },
             });
 
             // check the user's rights
             const userRights = await this.prisma.chanUsr.findFirstOrThrow({
                 where: {
-                  userId,
-                  chanId,
-                  role: { in: ['ADMIN', 'OWNER'] },
+                    userId,
+                    chanId,
+                    role: { in: ['ADMIN', 'OWNER'] },
                 },
-              });
+            });
 
             // call appropriate functions if user provided element
             if (channelModified.name)
@@ -357,7 +376,7 @@ export class ChannelService {
             if (channelModified.visibility)
                 await this.set_chanVisibility(chanId, channelModified.visibility);
             if (channelModified.hash)
-                await this.set_chanPassword(chanId, channelModified.hash);            
+                await this.set_chanPassword(chanId, channelModified.hash);
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
@@ -367,36 +386,38 @@ export class ChannelService {
         }
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//																							//
-//		Channel User privileges and status	                                                //
-//																							//
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Channel User privileges and status	                                                //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
-    private async set_chanUsrRole(userToModify: DTOChanUsr ) {
+    private async set_chanUsrRole(userToModify: DTOChanUsr) {
         try {
             await this.prisma.chanUsr.update({
-                where: { id: userToModify.id},
+                where: { id: userToModify.id },
                 data: { role: userToModify.role }
             });
-          } catch (e) {
+        } catch (e) {
             error.unexpected(e + ' Unexpected error while updating user role.');
         }
     }
 
-    private async set_chanUsrStatus(userToModify: DTOChanUsr ) {
+    private async set_chanUsrStatus(userToModify: DTOChanUsr) {
         try {
             await this.prisma.chanUsr.update({
-                where: { id: userToModify.id},
-                data: { status: userToModify.status,
-                        statusDuration: userToModify.statusDuration }
+                where: { id: userToModify.id },
+                data: {
+                    status: userToModify.status,
+                    statusDuration: userToModify.statusDuration
+                }
             });
-          } catch (e) {
+        } catch (e) {
             error.unexpected(e + ' Unexpected error while updating user status.');
         }
     }
 
-    async updateChanUsr(userId: number, chanId: number, userToModify: DTOChanUsr ): Promise<void> {
+    async updateChanUsr(userId: number, chanId: number, userToModify: DTOChanUsr): Promise<void> {
         try {
             // check that the user can access that channel
             const hasAccess = await this.prisma.chanUsr.findFirstOrThrow({
@@ -404,18 +425,18 @@ export class ChannelService {
                     userId,
                     chanId,
                     invitedToChan: { in: ['ACCEPTED', null] },
-                    NOT: { status: 'BANNED'}
+                    NOT: { status: 'BANNED' }
                 },
             });
             // check the user's rights
             const userRights = await this.prisma.chanUsr.findFirstOrThrow({
                 where: {
-                  userId,
-                  chanId,
-                  role: { in: ['ADMIN', 'OWNER'] },
+                    userId,
+                    chanId,
+                    role: { in: ['ADMIN', 'OWNER'] },
                 },
-              });
-            
+            });
+
             // call appropriate functions if user provided element
             if (userToModify.role)
                 await this.set_chanUsrRole(userToModify);
