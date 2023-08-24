@@ -128,7 +128,7 @@ export class FriendController {
 			console.log('JWT User: ', user);
 			console.log('Answer Invitation: ', answer);
 
-			const response = await this.friendService.acceptFriendInvitation(user.id, true, 'Hamtaro');
+			const response = await this.friendService.acceptFriendInvitation(user.id, answer, fromUser);
 
             return res.status(200).json({success: true });
 		} catch (err: any) {
