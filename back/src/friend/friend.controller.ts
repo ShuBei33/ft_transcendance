@@ -16,7 +16,7 @@ const user1 = {
 };
 
 
-@UseGuards(JwtGuard) //! A DECOMMENTER
+@UseGuards(JwtGuard) 
 @ApiTags('Friend')
 @ApiBearerAuth()
 @Controller('friend')
@@ -28,11 +28,11 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
-		@GetUser() user: User, //! A DECOMMENTER
+		@GetUser() user: User, 
 		@Res() res: Response 
 	) { try {
 			console.log('FUNCTION Get Friend was called and retrieved friends list for user of id ' + user.id);
-			console.log('JWT User: ', user); //! A DECOMMENTER
+			console.log('JWT User: ', user); 
 
 			// CODE ICI
 			const data = await this.friendService.getFriendsList(user.id);
@@ -57,15 +57,15 @@ export class FriendController {
 	@ApiParam({ name: 'uid', description: 'ID de l\'user cible', type: 'number', example: 1 })
 	async remove(
 		@Param('uid', ParseIntPipe) uid: number, 
-		@GetUser() user: User, //! A DECOMMENTER
+		@GetUser() user: User, 
 		@Res() res: Response,
 	) { try {
 			console.log('FUNCTION Remove Friend was called');
-			console.log('JWT User: ', user); //! A DECOMMENTER
+			console.log('JWT User: ', user); 
 			console.log('User Id Cible: ', uid);
 
-			await this.friendService.deleteFriend(user.id, uid); // ! A CHANGER AVEC LE USER EN COURS
-			await this.friendService.deleteFriend(uid, user.id); // ! A CHANGER AVEC LE USER EN COURS
+			await this.friendService.deleteFriend(user.id, uid);
+			await this.friendService.deleteFriend(uid, user.id);
 
             return res.status(200).json({success: true });
 		} catch (err: any) {
@@ -86,7 +86,7 @@ export class FriendController {
 			console.log('JWT User: ', user);
 
 			// CODE ICI
-			const data = await this.friendService.getReceivedPendingInvites(user.id); // ! A CHANGER AVEC LE USER EN COURS
+			const data = await this.friendService.getReceivedPendingInvites(user.id);
 
             return res.status(200).json({success: true, data: data });
 		} catch (err: any) {
