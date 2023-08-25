@@ -3,6 +3,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { error } from '../utils/utils_error';
 import { Prisma } from '@prisma/client';
 import { Logger } from '@nestjs/common';
+import { User, UserStatus } from '@prisma/client';
+
 const logger = new Logger();
 
 @Injectable()
@@ -25,5 +27,31 @@ export class UserService {
     const user = await this.prisma.user.findUnique(query);
     if (!user) error.notFound(`User with id '${id}' does not exists.`);
     return user;
+  }
+
+  async updateUserStatus(userId: number, newStatus: UserStatus): Promise<User> {
+    try {
+      const existingUser = await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!existingUser) {
+        throw new Error('User not found');
+      }
+
+      const updatedUser = await this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          status: newStatus,
+        },
+      });
+	  	return updatedUser;
+    } catch (err: any) {
+      throw new Error(err.message);
+    }
   }
 }
