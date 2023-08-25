@@ -1,10 +1,15 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
+import { UseGuards, Controller, Get, Post, Delete, Patch } from '@nestjs/common';
+import { Param, Body, Query, ParseIntPipe, Res } from '@nestjs/common';
+import { Logger } from '@nestjs/common'; // for testing purposes
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DiscussionService } from './discussion.service';
+import { User } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
-import { User } from '@prisma/client';
 import { Response } from 'express';
+import { DiscussionService } from './discussion.service';
+import { success } from 'src/utils/utils_success';
 
 @UseGuards(JwtGuard)
 @ApiTags('Discussion')
@@ -13,32 +18,32 @@ import { Response } from 'express';
 export class DiscussionController {
 	constructor(private DiscussionService: DiscussionService) {}
 
-	@Get('get/:discId')
-	@ApiOperation({ summary: 'Recuperation de l\'historique de messages Discussion' })
-    @ApiResponse({ status: 200, description: 'Succes de la Requete' })
-    @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	@ApiParam({ name: 'discId', description: 'ID de la discussion', type: 'number', example: 1 })
+	@Get('all')
+	@ApiOperation({ summary: 'Retrieve all of a user\'s discussions' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'discId', description: 'Discussion ID', type: 'number', example: 1 })
 	async getMessage(
-		@Param('discId', ParseIntPipe) discId: number, // A CONTROLLER POUR SAVOIR SI CEST BIEN LA TIENNE
+		// @Param('discId', ParseIntPipe) discId: number,
 		@GetUser() user: User,
-		@Res() res: Response 
-	) { try {
-			console.log('FUNCTION Get Message was called');
-			console.log('JWT User: ', user);
-			console.log('Disc Id Cible: ', discId);
+		@Res() res: Response
+	) {
+		const DMs = await this.DiscussionService.getAllDiscussions(user.id);
+		return success.general(res, "All discussions retrieved successfully.", DMs);
+	}
 
-			// CODE ICI
-
-			return res.status(200).json({
-				success: true,
-				message: "La recuperation des messages c'est bien passe",
-			});
-		} catch (err: any) {
-			return res.status(400).json({
-				success: false,
-				message: err.message,
-			});
-		}
+	@Get('msgs/:discId')
+	@ApiOperation({ summary: 'Retrieve messages of a specific discussion' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'discId', description: 'Discussion ID', type: 'number', example: 1 })
+	async getDMs(
+		@Param('discId', ParseIntPipe) discId: number,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const DMs = await this.DiscussionService.getDMs(user.id, discId);
+		return success.general(res, "DMs retrieved successfully.", DMs);
 	}
 }
 

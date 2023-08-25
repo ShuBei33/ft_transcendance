@@ -141,7 +141,7 @@ export class ChannelService {
                 error.unexpected(e);
         }
     }
-
+    // const channelList = await this.channelService.getMyChannels(user.id);
     async getChannelMsgs(userId: number, channelId: number): Promise<ChannelMsg[]> {
         try {
             // check user's access to the channel
