@@ -12,7 +12,7 @@ import { ChannelService } from './channel.service';
 import { DTOCreateChan, DTOJoinChan, DTOInviteChan, DTOUpdateChan, DTOChanUsr } from './dto';
 import { ChanVisibility, ChanUsrRole } from '@prisma/client';
 import { success } from 'src/utils/utils_success';
-import { channel } from 'diagnostics_channel';
+// import { channel } from 'diagnostics_channel';
 
 // const logger = new Logger();
 

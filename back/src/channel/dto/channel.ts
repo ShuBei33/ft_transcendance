@@ -21,13 +21,8 @@ export class DTOInviteChan {
 }
 
 export class DTOUpdateChan {	
-	// @IsNotEmpty()
-	// @Length(1, 50)
 	name?: Channel['name'];
-	
-	// @IsEnum(ChanVisibility)
 	visibility?: Channel['visibility'];
-	
 	hash?: Channel['hash'];
 }
 
@@ -37,8 +32,6 @@ export class DTOChanUsr {
 	
 	role?: ChanUsrRole;
 	status?: ChanUsrStatus;
-
-	// @IsDate()
 	statusDuration?: Date;
 }
 
