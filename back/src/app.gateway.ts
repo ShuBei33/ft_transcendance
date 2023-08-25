@@ -2,15 +2,21 @@ import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { FTAuth } from './auth/dto';
 import { UserLite } from './user/dto';
 import { UserService } from './user/user.service';
 import { User, UserStatus } from '@prisma/client';
+import { DiscussionService } from './discussion/discussion.service';
+import { ChannelService } from './channel/channel.service';
 
 @WebSocketGateway({ cors: '*:*', })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
-	constructor( private jwt: JwtService, private userService: UserService ) {}
+	constructor(
+		private jwt: JwtService,
+		private userService: UserService,
+		private discService: DiscussionService,
+		private chanService: ChannelService
+	) {}
 
 	private clientsMap = new Map<UserLite, Socket>();
 	@WebSocketServer() wss: Server;
@@ -101,11 +107,11 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     ////////////////////
 
 	async joinAllDiscussion( socket: Socket, user: UserLite) {
-		
+		// this.discService.getAllDiscussions(user.id)
 	}
 
 	async joinAllChannel( socket: Socket, user: UserLite) {
-		// getMyChannels
+		// this.chanService.getMyChannels(user.id)
 	}
 
 

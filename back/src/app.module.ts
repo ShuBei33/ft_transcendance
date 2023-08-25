@@ -12,6 +12,8 @@ import { GameService } from './game/game.service';
 import { JwtModule } from '@nestjs/jwt';
 import { AppGateway } from './app.gateway';
 import { UserService } from './user/user.service';
+import { DiscussionService } from './discussion/discussion.service';
+import { ChannelService } from './channel/channel.service';
 
 @Module({
 	imports: [
@@ -29,7 +31,9 @@ import { UserService } from './user/user.service';
 		EventsGateway,
 		PongGateway,
 		GameService,
-		UserService
+		UserService,
+		DiscussionService,
+		ChannelService
 	],
 })
 export class AppModule {}
