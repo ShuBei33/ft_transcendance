@@ -20,7 +20,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    private async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
+    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
         try {
             const newChanUsr = await this.prisma.chanUsr.create({
                 data: {
@@ -263,22 +263,26 @@ export class ChannelService {
             // check that invitedUser is not already a member
             const invited = await this.prisma.chanUsr.findFirst({
                 where: {
-                    userId,
+                    userId: invitedUser.userId,
                     chanId,
                     OR: [
-                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: 'PENDING' },
                         { invitedToChan: 'REJECT' },
                         { invitedToChan: 'BLOCKED' },
+                        { invitedToChan: 'ACCEPTED' },
                     ],
                 },
             })
             if (invited) {
-                if (invited.invitedToChan == 'PENDING')
+                if (invited.invitedToChan == 'PENDING') {
                     error.hasConflict('This person has already been invited.')
-                else if (invited.invitedToChan == 'REJECT')
+                }
+                else if (invited.invitedToChan == 'REJECT') {
                     error.hasConflict('This person has already refused your invitation.')
-                else if (invited.invitedToChan == 'BLOCKED')
+                }
+                else if (invited.invitedToChan == 'BLOCKED') {
                     error.hasConflict('You cannot send invitations to this person.')
+                }
                 error.hasConflict('This person is already a member of this channel.');
             }
             await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
