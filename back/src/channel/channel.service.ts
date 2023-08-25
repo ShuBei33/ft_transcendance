@@ -141,7 +141,7 @@ export class ChannelService {
                 error.unexpected(e);
         }
     }
-    // const channelList = await this.channelService.getMyChannels(user.id);
+
     async getChannelMsgs(userId: number, channelId: number): Promise<ChannelMsg[]> {
         try {
             // check user's access to the channel
@@ -476,4 +476,33 @@ export class ChannelService {
                 error.unexpected(e);
         }
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //																							//
+    //		Utils Back		                                                                    //
+    //																							//
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    // These functions do not have controllers yet
+
+    async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> {
+        try {
+            // check that the chanUsr exists
+            const requestedChanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
+                where: {
+                    userId_chanId: { userId: userId,
+                                     chanId: chanId }
+                    }
+                });
+            // return a chanUsr with all the info related to it
+            return requestedChanUsr;
+            }
+            catch (e) {
+                if (e instanceof PrismaClientKnownRequestError)
+                    error.notFound('Channel User not found.');
+                else
+                    error.unexpected(e);
+            }
+    }
+
 }
