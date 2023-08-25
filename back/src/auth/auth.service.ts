@@ -9,38 +9,45 @@ const logger = new Logger();
 export class AuthService {
   constructor(private jwt: JwtService, private prisma: PrismaService) {}
 
-  async user_validator(login: string) {
-    const ret = await this.prisma.user.count({ where: { login: login } });
-    return ret != 0;
+  async user_validator(login: string): Promise<boolean> {
+    try {
+        const count = await this.prisma.user.count({ where: { login: login } });
+        return count > 0;
+    } catch (error) {
+        logger.error("Erreur lors de la validation de l'utilisateur");
+        return false;
+    }
   }
 
   async pseudo_validator(pseudo: string) {
-    const ret = await this.prisma.user.count({ where: { pseudo: pseudo } });
-    return ret != undefined ? true : false;
+    try {
+        const count = await this.prisma.user.count({ where: { pseudo: pseudo } });
+        return count > 0;
+    } catch (error) {
+        logger.error("Erreur lors de la validation du pseudo");
+        return false;
+    }
   }
 
   async pseudo_create(login: string): Promise<string> {
-    let pseudo =
-      login +
-      LIST_SUFFIX_PSEUDO[Math.floor(Math.random() * LIST_SUFFIX_PSEUDO.length)];
-    while (await this.pseudo_validator(pseudo))
-      pseudo =
-        login +
-        LIST_SUFFIX_PSEUDO[
-          Math.floor(Math.random() * LIST_SUFFIX_PSEUDO.length)
-        ];
+    let pseudo = login + LIST_SUFFIX_PSEUDO[Math.floor(Math.random() * LIST_SUFFIX_PSEUDO.length)];
+    while ( (await this.pseudo_validator(pseudo)) == true )
+      pseudo = login + LIST_SUFFIX_PSEUDO[Math.floor(Math.random() * LIST_SUFFIX_PSEUDO.length)];
+	logger.log(pseudo);
     return pseudo;
   }
 
   async signup(login: string) {
+	const pseudo = await this.pseudo_create(login);
     const user = await this.prisma.user.create({
       data: {
         login,
-        pseudo: login,
+        pseudo: pseudo,
         rank: 1,
       },
     });
     const { createdAt, updateAt, twoFA, ...rest } = user;
+    console.log(user);
     return rest;
   }
 
@@ -67,8 +74,7 @@ export class AuthService {
     access_token: string,
     refresh_token: string,
   ): Promise<{ token: string }> {
-    logger.log('singin42()');
-    if ((await this.user_validator(login)) == false) this.signup(login);
+    if ((await this.user_validator(login)) == false) { this.signup(login) }
     return await this.signToken(refresh_token, access_token, login);
   }
 }
