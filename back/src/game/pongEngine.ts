@@ -77,6 +77,7 @@ const defaultSettings: DefaultSettings = getDefaultSettings(800, 600);
 export default class Pong {
   settings = defaultSettings;
   intervalId = -1;
+  public gameHasStarted = false;
   public static targetFPS = 60;
   public static intervalTime = 1000 / this.targetFPS;
 
@@ -215,6 +216,7 @@ export default class Pong {
     this.intervalId = Number(
       setInterval(() => this.gameLoop(), Pong.intervalTime),
     );
+    this.gameHasStarted = true;
   }
 
   stopGame(summary?: PongCallback['onGameEnd']) {
