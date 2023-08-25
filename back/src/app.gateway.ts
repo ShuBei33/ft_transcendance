@@ -42,6 +42,8 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 			this.clientsMap.set(user, client);
 			this.userService.updateUserStatus(user.id, UserStatus.ONLINE);
 			this.wss.emit('loginToClient', user.id);
+			this.joinAllChannel(client, user);
+			this.joinAllDiscussion(client, user);
 		}
 	}
 
@@ -94,24 +96,20 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 		this.wss.emit('updateStatus', { id: userId, status: newStatus});
 	}
 
-
-
-
-
-
-
     ////////////////////
     //  CHAT METHODS  //
     ////////////////////
 
-	joinAllDiscussion( socket: Socket, user: UserLite) {
-
+	async joinAllDiscussion( socket: Socket, user: UserLite) {
+		
 	}
 
-	joinAllChannel( socket: Socket, user: UserLite) {
+	async joinAllChannel( socket: Socket, user: UserLite) {
 		// getMyChannels
 	}
 
 
+
+	// discID + uid + ( message date etc ) 
 
 }
