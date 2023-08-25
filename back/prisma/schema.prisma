@@ -20,6 +20,7 @@ model User {
     pseudo String  @unique
     avatar String?
     twoFA  Boolean @default(false)
+	status UserStatus @default(OFFLINE)
     rank   Int
 
     sentInvites     Friendship[] @relation("sentInvites")
@@ -154,6 +155,14 @@ enum StatusInv {
     ACCEPTED
     REJECT
     BLOCKED
+}
+
+enum UserStatus {
+	OFFLINE
+	ONLINE
+	OCCUPED
+	INQUEUE
+	INGAME
 }
 
 enum ChanVisibility {
