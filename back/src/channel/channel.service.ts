@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { DTOCreateChan, DTOInviteChan, DTOJoinChan, DTOUpdateChan, DTOChanUsr } from './dto';
 import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
 import { ChanUsrRole, ChanUsrStatus, ChanVisibility, StatusInv } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { error } from 'src/utils/utils_error';
 
 const logger = new Logger();
@@ -20,7 +20,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    private async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
+    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
         try {
             const newChanUsr = await this.prisma.chanUsr.create({
                 data: {
@@ -263,22 +263,26 @@ export class ChannelService {
             // check that invitedUser is not already a member
             const invited = await this.prisma.chanUsr.findFirst({
                 where: {
-                    userId,
+                    userId: invitedUser.userId,
                     chanId,
                     OR: [
-                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: 'PENDING' },
                         { invitedToChan: 'REJECT' },
                         { invitedToChan: 'BLOCKED' },
+                        { invitedToChan: 'ACCEPTED' },
                     ],
                 },
             })
             if (invited) {
-                if (invited.invitedToChan == 'PENDING')
+                if (invited.invitedToChan == 'PENDING') {
                     error.hasConflict('This person has already been invited.')
-                else if (invited.invitedToChan == 'REJECT')
+                }
+                else if (invited.invitedToChan == 'REJECT') {
                     error.hasConflict('This person has already refused your invitation.')
-                else if (invited.invitedToChan == 'BLOCKED')
+                }
+                else if (invited.invitedToChan == 'BLOCKED') {
                     error.hasConflict('You cannot send invitations to this person.')
+                }
                 error.hasConflict('This person is already a member of this channel.');
             }
             await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
@@ -360,25 +364,21 @@ export class ChannelService {
 
     async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan): Promise<void> {
         try {
-            // check that the user can access that channel
-            const hasAccess = await this.prisma.chanUsr.findFirstOrThrow({
+            // check that the user can access that channel and has the correct rights
+            await this.prisma.chanUsr.findFirstOrThrow({
                 where: {
                     userId,
                     chanId,
-                    invitedToChan: { in: ['ACCEPTED', null] },
-                    NOT: { status: 'BANNED' }
-                },
-            });
-
-            // check the user's rights
-            const userRights = await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    NOT: {
+                        status: 'BANNED'
+                    },
                     role: { in: ['ADMIN', 'OWNER'] },
-                },
-            });
-
+                }
+            })
             // call appropriate functions if user provided element
             if (channelModified.name)
                 await this.set_chanName(chanId, channelModified.name);
@@ -386,10 +386,14 @@ export class ChannelService {
                 await this.set_chanVisibility(chanId, channelModified.visibility);
             if (channelModified.hash)
                 await this.set_chanPassword(chanId, channelModified.hash);
+            if (!channelModified.name && !channelModified.visibility && !channelModified.hash)
+                error.notFound('You must provide at least one element.');
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized('Unauthorized operation.');
+            else if (e instanceof HttpException)
+                throw e;
             else
                 error.unexpected(e);
         }
@@ -408,7 +412,12 @@ export class ChannelService {
                 data: { role: userToModify.role }
             });
         } catch (e) {
-            error.unexpected(e + ' Unexpected error while updating user role.');
+            if (e instanceof PrismaClientKnownRequestError)
+                error.notAuthorized('Unauthorized operation.');
+            else if (e instanceof PrismaClientValidationError)
+                error.notFound('Channel User not found.');
+            else
+                error.unexpected(e + ' Unexpected error while updating user role.');
         }
     }
 
@@ -422,39 +431,47 @@ export class ChannelService {
                 }
             });
         } catch (e) {
-            error.unexpected(e + ' Unexpected error while updating user status.');
+            if (e instanceof PrismaClientKnownRequestError)
+                error.notAuthorized('Unauthorized operation.');
+            else if (e instanceof PrismaClientValidationError)
+                error.notFound('Channel User not found.');
+            else
+                error.unexpected(e + ' Unexpected error while updating user status.');
         }
     }
 
     async updateChanUsr(userId: number, chanId: number, userToModify: DTOChanUsr): Promise<void> {
         try {
-            // check that the user can access that channel
-            const hasAccess = await this.prisma.chanUsr.findFirstOrThrow({
+            // check that the user can access that channel and has the correct rights
+            await this.prisma.chanUsr.findFirstOrThrow({
                 where: {
                     userId,
                     chanId,
-                    invitedToChan: { in: ['ACCEPTED', null] },
-                    NOT: { status: 'BANNED' }
-                },
-            });
-            // check the user's rights
-            const userRights = await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    NOT: {
+                        status: 'BANNED'
+                    },
                     role: { in: ['ADMIN', 'OWNER'] },
-                },
-            });
-
+                }
+            })
             // call appropriate functions if user provided element
             if (userToModify.role)
                 await this.set_chanUsrRole(userToModify);
             if (userToModify.status)
                 await this.set_chanUsrStatus(userToModify);
+            if (!userToModify.role && !userToModify.status)
+                error.notFound('You must provide at least one element.');
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized('Unauthorized operation.');
+            else if (e instanceof PrismaClientValidationError)
+                error.notFound('Channel User not found.');
+            else if (e instanceof HttpException)
+                throw e;
             else
                 error.unexpected(e);
         }
