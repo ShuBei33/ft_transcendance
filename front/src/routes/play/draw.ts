@@ -26,7 +26,7 @@ export default function draw(
   // Draw ball
   context.beginPath();
   context.arc(data.ballX, data.ballY, data.ballRadius, 0, Math.PI * 2);
-  context.fillStyle = "blue";
+  context.fillStyle = data.ballFill;
   context.fill();
   context.closePath();
 
@@ -38,14 +38,14 @@ export default function draw(
     data.paddleWidth,
     data.paddleHeight
   );
-  context.fillStyle = "red";
+  context.fillStyle = data.playerOnePaddleFill;
   context.fill();
   context.closePath();
 
   // Draw right paddle
   context.beginPath();
   context.rect(data.rightPaddleX, 0, data.paddleWidth, data.paddleHeight);
-  context.fillStyle = "green";
+  context.fillStyle = data.playerTwoPaddleFill;
   context.fill();
   context.closePath();
 }

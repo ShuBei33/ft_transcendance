@@ -10,6 +10,33 @@ let queue: number[] = [];
 export class GameService {
   constructor(private prisma: PrismaService, private event: EventsGateway) {}
 
+  async saveGame(_data: {
+    winnerId: number;
+    lhsPlayerId: number;
+    rhsPlayerId: number;
+    lhsScore: number;
+    rhsScore: number;
+  }) {
+    const { winnerId, lhsPlayerId, rhsPlayerId, lhsScore, rhsScore } = _data;
+    return await this.prisma.game.create({
+      data: {
+        lhsScore,
+        rhsScore,
+        winnerId,
+        lhsPlayer: {
+          connect: {
+            id: lhsPlayerId,
+          },
+        },
+        rhsPlayer: {
+          connect: {
+            id: rhsPlayerId,
+          },
+        },
+      },
+    });
+  }
+
   async createGame(userIds: number[]) {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
     for (let i = 0; i < userIds.length; i++) {

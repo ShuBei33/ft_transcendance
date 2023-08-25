@@ -2,175 +2,174 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 // USER
 model User {
-	id					Int @id @default(autoincrement())
-	createdAt			DateTime @default(now())
-	updateAt			DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
 
-	login				String @unique
-  	pseudo				String @unique
-	avatar				String?
-	twoFA				Boolean @default(false)
-	rank				Int
+    login  String  @unique
+    pseudo String  @unique
+    avatar String?
+    twoFA  Boolean @default(false)
+    rank   Int
 
-	sentInvites     	Friendship[] @relation("sentInvites")
-  	receivedInvites 	Friendship[] @relation("receivedInvites")
+    sentInvites     Friendship[] @relation("sentInvites")
+    receivedInvites Friendship[] @relation("receivedInvites")
 
-	asUser1				Discussion[] @relation("userOne")
-	asUser2				Discussion[] @relation("userTwo")
-	discussionsMsgs		DiscussionMsg[]
+    asUser1         Discussion[]    @relation("userOne")
+    asUser2         Discussion[]    @relation("userTwo")
+    discussionsMsgs DiscussionMsg[]
 
-	channelsMsgs		ChannelMsg[]
-	channelMember		ChanUsr[]
+    channelsMsgs  ChannelMsg[]
+    channelMember ChanUsr[]
 
-	achievements		Achievement[]
-	leftPlayer			Game[] @relation("left")
-	rightPlayer			Game[] @relation("right")
+    achievements Achievement[]
+    leftPlayer   Game[]        @relation("left")
+    rightPlayer  Game[]        @relation("right")
 }
 
 // INVITE AND FRIENDS
 model Friendship {
-  id                  Int       @id @default(autoincrement())
-  inviteStatus        StatusInv @default(PENDING)
+    id           Int       @id @default(autoincrement())
+    inviteStatus StatusInv @default(PENDING)
 
-  sender              User      @relation("sentInvites", fields: [senderId], references: [id])
-  senderId            Int
-  receiver            User      @relation("receivedInvites", fields: [receiverId], references: [id])
-  receiverId          Int
+    sender     User @relation("sentInvites", fields: [senderId], references: [id])
+    senderId   Int
+    receiver   User @relation("receivedInvites", fields: [receiverId], references: [id])
+    receiverId Int
 
-//   countResendSndr     Int       @default(0)
-//   countResendRcvr     Int       @default(0)
-//   senderHasBlocked    Boolean   @default(false)
-//   receiverHasBlocked  Boolean   @default(false)
+    //   countResendSndr     Int       @default(0)
+    //   countResendRcvr     Int       @default(0)
+    //   senderHasBlocked    Boolean   @default(false)
+    //   receiverHasBlocked  Boolean   @default(false)
 }
 
 // GAME 
 model Game {
-	id					Int @id @default(autoincrement())
+    id Int @id @default(autoincrement())
 
-	lhsPlayer			User @relation("left", fields:[lhsPlayerId], references: [id])
-	lhsPlayerId			Int
-	lhsScore			Int
-	
-	rhsPlayer			User @relation("right", fields:[rhsPlayerId], references: [id])
-	rhsPlayerId			Int
-	rhsScore			Int
+    lhsPlayer   User @relation("left", fields: [lhsPlayerId], references: [id])
+    lhsPlayerId Int
+    lhsScore    Int
 
-	texture1			String
-	texture2			String
+    rhsPlayer   User @relation("right", fields: [rhsPlayerId], references: [id])
+    rhsPlayerId Int
+    rhsScore    Int
+
+    winnerId Int
 }
 
 model Achievement {
-	id					Int @id @default(autoincrement())
-	title				String @unique
-	desc				String @unique
-	icon				String @unique
-	users				User[]
+    id    Int    @id @default(autoincrement())
+    title String @unique
+    desc  String @unique
+    icon  String @unique
+    users User[]
 }
 
 // CHAT - DISCUSSIONS
 model Discussion {
-	id					Int @id @default(autoincrement())
-	createdAt			DateTime @default(now())
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
 
-	user1				User @relation("userOne", fields:[userId1], references: [id])
-	userId1				Int
-	user2				User @relation("userTwo", fields:[userId2], references: [id])
-	userId2				Int
+    user1   User @relation("userOne", fields: [userId1], references: [id])
+    userId1 Int
+    user2   User @relation("userTwo", fields: [userId2], references: [id])
+    userId2 Int
 
-	discussionsMsgs		DiscussionMsg[]
+    discussionsMsgs DiscussionMsg[]
 }
 
 model DiscussionMsg {
-	id					Int @id @default(autoincrement())
-	createdAt			DateTime @default(now())
-	updateAt			DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
 
-	content				String
+    content String
 
-	user				User @relation(fields: [userId], references: [id])
-	userId				Int
-	discussion			Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-	discussionId		Int
+    user         User       @relation(fields: [userId], references: [id])
+    userId       Int
+    discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+    discussionId Int
 }
 
 // CHAT - CHANNELS
 model Channel {
-	id					Int @id @default(autoincrement())
-	name				String @unique
-	createdAt			DateTime @default(now())
-	updateAt			DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    name      String   @unique
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
 
-	visibility			ChanVisibility
+    visibility ChanVisibility
 
-	channelUsers		ChanUsr[]
-	channelMsgs			ChannelMsg[]
+    channelUsers ChanUsr[]
+    channelMsgs  ChannelMsg[]
 
-	hash				String? // hash?
+    hash String? // hash?
 }
 
 model ChannelMsg {
-	id					Int @id @default(autoincrement())
-	createdAt			DateTime @default(now())
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
 
-	content				String
+    content String
 
-	user				User @relation(fields: [userId], references: [id])
-	userId				Int
-	channel				Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-	channelId			Int
+    user      User    @relation(fields: [userId], references: [id])
+    userId    Int
+    channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+    channelId Int
 }
 
 // CHAT - USER
 model ChanUsr {
-	id					Int @id @default(autoincrement())
-	createdAt			DateTime @default(now())
-	updateAt			DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
 
-	user				User @relation(fields: [userId], references: [id])
-	userId				Int
-	channel				Channel @relation(fields: [chanId], references: [id], onDelete: Cascade)
-	chanId				Int
+    user    User    @relation(fields: [userId], references: [id])
+    userId  Int
+    channel Channel @relation(fields: [chanId], references: [id], onDelete: Cascade)
+    chanId  Int
 
-	role				ChanUsrRole
-	status				ChanUsrStatus
-	statusDuration		DateTime?
+    role           ChanUsrRole
+    status         ChanUsrStatus
+    statusDuration DateTime?
 
-	invitedToChan       StatusInv?
+    invitedToChan StatusInv?
 
-	@@unique([userId, chanId])
+    @@unique([userId, chanId])
 }
 
 enum StatusInv {
-	PENDING
-	ACCEPTED
-	REJECT
-	BLOCKED
+    PENDING
+    ACCEPTED
+    REJECT
+    BLOCKED
 }
 
 enum ChanVisibility {
-	PUBLIC
-	PROTECTED
-	PRIVATE
+    PUBLIC
+    PROTECTED
+    PRIVATE
 }
 
 enum ChanUsrStatus {
-	NORMAL
-	MUTED
-	BANNED
+    NORMAL
+    MUTED
+    BANNED
 }
 
 enum ChanUsrRole {
-	NORMAL
-	ADMIN
-	OWNER
+    NORMAL
+    ADMIN
+    OWNER
 }

@@ -10,6 +10,7 @@ import { DiscussionModule } from './discussion/discussion.module';
 import { ChannelModule } from './channel/channel.module';
 import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
+import { GameService } from './game/game.service';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { UserModule } from './user/user.module';
     ChannelModule,
     UserModule,
   ],
-  providers: [AppGateway, EventsGateway, PongGateway],
+  providers: [AppGateway, EventsGateway, PongGateway, GameService],
 })
 export class AppModule {}

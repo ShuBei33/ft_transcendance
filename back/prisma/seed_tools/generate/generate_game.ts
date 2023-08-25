@@ -16,8 +16,7 @@ export async function generate_game( uid1: number, uid2: number ): Promise<Game>
 			lhsScore: win ? 5 : oth_score,
 			rhsPlayer: { connect: { id: uid2 }},
 			rhsScore: win ? 5 : oth_score,
-			texture1: "GENERATION URL A VOIR PLUS TARD1",
-			texture2: "GENERATION URL A VOIR PLUS TARD"
+			winnerId: uid1,
 		}
 	})
 	return data;

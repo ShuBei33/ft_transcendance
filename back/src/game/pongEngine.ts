@@ -1,5 +1,7 @@
+import { clear } from 'console';
 import { clearInterval } from 'timers';
 
+export type keyStroke = { key: string; down: boolean };
 type fill = string | CanvasGradient | CanvasPattern;
 type pongOnUpdateCallback = (gameData: DefaultSettings) => void;
 type pongOnGameEndCallback = (gameData: DefaultSettings) => void;
@@ -72,14 +74,15 @@ export const getDefaultSettings = (
   };
 };
 
-const defaultSettings: DefaultSettings = getDefaultSettings(800, 600);
-
 export default class Pong {
-  settings = defaultSettings;
-  intervalId = -1;
   public gameHasStarted = false;
   public static targetFPS = 60;
   public static intervalTime = 1000 / this.targetFPS;
+  public static defaultSettings = { ...getDefaultSettings(800, 600) };
+
+  settings = { ...Pong.defaultSettings };
+  intervalIds: number[] = [];
+  keyStrokes: keyStroke[] = [];
 
   callBacks: PongCallback = {
     onUpdate() {},
@@ -162,8 +165,8 @@ export default class Pong {
     //   this.settings.ballSpeedY = -this.settings.ballSpeedY;
     // }
     if (this.settings.ballY > this.settings.height || this.settings.ballY < 0) {
-      if (this.settings.ballY < 0) this.settings.playerOnePoints++;
-      else this.settings.playerTwoPoints++;
+      if (this.settings.ballY < 0) this.settings.playerTwoPoints++;
+      else this.settings.playerOnePoints++;
       this.settings.ballY = this.settings.ballInitialY;
       this.settings.ballX = this.settings.ballInitialX;
 
@@ -212,29 +215,49 @@ export default class Pong {
     this.update();
   }
 
+  registerKeyStroke(k: keyStroke) {
+    this.keyStrokes = [...this.keyStrokes, k];
+  }
+
   startGame() {
-    this.intervalId = Number(
-      setInterval(() => this.gameLoop(), Pong.intervalTime),
-    );
+    this.intervalIds = [
+      Number(setInterval(() => this.gameLoop(), Pong.intervalTime)),
+      Number(
+        setInterval(() => {
+          this.keyStrokes.forEach((action) => {
+            //down - true = pressed, false = relased
+            const { key, down } = action;
+            if (key == 'ArrowLeft') this.settings.leftPressed = down;
+            else if (key == 'ArrowRight') this.settings.rightPressed = down;
+
+            if (key == 'a') this.settings.aPressed = down;
+            else if (key == 'd') this.settings.dPressed = down;
+          });
+        }, Pong.intervalTime / 2),
+      ),
+    ];
     this.gameHasStarted = true;
   }
 
   stopGame(summary?: PongCallback['onGameEnd']) {
-    if (this.intervalId) clearInterval(this.intervalId);
+    this.intervalIds.forEach((intervalId) => clearInterval(intervalId));
+    // if (this.intervalId) clearInterval(this.intervalId);
     summary && summary(this.settings);
     this.callBacks.onGameEnd(this.settings);
   }
 
   constructor(
     callBackFunctions: PongCallback,
+    keyStrokes: { key: string; down: boolean }[],
     dimensions?: { width: number; height: number },
     settings?: DefaultSettings,
   ) {
-    if (settings) this.settings = settings;
+    if (settings) this.settings = { ...settings };
     if (dimensions) {
       this.settings.width = dimensions.width;
       this.settings.height = dimensions.height;
     }
     this.callBacks = callBackFunctions;
+    this.keyStrokes = keyStrokes;
   }
 }
