@@ -5,6 +5,7 @@ import { Server, Socket } from 'socket.io';
 @WebSocketGateway({ cors: '*:*', })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
+	private clientsMap = new Map<number, Socket>(); // userid / socket associer au user
 	@WebSocketServer() wss: Server;
 
 	private logger: Logger = new Logger('AppGateway');
@@ -15,11 +16,14 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
 	handleConnection(client: Socket, ...args: any[]) {
 		this.logger.log(`CLIENT ${client.id} CONNECTED: `);
+		console.log(client.handshake.auth);
 	}
 
 	handleDisconnect(client: Socket) {
 		this.logger.log(`CLIENT ${client.id} DISCONNECTED`);
 	}
+
+
 
 	@SubscribeMessage('message')
 	handleMessage(@MessageBody() data: string, @ConnectedSocket() client: Socket) {
