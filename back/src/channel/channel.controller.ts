@@ -14,7 +14,7 @@ import { ChanVisibility, ChanUsrRole } from '@prisma/client';
 import { success } from 'src/utils/utils_success';
 import { channel } from 'diagnostics_channel';
 
-const logger = new Logger();
+// const logger = new Logger();
 
 @UseGuards(JwtGuard)
 @ApiTags('Channel')
@@ -132,7 +132,7 @@ export class ChannelController {
 		return success.general(res, "Channel left successfully.", channelLeft);
 	}
 
-	@Patch('adminOptions/:chanId')
+	@Patch('admin/:chanId')
 	@ApiOperation({ summary: 'Update channel settings' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
@@ -147,7 +147,7 @@ export class ChannelController {
 		return success.general(res, "Channel settings updated successfully.", channelModified);
 	}
 
-	@Patch('adminOptions/:chanId/usrpriv')
+	@Patch('admin/:chanId/usr')
 	@ApiOperation({ summary: 'Update channel settings' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
@@ -162,26 +162,3 @@ export class ChannelController {
 		return success.general(res, "Channel settings updated successfully.", channelModified);
 	}
 }
-
-// updateCHannel(dto: nom, vibiliste mdp)
-// setUserPrivilege()
-//
-// CHAT {
-//     - createChan 				OK
-//     - chanSettings				
-//         - renameChan				-> SERVICE
-//         - changeChanPwd			-> SERVICE
-//         - changeVisibility		-> SERVICE
-//     - deleteChan					OK
-//         - disconnectAllUsrs		-> SERVICE
-//     - showSubscribedChans		OK
-//     - leaveChan					OK
-//     - showMsgs					OK
-//         - showDMs				
-//         - showChanMsgs
-//     - addUsr
-//     - changeUsrStatus
-//         - muteUsr
-//         - banUsr
-//         - setPriv
-// }
