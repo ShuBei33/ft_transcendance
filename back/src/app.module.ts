@@ -1,27 +1,44 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { AppGateway } from './app.gateway';
-import { EventsGateway } from './events.gateway';
-import { PongGateway } from './pong.gateway';
-import { FriendModule } from './friend/friend.module';
+// import { GameGateway } from './game.gateway';
 import { GameModule } from './game/game.module';
+// import { GameService } from './game/game.service';
+import { LobbyGateway } from './lobby.gateway';
+import { FriendModule } from './friend/friend.module';
 import { DiscussionModule } from './discussion/discussion.module';
 import { ChannelModule } from './channel/channel.module';
-import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
-import { GameService } from './game/game.service';
+import { JwtModule } from '@nestjs/jwt';
+import { ChatGateway } from './chat.gateway';
+import { UserService } from './user/user.service';
+import { DiscussionService } from './discussion/discussion.service';
+import { ChannelService } from './channel/channel.service';
+import { SocketService } from './sockets/socket.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    PrismaModule,
-    FriendModule,
-    GameModule,
-    DiscussionModule,
-    ChannelModule,
-    UserModule,
-  ],
-  providers: [AppGateway, EventsGateway, PongGateway, GameService],
+	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+		}),
+		AuthModule,
+		PrismaModule,
+		FriendModule,
+		GameModule,
+		DiscussionModule,
+		ChannelModule,
+		UserModule,
+		JwtModule,
+	],
+	providers: [
+		ChatGateway,
+		LobbyGateway,
+		UserService,
+		DiscussionService,
+		ChannelService,
+		SocketService
+	],
+	exports: []
 })
 export class AppModule {}

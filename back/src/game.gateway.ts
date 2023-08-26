@@ -37,13 +37,14 @@ const userIdToPlayer = (
 // const playerTo
 
 //TODO Cors
-@WebSocketGateway({ cors: { origin: '*' } })
-export class PongGateway
+@WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
+export class GameGateway
   implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
 {
-  constructor(private gameService: GameService) {}
+  constructor(
+	private gameService: GameService) {}
   @WebSocketServer() serv: Server;
-  private logger: Logger = new Logger('EventsGateway');
+  private logger: Logger = new Logger('Pong Gateway');
   private prismaService: PrismaService;
   afterInit(serv: any) {
     this.logger.log('Init');
