@@ -26,7 +26,7 @@ export class DTOUpdateChan {
 	hash?: Channel['hash'];
 }
 
-export class DTOChanUsr {
+export class DTOUpdateChanUsr {
 	@IsInt()
 	id: ChanUsr['id'];
 	

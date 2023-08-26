@@ -13,7 +13,7 @@ export class AuthService {
 	async user_validator(login: string): Promise<boolean> {
 		try {
 			const count = await this.prisma.user.count({ where: { login: login } });
-			return count > 0;
+			return (count > 0);
 		} catch (error) {
 			logger.error("Erreur lors de la validation de l'utilisateur");
 			return false;
@@ -23,7 +23,7 @@ export class AuthService {
 	async pseudo_validator(pseudo: string) {
 		try {
 			const count = await this.prisma.user.count({ where: { pseudo: pseudo } });
-			return count > 0;
+			return (count > 0);
 		} catch (error) {
 			logger.error("Erreur lors de la validation du pseudo");
 			return false;
@@ -61,16 +61,14 @@ export class AuthService {
 		return rest;
 	}
 
-	async signToken(
-		refresh_token: string,
-		access_token: string,
-		login: string,
-	): Promise<{ token: string }> {
-		const user_lite: UserLite = await this.get_user(login)
+	async signToken( refresh_token: string, access_token: string, login: string ): Promise<{ token: string }>
+	{
+		const user_lite: UserLite = await this.get_user(login);
+		console.log("USERLITE: ", user_lite);
 		const payload = {
 			refresh: refresh_token,
 			access: access_token,
-			user: user_lite,
+			user: user_lite
 		};
 		const secret = process.env.JWT_SECRET;
 		const token = await this.jwt.signAsync(payload, {
