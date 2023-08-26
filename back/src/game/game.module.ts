@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
-import { GameController } from './game.controller';
-import { GameService } from './game.service';
-import { EventsGateway } from 'src/events.gateway';
+// import { Module } from '@nestjs/common';
+// import { GameController } from './game.controller';
+// import { GameService } from './game.service';
+// import { GameGateway } from '../game.gateway';
 
-@Module({
-  controllers: [GameController],
-  providers: [GameService, EventsGateway]
-})
-export class GameModule {}
+// @Module({
+// 	imports: [],
+// 	controllers: [GameController],
+// 	providers: [GameService, GameGateway,]
+// })
+// export class GameModule {}
