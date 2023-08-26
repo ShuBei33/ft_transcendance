@@ -7,6 +7,7 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { UserLite } from './user/dto';
 import { ENS } from './sockets/dto';
+import { SubscribeMessage } from '@nestjs/websockets';
 
 @WebSocketGateway({ namespace: '/chat', cors: '*:*', })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -31,7 +32,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleConnection(client: Socket, ...args: any[]) {
 		const token = client.handshake.auth.token;
 		const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
-
 		if (!user) {
 			client.disconnect();
 			return;
@@ -87,8 +87,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	// caseMessage(client: Socket, payload: string): void {
 	// 	this.serv.emit("message", payload);
 	// }
-	// @SubscribeMessage("messageToRoom")
-	// caseToRoom(client: Socket, payload: any): void {
-	// 	this.serv.to(payload.destination).emit("message", payload.message);
-	// }
+
+	@SubscribeMessage("messageToRoom")
+	caseToRoom(client: Socket, payload: { id: string, message: string}): void {
+		// logic check person ban mute etc
+		this.wss.to(payload.id).emit("message", payload.message);
+	}
 };
