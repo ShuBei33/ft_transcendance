@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsEnum, IsInt, Length, IsDate } from 'class-validator';
 import { User, Channel, ChanUsr } from '@prisma/client';
-import { ChanVisibility, ChanUsrRole, ChanUsrStatus } from '@prisma/client';
+import { ChanVisibility, ChanUsrRole, UserStatusMSGs } from '@prisma/client';
 
 export class DTOCreateChan {
 	@IsNotEmpty()
@@ -31,7 +31,7 @@ export class DTOUpdateChanUsr {
 	id: ChanUsr['id'];
 	
 	role?: ChanUsrRole;
-	status?: ChanUsrStatus;
+	status?: UserStatusMSGs;
 	statusDuration?: Date;
 }
 
