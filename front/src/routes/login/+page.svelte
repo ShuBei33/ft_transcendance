@@ -92,8 +92,8 @@
 
 .msg {
   color: #8F8F8F;
-  font-family: NotoSansTamil;
-  font-size: 14px;
+  font-family: 'Noto Sans Tamil';
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
@@ -122,7 +122,7 @@
 
 .link {
   color: #FFF;
-  font-family: Noto Sans Tamil;
+  font-family: 'Noto Sans Tamil';
   font-size: 14px;
   font-style: normal;
   font-weight: 400;

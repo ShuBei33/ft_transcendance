@@ -64,13 +64,13 @@
     right: 1em;
   }
 
-  @font-face {
-    font-family: 'NotoSansTamil';
-    src: url('/fonts/NotoSansTamil.ttf') format('ttf');
-  }
+  // @font-face {
+  //   font-family: 'NotoSansTamil';
+  //   src: url('/fonts/NotoSansTamil.ttf') format('ttf');
+  // }
 
-  body {
-    font-family: 'NotoSansTamil';
-  }
+  // body {
+  //   font-family: 'NotoSansTamil';
+  // }
 
 </style>
