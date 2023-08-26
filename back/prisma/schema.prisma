@@ -48,10 +48,10 @@ model Friendship {
     receiver   User @relation("receivedInvites", fields: [receiverId], references: [id])
     receiverId Int
 
-    //   countResendSndr     Int       @default(0)
-    //   countResendRcvr     Int       @default(0)
-    //   senderHasBlocked    Boolean   @default(false)
-    //   receiverHasBlocked  Boolean   @default(false)
+    countResendSndr     Int      @default(0)
+    countResendRcvr     Int      @default(0)
+    senderIsBlocked    Boolean   @default(false)
+    receiverIsBlocked  Boolean   @default(false)
 }
 
 // GAME 
