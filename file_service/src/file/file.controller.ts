@@ -4,6 +4,9 @@ import {
   Injectable,
   MaxFileSizeValidator,
   Post,
+  Param,
+  Res,
+  Get,
   Req,
   UseInterceptors,
   UploadedFile,
@@ -15,6 +18,7 @@ import {
   CallHandler,
 } from "@nestjs/common";
 
+import { readdir, readdirSync } from "fs";
 import { ExecutionContext } from "@nestjs/common";
 import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -22,6 +26,8 @@ import { diskStorage } from "multer";
 import { HttpService } from "src/http/http.service";
 import { AxiosError } from "axios";
 import { Observable } from "rxjs";
+import { join } from "path";
+import { file } from "@babel/types";
 var path = require("path");
 
 interface myConfig {
@@ -112,5 +118,34 @@ export class FileController {
     @Req() req: Request
   ) {
     return HttpStatus.CREATED;
+  }
+
+  @UseInterceptors(UserInterceptor)
+  @Get("/download/:id")
+  GetAvatar(@Req() req: Request, @Param("id") id: string, @Res() res) {
+    const directoryPath = join(process.cwd(), "src", "storage", "avatar");
+
+    readdir(directoryPath, (err, files) => {
+      if (err) {
+        throw new HttpException(
+          {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            error: "Unexpected error",
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+
+      const fileToSend = files.find(
+        (file) => file.split(".").reverse().pop().toString() == id
+      );
+
+      if (fileToSend) res.sendFile(join(directoryPath, fileToSend));
+      else
+        res.status(HttpStatus.NOT_FOUND).json({
+          success: false,
+          message: "Avatar not found",
+        });
+    });
   }
 }
