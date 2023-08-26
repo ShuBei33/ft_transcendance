@@ -8,8 +8,24 @@ const errorTemplate = (error: string, status: number) => {
 }
 
 export namespace error {
+    export const badRequest = (error: string) => errorTemplate(error, HttpStatus.BAD_REQUEST);
     export const notFound = (error: string) => errorTemplate(error, HttpStatus.NOT_FOUND);
     export const notAuthorized = (error: string) => errorTemplate(error, HttpStatus.FORBIDDEN);
     export const hasConflict = (error: string) => errorTemplate(error, HttpStatus.CONFLICT);
     export const unexpected = (error: string) => errorTemplate(error, HttpStatus.I_AM_A_TEAPOT);
 }
+
+/* PRISMA CLIENT ERROR TYPES */
+/*
+
+PrismaClientKnownRequestError
+
+PrismaClientUnknownRequestError
+
+PrismaClientRustPanicError
+
+PrismaClientInitializationError
+
+PrismaClientValidationError
+
+*/

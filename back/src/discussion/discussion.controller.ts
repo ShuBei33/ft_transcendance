@@ -22,7 +22,6 @@ export class DiscussionController {
 	@ApiOperation({ summary: 'Retrieve all of a user\'s discussions' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'discId', description: 'Discussion ID', type: 'number', example: 1 })
 	async getMessage(
 		@GetUser() user: User,
 		@Res() res: Response
