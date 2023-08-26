@@ -103,10 +103,13 @@ export interface Channel {
   createdAt: Date;
   updateAt: Date;
   visibility: ChanVisibility;
-  channelUsers?: ChanUsr[];
-  channelMsgs?: ChannelMsg[];
   hash?: string | null;
 }
+
+export type ChannelExtended = Channel & {
+  channelUsers?: ChanUsr[];
+  channelMsgs?: ChannelMsg[];
+};
 
 export interface ChannelMsg {
   id: number;

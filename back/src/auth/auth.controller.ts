@@ -24,8 +24,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
   async checkJWT(@GetUser() user, @GetToken() tokens) {
-    console.log('user: ', user);
-    console.log('tokens: ', tokens);
+    // console.log('user: ', user);
+    // console.log('tokens: ', tokens);
     const { createdAt, updateAt, twoFA, ...rest } = user;
     return { user: rest };
   }
