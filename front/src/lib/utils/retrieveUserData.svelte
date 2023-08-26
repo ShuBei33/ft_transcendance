@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Channel } from "$lib/apiCalls";
-  import { data } from "$lib/stores/data";
+  import { data as dataStore } from "$lib/stores/data";
   onMount(() => {
     const _Channel = new Channel();
-    _Channel.all().then((response) => ($data.channels = response.data));
+    _Channel.all().then(({ data }) => ($dataStore.channels = data.data));
   });
 </script>

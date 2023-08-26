@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ui } from "$lib/stores/ui";
+  import LeftRoom from "./left-ROOM.svelte";
   const tabsName = ["DM", "ROOM", "FRIEND"] as const;
 </script>
 
@@ -15,6 +16,7 @@
             </button>
           {/each}
         </div>
+        <svelte:component this={LeftRoom} />
       </div>
       <div class="right" />
     </div>

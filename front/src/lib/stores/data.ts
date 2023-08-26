@@ -1,11 +1,11 @@
 import type { ChannelExtended } from "$lib/models/prismaSchema";
 import { writableHook } from "./hooks";
 
-interface data {
+interface dataType {
   channels: ChannelExtended[];
 }
 
-export const data = writableHook<data>({
+export const data = writableHook<dataType>({
   initialValue: {
     channels: [],
   },
