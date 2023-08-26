@@ -329,7 +329,7 @@ export class ChannelService {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     //																							//
-    //		Channel settings	                                                                //
+    //		Updates	                                                                            //
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -374,12 +374,6 @@ export class ChannelService {
                 error.unexpected(e);
         }
     }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////
-    //																							//
-    //		Channel User privileges and status	                                                //
-    //																							//
-    //////////////////////////////////////////////////////////////////////////////////////////////
 
     async updateChanUsr(userId: number, chanId: number, userToModify: DTOUpdateChanUsr): Promise<void> {
         try {

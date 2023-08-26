@@ -1,0 +1,1 @@
+{"version":3,"file":"http-module.js","sourceRoot":"","sources":["../../src/http-module/http-module.ts"],"names":[],"mappings":";;;;;;;;;AAAA,2CAAwC;AACxC,yCAA2C;AAC3C,uDAAoD;AAM7C,IAAM,kBAAkB,gCAAxB,MAAM,kBAAkB;CAAG,CAAA;6BAArB,kBAAkB;IAL9B,IAAA,eAAM,EAAC;QACN,OAAO,EAAE,CAAC,kBAAU,CAAC;QACrB,SAAS,EAAE,CAAC,0BAAW,CAAC;QACxB,OAAO,EAAE,CAAC,0BAAW,CAAC;KACvB,CAAC;GACW,kBAAkB,CAAG"}
