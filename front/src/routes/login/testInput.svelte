@@ -11,9 +11,17 @@
 </script>
 
 <main>
-  <input {...attributes} bind:value />
+  <!-- <div class="input-container"> -->
+    <input class="large-rectangle-input" {...attributes} bind:value />
+  <!-- </div> -->
 </main>
 
 <style lang="scss">
+  
+  // .input-container {
+  //   position: relative;
+  //   display: flex;
+  //   align-items: baseline;
+  // }
   /* your styles go here */
 </style>

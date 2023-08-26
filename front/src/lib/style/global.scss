@@ -1,8 +1,10 @@
 :global(body) {
     margin: 0;
     background-color: #2C2C33;
+    font-family: 'NotoSansTamil';
+    box-sizing: border-box;
+    padding: 0;
 }
-
 .small-square {
     width: 57px;
     height: 57px;
@@ -11,4 +13,28 @@
     border: 2px solid rgba(255, 255, 255, 0.20);
     background-color: rgba(255, 255, 255, 0.20);
     // display: none;
+}
+
+.large-rectangle-input {
+    width: 276px;
+    height: 57px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: rgba(255, 255, 255, 0.20);
+}
+
+.red-rectangle {
+    width: 285px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: radial-gradient(95.61% 95.61% at 50.00% 4.39%, rgba(255, 0, 0, 0.30) 0%, rgba(138, 5, 5, 0.00) 100%), linear-gradient(180deg, #FF004C 0%, #D90041 100%);
+    color: #FFF;
+    font-family: "NotoSansTamil";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: normal;
 }
