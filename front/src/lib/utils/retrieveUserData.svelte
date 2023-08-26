@@ -4,9 +4,6 @@
   import { data } from "$lib/stores/data";
   onMount(() => {
     const _Channel = new Channel();
-    _Channel.all().then((data) => {
-      console.log("!!!!!!!!!!!!!!data", data.data);
-    });
-    // _Channel.all().then((data) => ($data.channels = data));
+    _Channel.all().then((response) => ($data.channels = response.data));
   });
 </script>
