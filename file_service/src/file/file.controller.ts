@@ -1,35 +1,39 @@
 import {
-  Body,
   Controller,
   FileTypeValidator,
+  Injectable,
   MaxFileSizeValidator,
-  ParseFilePipeBuilder,
-} from '@nestjs/common';
-import { Post, Req } from '@nestjs/common';
-import { UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadedFile } from '@nestjs/common';
-import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { diskStorage } from 'multer';
-import { Logger } from '@nestjs/common';
-import { ParseFilePipe } from '@nestjs/common';
-import { FileValidator } from '@nestjs/common';
-var path = require('path');
+  Post,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+  Logger,
+  ParseFilePipe,
+  HttpException,
+  HttpStatus,
+  NestInterceptor,
+  CallHandler,
+} from "@nestjs/common";
+
+import { ExecutionContext } from "@nestjs/common";
+import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { HttpService } from "src/http/http.service";
+import { AxiosError } from "axios";
+import { Observable } from "rxjs";
+var path = require("path");
 
 interface myConfig {
-  supportedImageExtentions: string[];
-  supportedMimeTypes: string[];
   avatarStoragePath: string;
   oneKB: number;
   maxSizeMB: number;
 }
 
 const config: myConfig = {
-  supportedImageExtentions: ['.jpg', '.jpeg', '.png', '.gif'],
-  supportedMimeTypes: ['image/jpeg', 'image/png', 'image/gif'],
   oneKB: 1024,
   maxSizeMB: 6,
-  avatarStoragePath: './src/storage/avatar',
+  avatarStoragePath: "./src/storage/avatar",
 };
 
 const logger = new Logger();
@@ -38,39 +42,62 @@ const avatarUploadOptions: MulterOptions = {
   storage: diskStorage({
     destination: config.avatarStoragePath,
     filename: (req: any, file: any, cb: any) => {
-      logger.log('body here', req.body);
-      const userId = req.body['userId'];
       const extension: string = path.parse(file.originalname).ext;
-      cb(null, `${userId}${extension}`);
+      logger.log(`user -- ${JSON.stringify(req["user"])}`);
+      cb(null, `${req["user"].id}${extension}`);
     },
   }),
-  // fileFilter: (req: any, file: any, cb: any) => {
-  // cb(null, true);
-  // logger.log('__TEST_SIZE__');
-  // logger.log(file);
-  // var _path = require('path');
-  // const fileExtension: string = _path
-  //   .parse(file.originalname)
-  //   .ext.toLowerCase();
-  // const { mimetype, size } = file;
-  // if (size > config.maxSizeMB * config.oneKB) {
-  //   cb(`File size exceeds ${config.maxSizeMB}MB`);
-  // } else if (
-  //   config.supportedImageExtentions.indexOf(fileExtension) == -1 ||
-  //   config.supportedMimeTypes.indexOf(mimetype) == -1
-  // ) {
-  //   cb('Unsupported file format: ' + fileExtension);
-  // } else {
-  //   cb(null, true);
-  // }
-  // },
 };
 
-@Controller('avatar')
+@Injectable()
+class UserInterceptor implements NestInterceptor {
+  constructor(private readonly httpService: HttpService) {}
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler
+  ): Promise<Observable<any>> {
+    const ctx = context.switchToHttp();
+
+    const BearerHeader = ctx.getRequest().headers["authorization"];
+    if (BearerHeader) {
+      try {
+        const user = await this.httpService
+          .checkJWT(BearerHeader.split(" ")[1])
+          .then((data) => data.data.user);
+
+        ctx.getRequest()["user"] = user;
+      } catch (e) {
+        if (e instanceof AxiosError && e.code == AxiosError.ERR_BAD_REQUEST)
+          throw new HttpException(
+            {
+              status: HttpStatus.FORBIDDEN,
+              error: "Token invalid",
+            },
+            HttpStatus.FORBIDDEN
+          );
+        else
+          throw new HttpException(
+            {
+              status: HttpStatus.INTERNAL_SERVER_ERROR,
+              error: "Unexpected error",
+            },
+            HttpStatus.INTERNAL_SERVER_ERROR
+          );
+      }
+    }
+    return next.handle();
+  }
+}
+
+@Controller("avatar")
 export class FileController {
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file', avatarUploadOptions))
-  uploadFile(
+  constructor(private readonly httpService: HttpService) {}
+  @Post("upload")
+  @UseInterceptors(
+    UserInterceptor,
+    FileInterceptor("file", avatarUploadOptions)
+  )
+  async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -79,13 +106,11 @@ export class FileController {
             maxSize: config.maxSizeMB * config.oneKB * config.oneKB,
           }),
         ],
-      }),
+      })
     )
     file: Express.Multer.File,
-    @Req() req: Request,
+    @Req() req: Request
   ) {
-    logger.log('ok');
-    logger.log(req.body);
-    // logger.log('req', JSON.stringify(req));
+    return HttpStatus.CREATED;
   }
 }
