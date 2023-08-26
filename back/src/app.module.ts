@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 // import { GameGateway } from './game.gateway';
-// import { GameModule } from './game/game.module';
+import { GameModule } from './game/game.module';
 // import { GameService } from './game/game.service';
 import { LobbyGateway } from './lobby.gateway';
 import { FriendModule } from './friend/friend.module';
@@ -25,15 +25,13 @@ import { SocketService } from './sockets/socket.service';
 		AuthModule,
 		PrismaModule,
 		FriendModule,
-		// GameModule,
+		GameModule,
 		DiscussionModule,
 		ChannelModule,
 		UserModule,
 		JwtModule,
 	],
 	providers: [
-		// GameService,
-		// GameGateway,
 		ChatGateway,
 		LobbyGateway,
 		UserService,

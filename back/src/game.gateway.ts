@@ -1,186 +1,186 @@
-// import {
-//   SubscribeMessage,
-//   WebSocketGateway,
-//   WebSocketServer,
-//   OnGatewayInit,
-//   OnGatewayConnection,
-//   OnGatewayDisconnect,
-// } from '@nestjs/websockets';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
 
-// import { Logger } from '@nestjs/common';
-// import { Socket, Server } from 'socket.io';
-// import Pong from './game/pongEngine';
-// import { PrismaService } from './prisma/prisma.service';
-// import { GameService } from './game/game.service';
+import { Logger } from '@nestjs/common';
+import { Socket, Server } from 'socket.io';
+import Pong from './game/pongEngine';
+import { PrismaService } from './prisma/prisma.service';
+import { GameService } from './game/game.service';
 
-// interface PongInstance {
-//   playersUserIds: number[];
-//   spectatorIds?: number[];
-//   engine: Pong | undefined;
-// }
+interface PongInstance {
+  playersUserIds: number[];
+  spectatorIds?: number[];
+  engine: Pong | undefined;
+}
 
-// const games = new Map<number, PongInstance>();
-// const connectedClients = new Map<string, Socket>();
-// // Utils functions
-// const isGamePlayersLocked = (instance: PongInstance) =>
-//   instance.playersUserIds.length == 2;
-// // First user in array of playersUserIds is playerOne
-// const userIdToPlayer = (
-//   userId: number,
-//   pongInstance: PongInstance,
-// ): 'playerOne' | 'playerTwo' => {
-//   return pongInstance.playersUserIds.indexOf(userId) == 0
-//     ? 'playerOne'
-//     : 'playerTwo';
-// };
+const games = new Map<number, PongInstance>();
+const connectedClients = new Map<string, Socket>();
+// Utils functions
+const isGamePlayersLocked = (instance: PongInstance) =>
+  instance.playersUserIds.length == 2;
+// First user in array of playersUserIds is playerOne
+const userIdToPlayer = (
+  userId: number,
+  pongInstance: PongInstance,
+): 'playerOne' | 'playerTwo' => {
+  return pongInstance.playersUserIds.indexOf(userId) == 0
+    ? 'playerOne'
+    : 'playerTwo';
+};
 
-// // const playerTo
+// const playerTo
 
-// //TODO Cors
-// @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
-// export class GameGateway
-//   implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
-// {
-//   constructor(
-// 	private gameService: GameService) {}
-//   @WebSocketServer() serv: Server;
-//   private logger: Logger = new Logger('Pong Gateway');
-//   private prismaService: PrismaService;
-//   afterInit(serv: any) {
-//     this.logger.log('Init');
-//   }
+//TODO Cors
+@WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
+export class GameGateway
+  implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
+{
+  constructor(
+	private gameService: GameService) {}
+  @WebSocketServer() serv: Server;
+  private logger: Logger = new Logger('Pong Gateway');
+  private prismaService: PrismaService;
+  afterInit(serv: any) {
+    this.logger.log('Init');
+  }
 
-//   @SubscribeMessage('keyStroke')
-//   keyStoke(client: Socket, e: { key: string; down: boolean }) {
-//     connectedClients.forEach((socket, identification) => {
-//       if (socket == client) {
-//         const { userId, gameId }: { userId: number; gameId: number } =
-//           JSON.parse(identification);
-//         const pongInstance = games.get(gameId);
-//         if (pongInstance) {
-//           if (userIdToPlayer(userId, pongInstance) == 'playerOne') {
-//             e.key = e.key == 'a' ? 'ArrowLeft' : e.key;
-//             e.key = e.key == 'd' ? 'ArrowRight' : e.key;
-//           }
-//           pongInstance.engine.registerKeyStroke(e);
-//         }
-//         return;
-//       }
-//     });
-//   }
+  @SubscribeMessage('keyStroke')
+  keyStoke(client: Socket, e: { key: string; down: boolean }) {
+    connectedClients.forEach((socket, identification) => {
+      if (socket == client) {
+        const { userId, gameId }: { userId: number; gameId: number } =
+          JSON.parse(identification);
+        const pongInstance = games.get(gameId);
+        if (pongInstance) {
+          if (userIdToPlayer(userId, pongInstance) == 'playerOne') {
+            e.key = e.key == 'a' ? 'ArrowLeft' : e.key;
+            e.key = e.key == 'd' ? 'ArrowRight' : e.key;
+          }
+          pongInstance.engine.registerKeyStroke(e);
+        }
+        return;
+      }
+    });
+  }
 
-//   @SubscribeMessage('joinGame')
-//   joinGame(client: Socket, payload: { userId: number; gameId: number }): void {
-//     // saving 'this' for Pong callback context
-//     const _this = this;
+  @SubscribeMessage('joinGame')
+  joinGame(client: Socket, payload: { userId: number; gameId: number }): void {
+    // saving 'this' for Pong callback context
+    const _this = this;
 
-//     this.logger.log(`User ${payload.userId} join game ${payload.gameId}`);
-//     if (games.has(payload.gameId)) {
-//       let pongInstance = games.get(payload.gameId);
-//       if (!isGamePlayersLocked(pongInstance)) {
-//         pongInstance.playersUserIds.push(payload.userId);
-//         if (isGamePlayersLocked(pongInstance)) {
-//           pongInstance.engine = new Pong(
-//             {
-//               onUpdate(data) {
-//                 // There is a winner
-//                 if (data.playerOnePoints == 3 || data.playerTwoPoints == 3) {
-//                   //  Disconnecting looser socket (first user to disconnect is looser by default)
-//                   const looserIdIndex =
-//                     data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
-//                   connectedClients.forEach((socket, identification) => {
-//                     const {
-//                       userId,
-//                       gameId,
-//                     }: { userId: number; gameId: number } =
-//                       JSON.parse(identification);
-//                     if (userId == pongInstance.playersUserIds[looserIdIndex]) {
-//                       socket.disconnect();
-//                       return;
-//                     }
-//                   });
-//                 } // No winner yet, game data is sent to players
-//                 else
-//                   _this.serv.volatile.emit(`game: ${String(payload.gameId)}`, {
-//                     expect: 'update',
-//                     data,
-//                   });
-//               },
-//               onGameEnd() {
-//                 // Disconnect all players if connected and remove game locally
-//                 connectedClients.forEach((socket, identification) => {
-//                   const { userId, gameId }: { userId: number; gameId: number } =
-//                     JSON.parse(identification);
-//                   if (pongInstance.playersUserIds.indexOf(userId) != -1)
-//                     socket.connected && socket.disconnect();
-//                 });
-//                 games.delete(payload.gameId);
-//               },
-//             },
-//             [],
-//             { width: 800, height: 600 },
-//           );
-//           pongInstance.engine.startGame();
-//           this.logger.log('Game can start', pongInstance);
-//         }
-//       }
-//       games.set(payload.gameId, pongInstance);
-//     } else {
-//       games.set(payload.gameId, {
-//         playersUserIds: [payload.userId],
-//         engine: undefined,
-//       });
-//     }
-//   }
-//   handleDisconnect(client: Socket) {
-//     connectedClients.forEach((socket, identification) => {
-//       if (socket == client) {
-//         const { userId, gameId }: { userId: number; gameId: number } =
-//           JSON.parse(identification);
-//         const pongInstance = games.get(gameId);
-//         if (pongInstance) {
-//           pongInstance.engine.stopGame((gameData) => {
-//             const winnerId = pongInstance.playersUserIds.filter(
-//               (id) => id != userId,
-//             )[0];
-//             // Save game into database
-//             (async () => {
-//               this.logger.log('saved', gameData);
-//               const lhsPlayerId = pongInstance.playersUserIds[0];
-//               const rhsPlayerId = pongInstance.playersUserIds[1];
-//               await this.gameService.saveGame({
-//                 winnerId,
-//                 lhsPlayerId,
-//                 rhsPlayerId,
-//                 lhsScore:
-//                   gameData[
-//                     `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
-//                   ],
-//                 rhsScore:
-//                   gameData[
-//                     `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
-//                   ],
-//               });
-//             })();
-//           });
-//         }
-//         return;
-//       }
-//     });
-//     this.logger.log('Client with id: ' + client.id + 'is now disconnected');
-//   }
-//   handleConnection(client: Socket, ...args: any[]) {
-//     client.join(client.id);
-//     client.on(
-//       'identification',
-//       (payload: { userId: number; gameId: string }) => {
-//         const payloadStringify = JSON.stringify(payload);
-//         const socketExist = connectedClients.get(payloadStringify);
-//         if (socketExist) socketExist.disconnect();
-//         connectedClients.set(payloadStringify, client);
-//         this.logger.log(`User ${payload.userId} is authorized`);
-//       },
-//     );
-//     this.logger.log('Client with id: ' + client.id + 'just connected');
-//   }
-// }
+    this.logger.log(`User ${payload.userId} join game ${payload.gameId}`);
+    if (games.has(payload.gameId)) {
+      let pongInstance = games.get(payload.gameId);
+      if (!isGamePlayersLocked(pongInstance)) {
+        pongInstance.playersUserIds.push(payload.userId);
+        if (isGamePlayersLocked(pongInstance)) {
+          pongInstance.engine = new Pong(
+            {
+              onUpdate(data) {
+                // There is a winner
+                if (data.playerOnePoints == 3 || data.playerTwoPoints == 3) {
+                  //  Disconnecting looser socket (first user to disconnect is looser by default)
+                  const looserIdIndex =
+                    data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
+                  connectedClients.forEach((socket, identification) => {
+                    const {
+                      userId,
+                      gameId,
+                    }: { userId: number; gameId: number } =
+                      JSON.parse(identification);
+                    if (userId == pongInstance.playersUserIds[looserIdIndex]) {
+                      socket.disconnect();
+                      return;
+                    }
+                  });
+                } // No winner yet, game data is sent to players
+                else
+                  _this.serv.volatile.emit(`game: ${String(payload.gameId)}`, {
+                    expect: 'update',
+                    data,
+                  });
+              },
+              onGameEnd() {
+                // Disconnect all players if connected and remove game locally
+                connectedClients.forEach((socket, identification) => {
+                  const { userId, gameId }: { userId: number; gameId: number } =
+                    JSON.parse(identification);
+                  if (pongInstance.playersUserIds.indexOf(userId) != -1)
+                    socket.connected && socket.disconnect();
+                });
+                games.delete(payload.gameId);
+              },
+            },
+            [],
+            { width: 800, height: 600 },
+          );
+          pongInstance.engine.startGame();
+          this.logger.log('Game can start', pongInstance);
+        }
+      }
+      games.set(payload.gameId, pongInstance);
+    } else {
+      games.set(payload.gameId, {
+        playersUserIds: [payload.userId],
+        engine: undefined,
+      });
+    }
+  }
+  handleDisconnect(client: Socket) {
+    connectedClients.forEach((socket, identification) => {
+      if (socket == client) {
+        const { userId, gameId }: { userId: number; gameId: number } =
+          JSON.parse(identification);
+        const pongInstance = games.get(gameId);
+        if (pongInstance) {
+          pongInstance.engine.stopGame((gameData) => {
+            const winnerId = pongInstance.playersUserIds.filter(
+              (id) => id != userId,
+            )[0];
+            // Save game into database
+            (async () => {
+              this.logger.log('saved', gameData);
+              const lhsPlayerId = pongInstance.playersUserIds[0];
+              const rhsPlayerId = pongInstance.playersUserIds[1];
+              await this.gameService.saveGame({
+                winnerId,
+                lhsPlayerId,
+                rhsPlayerId,
+                lhsScore:
+                  gameData[
+                    `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
+                  ],
+                rhsScore:
+                  gameData[
+                    `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
+                  ],
+              });
+            })();
+          });
+        }
+        return;
+      }
+    });
+    this.logger.log('Client with id: ' + client.id + 'is now disconnected');
+  }
+  handleConnection(client: Socket, ...args: any[]) {
+    client.join(client.id);
+    client.on(
+      'identification',
+      (payload: { userId: number; gameId: string }) => {
+        const payloadStringify = JSON.stringify(payload);
+        const socketExist = connectedClients.get(payloadStringify);
+        if (socketExist) socketExist.disconnect();
+        connectedClients.set(payloadStringify, client);
+        this.logger.log(`User ${payload.userId} is authorized`);
+      },
+    );
+    this.logger.log('Client with id: ' + client.id + 'just connected');
+  }
+}
