@@ -2,7 +2,7 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DTOCreateChan, DTOInviteChan, DTOJoinChan, DTOUpdateChan, DTOUpdateChanUsr } from './dto';
 import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
-import { ChanUsrRole, ChanUsrStatus, ChanVisibility, StatusInv } from '@prisma/client';
+import { ChanUsrRole, UserStatusMSGs, ChanVisibility, StatusInv } from '@prisma/client';
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { error } from 'src/utils/utils_error';
 
@@ -20,7 +20,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: ChanUsrStatus, invitedToChan?: StatusInv): Promise<ChanUsr> {
+    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> {
         try {
             const newChanUsr = await this.prisma.chanUsr.create({
                 data: {

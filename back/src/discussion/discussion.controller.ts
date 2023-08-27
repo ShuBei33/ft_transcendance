@@ -9,6 +9,7 @@ import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { DiscussionService } from './discussion.service';
+import { DTORestrainUsr } from './dto';
 import { success } from 'src/utils/utils_success';
 
 @UseGuards(JwtGuard)
@@ -42,5 +43,20 @@ export class DiscussionController {
 	) {
 		const DMs = await this.DiscussionService.getDMs(user.id, discId);
 		return success.general(res, "DMs retrieved successfully.", DMs);
+	}
+
+	@Patch('msgs/usr')
+	@ApiOperation({ summary: 'Update user status' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'discId', description: 'Discussion ID', type: 'number', example: 1 })
+	async update(
+		@Param('discId', ParseIntPipe) discId: number,
+		@Body() usrToRestrain: DTORestrainUsr,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const restrainedUsr = await this.DiscussionService.muteOrBlockUser(user.id, usrToRestrain);
+		return success.general(res, "User status updated successfully.", restrainedUsr);
 	}
 }
