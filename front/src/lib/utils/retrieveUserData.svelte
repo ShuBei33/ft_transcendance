@@ -6,5 +6,8 @@
   onMount(() => {
     const _Channel = new Channel();
     _Channel.all().then(({ data }) => ($dataStore.channels = data.data));
+    _Channel.mine().then(({ data }) => {
+      console.log("!!mine", data);
+    });
   });
 </script>

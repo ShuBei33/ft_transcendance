@@ -135,5 +135,5 @@ export interface ChanUsr {
 }
 
 export type ChanUserExtended = Channel & {
-  channel?: Channel | null;
+  channel: Channel;
 };
