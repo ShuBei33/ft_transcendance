@@ -33,7 +33,6 @@
           case "update":
             gameData = data.data;
             draw(_canvas, context, gameData);
-            console.log(data);
             break;
           default:
             break;

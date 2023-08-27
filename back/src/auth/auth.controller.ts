@@ -10,7 +10,7 @@ import {
 import { FtGuard, JwtGuard } from './guard';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { GetToken, GetUser } from './decorator';
+import { GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 
