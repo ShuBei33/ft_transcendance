@@ -110,8 +110,6 @@ export class DiscussionService {
                     { userId2: userId },
                   ], }
             })
-            if (discussions.length === 0) // strict equality operator
-                error.notFound("You don\'t have any discussions yet.");
             return discussions;
         }
         catch (e) {
@@ -138,8 +136,6 @@ export class DiscussionService {
             const messages = await this.prisma.discussionMsg.findMany({
                 where: { discussionId: discId }
             })
-            if (messages.length === 0) // strict equality operator
-                error.notFound("There aren\'t any messages at the moment.")
             return messages;
         }
         catch (e) {
