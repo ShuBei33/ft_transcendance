@@ -40,3 +40,30 @@
     font-weight: 800;
     line-height: normal;
 }
+
+.small-rectangle {
+    width: 141px;
+    height: 29px;
+    flex-shrink: 0;
+    border-radius: 7px;
+    border: none;
+    background: rgba(255, 255, 255, 0.20);
+    color: #FFF;
+    font-family: 'Noto Sans Tamil';
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.plus {
+    width: 57px;
+    height: 57px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.20);
+    background: radial-gradient(95.61% 95.61% at 50.00% 4.39%, rgba(255, 0, 0, 0.30) 0%, rgba(138, 5, 5, 0.00) 100%), linear-gradient(180deg, #FF004C 0%, #D90041 100%);
+    color: #FFF;
+    font-size: 45px;
+    text-align: center;
+}

@@ -7,13 +7,12 @@
   const password = field("password", "", [required()]);
   const loginForm = form(email, password);
   let redirectTo = "http://localhost:5500/auth/signin42";
-  import { goto } from "$app/navigation";
 </script>
 
   <div class="grid-container">
     <div id="lhs"></div>
     <div id="rhs">
-      <h1>Sign in</h1>
+      <h1 id="sign">Sign in</h1>
       <div id="small">
         <Button class="small-square"
           on:click={() =>
@@ -30,7 +29,7 @@
         <TestInput
           attributes={{
             type: "text",
-            placeholder: "@",
+            placeholder: "e-mail",
             name: "email",
           }}
           setter={email.set}
@@ -38,13 +37,13 @@
         <TestInput
           attributes={{
             type: "password",
-            placeholder: "🔒",
+            placeholder: "password",
             name: "password",
           }}
           setter={password.set}
         />
         <div class="line-msg">
-          <div class="msg">Forgot your password ?</div><div class="link">Reset my password</div>
+          <div class="msg">Forgot your password ?</div><span><a href="/reset">Reset my password</a></span>
         </div>
         <Button class="red-rectangle"
           on:click={() =>
@@ -52,9 +51,15 @@
           >Log in</Button
         >
         <div class="line-msg2">
-          <div class="msg">Don't have an account yet ?</div><button class="link" on:click={() => goto('/signup')}>Sign up</button>
+          <div class="msg">Don't have an account yet ?</div><span><a href="/signup">Sign up</a></span>
         </div>
       </div>
+      <div class="guest">
+        <Button class="small-rectangle"
+          on:click={()=>
+            alert("login not implemented yet." + JSON.stringify($loginForm.summary))}
+          >Continue as guest</Button
+        ></div>
     </div>
   </div>
 
@@ -75,6 +80,16 @@
   display: grid;
   justify-content: center;
   align-content: center;
+}
+
+#sign {
+  color: #FFF;
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: normal;
+  text-align: center;
+  padding-bottom: 30px;
 }
 
 #small {
@@ -98,6 +113,7 @@
   font-weight: 400;
   line-height: normal;
   text-align: center;
+  margin-top: 4px;
 }
 
 .line-msg {
@@ -110,31 +126,34 @@
 }
 
 .line-msg2 {
-  -webkit-appearance: none;
-	appearance: none;
   display: flex;
   justify-content: space-around;
   text-align: center;
-  margin: 30px;
+  margin: 35px;
   margin-top: -10px;
   margin-bottom: 7px;
 }
 
-.link {
+a {
   color: #FFF;
-  font-family: 'Noto Sans Tamil';
-  font-size: 14px;
+  outline: none;
+  text-decoration: none;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
   text-align: center;
-  margin-top: -2px;
+
 }
 
-button {
-  background-color: #2C2C33;
-  border: 1px solid #2C2C33;
-  color: #eee;
+a:hover {
+  text-decoration: underline;
+}
+
+.guest {
+  display: flex;
+  justify-content: center;
+  margin-top: 13px;
 }
 
 </style>

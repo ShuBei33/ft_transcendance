@@ -31,6 +31,12 @@
             .catch(() => (allowSlot = false));
         } else allowSlot = true;
         break;
+      case "signup":
+        allowSlot = true;
+        break;
+      case "onboard":
+        allowSlot = true;
+        break;
       case "callback":
         if (!isAuthenticated && retrivedToken)
           goto(`/callback?token=${retrivedToken}`)
