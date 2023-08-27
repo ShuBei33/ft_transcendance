@@ -100,7 +100,7 @@ export class ChannelService {
             const nonPrivateChannels = await this.prisma.channel.findMany({
                 where: {
                     NOT: { visibility: 'PRIVATE' },
-                }
+                },
             });
             return nonPrivateChannels;
         }
@@ -122,10 +122,9 @@ export class ChannelService {
                     NOT: {
                         status: 'BANNED'
                     }
-                }
+                },
+                include: { channel: true } // display channel info
             })
-            // if (memberships.length === 0) // strict equality operator
-            //     error.notFound("You haven't subscribed to any channels yet.") we want to return empty objs
             return memberships;
         }
         catch (e) {
@@ -154,8 +153,8 @@ export class ChannelService {
             const messages = await this.prisma.channelMsg.findMany({
                 where: { channelId }
             })
-            if (messages.length === 0) // strict equality operator
-                error.notFound("There aren't any messages at the moment.")
+            // if (messages.length === 0) // strict equality operator
+            //     error.notFound("There aren't any messages at the moment.")
             return messages;
         }
         catch (e) {
@@ -281,7 +280,8 @@ export class ChannelService {
                 else if (invited.invitedToChan == 'BLOCKED') {
                     error.hasConflict("You cannot send invitations to this person.")
                 }
-                error.hasConflict("This person is already a member of this channel.");
+                error.hasConflict("This person is already a member of this channel.");            // if (messages.length === 0) // strict equality operator
+                //     error.notFound("There aren't any messages at the moment.")
             }
             await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
         }
