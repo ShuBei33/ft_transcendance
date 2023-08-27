@@ -9,7 +9,7 @@
   let redirectTo = "http://localhost:5500/auth/signin42";
 </script>
 
-  <div class="grid-container">
+<div class="grid-container">
     <div id="lhs"></div>
     <div id="rhs">
       <h1 id="sign">Sign in</h1>

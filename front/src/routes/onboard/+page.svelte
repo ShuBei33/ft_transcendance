@@ -4,8 +4,15 @@
   import TestInput from "../login/testInput.svelte";
   import Button from "../../components/button/button.svelte";
   const nickname = field("nickname", "", [required()]);
+  let redirectTo = "http://localhost:5500/auth/signin42";
 </script>
 
+<div class="back">
+  <Button class="red-mini-square"
+    on:click={() =>
+      window.location.href = redirectTo}
+    >-</Button>
+</div>
 <div class="flex-container">
   <div>
     <h1 id="text">Welcome ! Feel free to customize your nickname and avatar.</h1>
@@ -22,7 +29,7 @@
         <div class="avatar"></div>
       </div>
       <div class="ready">
-        <Button class="plus"
+        <Button class="red-mini-square"
           on:click={() =>
           alert("This is not implemented yet.")}
         >+</Button></div>
@@ -41,6 +48,11 @@
       flex-direction: column;
       width: 100%;
       height: inherit;
+    }
+
+    .back {
+      margin-top: 10px;
+      margin-left: 10px;
     }
 
     #text {

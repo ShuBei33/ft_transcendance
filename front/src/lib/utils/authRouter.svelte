@@ -37,6 +37,9 @@
       case "onboard":
         allowSlot = true;
         break;
+      case "lobby":
+        allowSlot = true;
+        break;
       case "callback":
         if (!isAuthenticated && retrivedToken)
           goto(`/callback?token=${retrivedToken}`)
