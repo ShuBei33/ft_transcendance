@@ -73,7 +73,7 @@ export class DiscussionService {
             if (userStatus !== 'NORMAL')
                 error.notAuthorized('You cannot send a message at the moment.');
 
-            // create new instance: userId is the one sending
+            // create new instance: userId is the sender
             const newDiscussionMSG = await this.prisma.discussionMsg.create({
                 data: {
                     content,

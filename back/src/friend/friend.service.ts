@@ -153,7 +153,8 @@ export class FriendService {
 
         console.log('Friend request denied');
         // Return a placeholder Friendship object as it's customary to return something even in the case of denial
-        return { id: -1, inviteStatus: 'REJECT', senderId: -1, receiverId: -1 }; // log-back says error
+        return { id: -1, inviteStatus: 'REJECT', senderId: -1, receiverId: -1, 
+                countResendSndr: 0, countResendRcvr: 0, senderIsBlocked: false, receiverIsBlocked: false };
       }
     } catch (err: any) {
       throw new Error(err.message);
