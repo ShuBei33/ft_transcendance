@@ -96,10 +96,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 	@SubscribeMessage("messageToRoom")
 	async caseToRoom(client: Socket, payload: { id: string, message: string}): Promise<void> {
-		
+		this.logger.log("message received ok bref", payload);
 		const writer = this.socketService.getUser(payload.id);
 		const writerChanUsr = await this.chanService.getChanUsr(Number(writer.id), Number(payload.id));
-		
 		if (writerChanUsr.status == 'NORMAL')
 			this.wss.to(payload.id).emit("message", payload.message);
 	}

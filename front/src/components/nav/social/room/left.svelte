@@ -11,9 +11,16 @@
       active: $ui.chat.room.labelFocusId == id,
     };
   };
+
+  $: channels = $data.myChannels.map((chanUsr) => chanUsr.channel);
+
+  onMount(() => {
+    if ($ui.chat.room.labelFocusId == -1 && $data.myChannels.length)
+      $ui.chat.room.labelFocusId = $data.myChannels[0].channel.id;
+  });
 </script>
 
-{#each get(data)["channels"] as channel}
+{#each channels as channel}
   <button
     class={classNames(labelClassNameObject(channel.id))}
     on:click={() => ($ui.chat.room.labelFocusId = channel.id)}

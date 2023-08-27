@@ -1,24 +1,35 @@
 <script lang="ts">
   import { ui, data } from "$lib/stores";
   import { onMount } from "svelte";
+  import { events } from "$lib/stores/socket";
   let value = "";
-  onMount(() => {
-    if ($ui.chat.room.labelFocusId == -1 && $data.channels.length)
-      $ui.chat.room.labelFocusId = $data.channels[0].id;
-  });
-  const handleInputSubmit = () => {
-    console.log(value);
+
+  $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
+  $: console.log(value);
+  $: chatSocket = $events;
+  $: console.log(chatSocket);
+
+  const handleInput = (key: string) => {
+    if (key == "Enter") {
+      chatSocket!.emit("messageToRoom", {
+        id: String($ui.chat.room.labelFocusId),
+        message: value,
+      });
+      value = "";
+    }
   };
 </script>
 
 <div class="messages-container">
   <div class="messages-section" />
   <div class="input-section">
-    <input
-      role="textbox"
-      bind:value
-      on:keypress={(k) => k.key == "Enter" && handleInputSubmit()}
-    />
+    {#if chatSocket}
+      <input
+        role="textbox"
+        bind:value
+        on:keypress={(k) => handleInput(k.key)}
+      />
+    {/if}
   </div>
 </div>
 
