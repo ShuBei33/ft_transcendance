@@ -127,9 +127,12 @@ export interface ChanUsr {
   updateAt: Date;
   user: User;
   userId: number;
-  channel?: Channel | null;
   chanId: number;
   role: ChanUsrRole;
   status: ChanUsrStatus;
   statusDuration?: Date | null;
 }
+
+export type ChanUserExtended = Channel & {
+  channel?: Channel | null;
+};

@@ -1,7 +1,18 @@
 <script lang="ts">
-  import { ui } from "$lib/stores/ui";
-  import LeftRoom from "./left-ROOM.svelte";
+  import { ui, data } from "$lib/stores";
+  import LeftRoom from "./room/left.svelte";
+  import RightRoom from "./room/right.svelte";
+  import { classNames, type ClassNamesObject } from "$lib/utils/classNames/";
+  import { onMount } from "svelte";
+
   const tabsName = ["DM", "ROOM", "FRIEND"] as const;
+
+  $: tabClassNameObject = (name: string): ClassNamesObject => {
+    return {
+      "tab-toggle": true,
+      active: $ui.chat.selected == name,
+    };
+  };
 </script>
 
 <main>
@@ -11,14 +22,31 @@
       <div class="left">
         <div class="top-left">
           {#each tabsName as tab}
-            <button on:click={() => ($ui.chat.selected = tab)}>
+            <button
+              class={classNames(tabClassNameObject(tab))}
+              on:click={() => ($ui.chat.selected = tab)}
+            >
               {tab}
             </button>
           {/each}
         </div>
-        <svelte:component this={LeftRoom} />
+        {#if $ui.chat.selected == "ROOM"}
+          <svelte:component this={LeftRoom} />
+        {:else if false}
+          <!-- else if content here -->
+        {:else}
+          <!-- else content here -->
+        {/if}
       </div>
-      <div class="right" />
+      <div class="right">
+        {#if $ui.chat.selected == "ROOM"}
+          <svelte:component this={RightRoom} />
+        {:else if false}
+          <!-- else if content here -->
+        {:else}
+          <!-- else content here -->
+        {/if}
+      </div>
     </div>
   {/if}
 </main>
@@ -54,15 +82,29 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
+    gap: 0.5em;
   }
 
   .right {
     grid-area: right;
+    padding: 1em;
   }
   .top-left {
     display: flex;
     flex-direction: row;
     column-gap: 0.5em;
     justify-content: center;
+  }
+
+  .tab-toggle {
+    cursor: pointer;
+    padding: 0.5em;
+    &:hover {
+      background-color: grey;
+    }
+  }
+
+  .active {
+    background-color: grey;
   }
 </style>
