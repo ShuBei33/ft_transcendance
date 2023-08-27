@@ -23,11 +23,9 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
-  async checkJWT(@GetUser() user, @GetToken() tokens) {
+  async checkJWT(@GetUser() user) {
     console.log('user: ', user);
-    console.log('tokens: ', tokens);
-    const { createdAt, updateAt, twoFA, ...rest } = user;
-    return { user: rest };
+    return { user: user };
   }
 
   @UseGuards(FtGuard)

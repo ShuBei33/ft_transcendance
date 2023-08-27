@@ -28,7 +28,6 @@ export class ChannelController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	async getAll(
-		// @GetUser() user: User,
 		@Res() res: Response,
 	) {
 		const channelList = await this.channelService.getAllChannels();

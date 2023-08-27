@@ -8,7 +8,7 @@ import { Logger } from '@nestjs/common';
 import { UserLite } from './user/dto';
 import { ENS } from './sockets/dto';
 
-@WebSocketGateway({ namespace: '/chat', cors: '*:*', })
+@WebSocketGateway({ cors: '*:*', })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(
