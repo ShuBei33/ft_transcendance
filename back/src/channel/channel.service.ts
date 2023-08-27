@@ -34,7 +34,7 @@ export class ChannelService {
             return newChanUsr;
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
-                error.hasConflict(`User with userId '${userId}' already exists in channel '${chanId}'.`);
+                error.hasConflict("Channel user already exists.");
             } else
                 error.unexpected(e);
         }
@@ -55,7 +55,7 @@ export class ChannelService {
 
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
-                error.hasConflict(`Channel ${newChanDto.name} already exists.`);
+                error.hasConflict("Channel already exists.");
             } else
                 error.unexpected(e);
         }
@@ -82,7 +82,7 @@ export class ChannelService {
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
-                error.notAuthorized(`Channel ID ${chanId} is not accessible for this user.`);
+                error.notAuthorized("This channel is not accessible to this user.");
             }
             else
                 error.unexpected(e);
@@ -124,8 +124,8 @@ export class ChannelService {
                     }
                 }
             })
-            if (memberships.length === 0) // strict equality operator
-                error.notFound('You haven\'t subscribed to any channels yet.')
+            // if (memberships.length === 0) // strict equality operator
+            //     error.notFound("You haven't subscribed to any channels yet.") we want to return empty objs
             return memberships;
         }
         catch (e) {
@@ -155,12 +155,12 @@ export class ChannelService {
                 where: { channelId }
             })
             if (messages.length === 0) // strict equality operator
-                error.notFound('There aren\'t any messages at the moment.')
+                error.notFound("There aren't any messages at the moment.")
             return messages;
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized('You are not allowed to access this channel.')
+                error.notAuthorized("You are not allowed to access this channel.")
             else
                 if (e instanceof HttpException)
                     throw e;
@@ -196,17 +196,17 @@ export class ChannelService {
             })
             if (chanUsr) {
                 if (chanUsr.invitedToChan == 'REJECT')
-                    error.hasConflict('You have already declined this invitation.');
+                    error.hasConflict("You have already declined this invitation.");
                 else if (chanUsr.invitedToChan == 'BLOCKED')
-                    error.hasConflict('You have already blocked this invitation.');
-                error.hasConflict('You are already a member of this channel.');
+                    error.hasConflict("You have already blocked this invitation.");
+                error.hasConflict("You are already a member of this channel.");
             }
             switch (channel.visibility) {
                 case 'PROTECTED':
                     // check that user provided correct password
                     const hash = joinChanDto;
                     if (hash != channel.hash)
-                        error.notAuthorized(`Password mismatch.`);
+                        error.notAuthorized("Password mismatch.");
                     else
                         await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
                     break;
@@ -220,7 +220,7 @@ export class ChannelService {
                         },
                     });
                     if (!invitation)
-                        error.notAuthorized(`You have not been invited to this channel.`);
+                        error.notAuthorized("You have not been invited to this channel.");
                     else
                         // we don't recreate a new chanUsr, we just update it
                         await this.prisma.chanUsr.update({
@@ -234,7 +234,7 @@ export class ChannelService {
             }
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
-                error.notFound(`Channel not found.`);
+                error.notFound("Channel not found.");
             else if (e instanceof HttpException)
                 throw e;
             else
@@ -273,21 +273,23 @@ export class ChannelService {
             })
             if (invited) {
                 if (invited.invitedToChan == 'PENDING') {
-                    error.hasConflict('This person has already been invited.')
+                    error.hasConflict("This person has already been invited.")
                 }
                 else if (invited.invitedToChan == 'REJECT') {
-                    error.hasConflict('This person has already refused your invitation.')
+                    error.hasConflict("This person has already refused your invitation.")
                 }
                 else if (invited.invitedToChan == 'BLOCKED') {
-                    error.hasConflict('You cannot send invitations to this person.')
+                    error.hasConflict("You cannot send invitations to this person.")
                 }
-                error.hasConflict('This person is already a member of this channel.');
+                error.hasConflict("This person is already a member of this channel.");
             }
             await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized("Not admin or owner.");
+            else if (e instanceof PrismaClientValidationError)
+                error.badRequest("You sent invalid data.");
             else {
                 error.unexpected(e);
             }
@@ -350,10 +352,12 @@ export class ChannelService {
                     role: { in: ['ADMIN', 'OWNER'] },
                 }
             })
+            // delete hash from the db if switching to public of private
             if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
                 channelModified.hash = null;
             if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
-                error.badRequest('You must provide a password.');
+                error.badRequest("You must provide a password.");
+            
             await this.prisma.channel.update({
                 where: {
                     id: chanId,
@@ -363,11 +367,13 @@ export class ChannelService {
                 }
             })
             if (!channelModified.name && !channelModified.visibility && !channelModified.hash)
-                error.notFound('You must provide at least one element.');
+                error.notFound("You must provide at least one element.");
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized('Unauthorized operation.');
+                error.notAuthorized("Unauthorized operation.");
+            else if (e instanceof PrismaClientValidationError)
+                error.badRequest("You sent invalid data.");
             else if (e instanceof HttpException)
                 throw e;
             else
@@ -392,6 +398,20 @@ export class ChannelService {
                     role: { in: ['ADMIN', 'OWNER'] },
                 }
             })
+            // check the userToModify is not owner of the channel
+            const isUserOwner = await this.prisma.chanUsr.findFirst({
+                where: {
+                    userId: userToModify.id,
+                    chanId,
+                    OR: [
+                        { invitedToChan: 'ACCEPTED' },
+                        { invitedToChan: null },
+                    ],
+                    role: { in: ['OWNER'] },
+                }
+            })
+            if (isUserOwner)
+                error.notAuthorized("You cannot modify a channel owner's status.")
             await this.prisma.chanUsr.update({
                 where: {
                     id: userToModify.id,
@@ -401,13 +421,13 @@ export class ChannelService {
                 }
             })
             if (!userToModify.role && !userToModify.status)
-                error.notFound('You must provide at least one element.');
+                error.notFound("You must provide at least one element.");
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized('Unauthorized operation.');
+                error.notAuthorized("Unauthorized operation.");
             else if (e instanceof PrismaClientValidationError)
-                error.notFound('Channel User not found.');
+                error.badRequest("You did not send the correct information.");
             else if (e instanceof HttpException)
                 throw e;
             else
@@ -439,7 +459,7 @@ export class ChannelService {
         }
         catch (e) {
             if (e instanceof PrismaClientKnownRequestError)
-                error.notFound('Channel User not found.');
+                error.notFound("Channel User not found.");
             else
                 error.unexpected(e);
         }
