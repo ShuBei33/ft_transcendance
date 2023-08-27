@@ -9,10 +9,9 @@ import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { ChannelService } from './channel.service';
-import { DTOCreateChan, DTOJoinChan, DTOInviteChan, DTOUpdateChan, DTOChanUsr } from './dto';
+import { DTOCreateChan, DTOJoinChan, DTOInviteChan, DTOUpdateChan, DTOUpdateChanUsr } from './dto';
 import { ChanVisibility, ChanUsrRole } from '@prisma/client';
 import { success } from 'src/utils/utils_success';
-// import { channel } from 'diagnostics_channel';
 
 // const logger = new Logger();
 
@@ -154,7 +153,7 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async setPrivileges(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() usrToModify: DTOChanUsr,
+		@Body() usrToModify: DTOUpdateChanUsr,
 		@GetUser() user: User,
 		@Res() res: Response
 	) {

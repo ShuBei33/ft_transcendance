@@ -11,9 +11,10 @@ export enum ChanVisibility {
   PRIVATE = "PRIVATE",
 }
 
-export enum ChanUsrStatus {
+export enum UserStatusMSGs {
   NORMAL = "NORMAL",
   MUTED = "MUTED",
+  BLOCKED = "BLOCKED",
   BANNED = "BANNED",
 }
 
@@ -129,7 +130,7 @@ export interface ChanUsr {
   userId: number;
   chanId: number;
   role: ChanUsrRole;
-  status: ChanUsrStatus;
+  status: UserStatusMSGs;
   statusDuration?: Date | null;
 }
 
