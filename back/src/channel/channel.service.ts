@@ -153,8 +153,6 @@ export class ChannelService {
             const messages = await this.prisma.channelMsg.findMany({
                 where: { channelId }
             })
-            // if (messages.length === 0) // strict equality operator
-            //     error.notFound("There aren't any messages at the moment.")
             return messages;
         }
         catch (e) {
