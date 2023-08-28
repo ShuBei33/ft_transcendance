@@ -104,10 +104,13 @@ export interface Channel {
   createdAt: Date;
   updatedAt: Date;
   visibility: ChanVisibility;
-  channelUsers?: ChanUsr[];
-  channelMsgs?: ChannelMsg[];
   hash?: string | null;
 }
+
+export type ChannelExtended = Channel & {
+  channelUsers?: ChanUsr[];
+  channelMsgs?: ChannelMsg[];
+};
 
 export interface ChannelMsg {
   id: number;
@@ -125,9 +128,12 @@ export interface ChanUsr {
   updatedAt: Date;
   user: User;
   userId: number;
-  channel?: Channel | null;
   chanId: number;
   role: ChanUsrRole;
   status: UserStatusMSGs;
   statusDuration?: Date | null;
 }
+
+export type ChanUserExtended = Channel & {
+  channel?: Channel | null;
+};

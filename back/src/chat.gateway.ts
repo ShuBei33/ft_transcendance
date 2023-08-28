@@ -10,7 +10,7 @@ import { UserLite } from './user/dto';
 import { ENS } from './sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
 
-@WebSocketGateway({ namespace: '/chat', cors: '*:*', })
+@WebSocketGateway({ cors: '*:*', })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(

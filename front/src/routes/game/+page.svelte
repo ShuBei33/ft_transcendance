@@ -199,10 +199,6 @@
     function gameLoop() {
       update();
       draw();
-      console.log("ballX", ballX);
-      console.log("ballY", ballY);
-      console.log("playerTwo", playerTwoPoints);
-      console.log("playerOne", playerOnePoints);
       requestAnimationFrame(gameLoop);
     }
 
