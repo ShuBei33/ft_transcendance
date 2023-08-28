@@ -1,4 +1,4 @@
-// import { User, Channel } from '@prisma/client';
+import { User, Channel } from '@prisma/client';
 
 // export class ChannelLite {
 // 	id: Channel['id'];
@@ -9,5 +9,5 @@
 export class ChannelLite {
 	id: number;
 	name: string;
-	visibility: number;
+	visibility:  Channel['visibility'];
 }

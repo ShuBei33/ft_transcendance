@@ -100,34 +100,24 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async getAllChannels(): Promise<Channel[]> {
+    async getAllChannels(): Promise<ChannelLite[]> {
         try {
-            const nonPrivateChannels = await this.prisma.channel.findMany({
+            const nonPrivChannels = await this.prisma.channel.findMany({
                 where: {
                     NOT: { visibility: 'PRIVATE' },
                 },
             });
-            return nonPrivateChannels;
+            const liteChannels: ChannelLite[] = nonPrivChannels.map(channel => {
+                const { createdAt, updatedAt, hash, ...rest } = channel;
+                return rest;
+            });
+    
+            return liteChannels;
         }
         catch (e) {
             error.unexpected(e);
         }
     }
-
-    // async getAllChannels(): Promise<ChannelLite[]> {
-    //     try {
-    //         const nonPrivChannels = await this.prisma.channel.findMany({
-    //             where: {
-    //                 NOT: { visibility: 'PRIVATE' },
-    //             },
-    //         });
-    //         const { createdAt, updatedAt, hash, ...rest } = nonPrivChannels;
-    //         return rest;
-    //     }
-    //     catch (e) {
-    //         error.unexpected(e);
-    //     }
-    // }
 
     async getMyChannels(userId: number): Promise<ChanUsr[]> {
         try {
@@ -143,7 +133,7 @@ export class ChannelService {
                         status: 'BANNED'
                     }
                 },
-                include: { channel: true } // display channel info
+                // include: { channel: true } // display channel info
             })
             return memberships;
         }
