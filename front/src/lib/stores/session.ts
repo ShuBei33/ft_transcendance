@@ -8,6 +8,7 @@ const TOKEN_EXPIRATION = 7;
 export const token = writableHook<string>({
   initialValue: "",
   onSet(value) {
+    console.log("!!token set", value);
     Cookies.set(COOKIE_TOKEN_NAME, value, { expires: TOKEN_EXPIRATION });
   },
   onUpdate(_, newValue) {

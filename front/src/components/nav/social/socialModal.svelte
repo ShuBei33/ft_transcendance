@@ -4,7 +4,9 @@
   import RightRoom from "./room/right.svelte";
   import { classNames, type ClassNamesObject } from "$lib/utils/classNames/";
   import { onMount } from "svelte";
+  import type { Socket } from "socket.io-client";
 
+  export let chatSocket: Socket | undefined;
   const tabsName = ["DM", "ROOM", "FRIEND"] as const;
 
   $: tabClassNameObject = (name: string): ClassNamesObject => {
@@ -16,7 +18,7 @@
 </script>
 
 <main>
-  {#if $ui.chat.toggle}
+  {#if $ui.chat.toggle && chatSocket}
     <div class="social-modal">
       <div class="header" />
       <div class="left">
@@ -40,7 +42,7 @@
       </div>
       <div class="right">
         {#if $ui.chat.selected == "ROOM"}
-          <svelte:component this={RightRoom} />
+          <svelte:component this={RightRoom} {chatSocket} />
         {:else if false}
           <!-- else if content here -->
         {:else}

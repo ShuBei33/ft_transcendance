@@ -25,6 +25,7 @@
     };
     axiosConfig.set(config);
     axiosInstance.subscribe((_axios) => {
+      console.log("!toke for callback", retrivedToken);
       _axios
         .get("/auth/checkJWT")
         .then((res) => {

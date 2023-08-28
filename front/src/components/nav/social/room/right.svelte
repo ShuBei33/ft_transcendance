@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { ui, data } from "$lib/stores";
+  import { ui, data, token } from "$lib/stores";
   import { onMount } from "svelte";
   import { events } from "$lib/stores/socket";
+  import { io } from "socket.io-client";
+  import type { Socket } from "socket.io-client";
+
+  export let chatSocket: Socket;
   let value = "";
 
   $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
-  $: console.log(value);
-  $: chatSocket = $events;
-  $: console.log(chatSocket);
 
   const handleInput = (key: string) => {
     if (key == "Enter") {
-      chatSocket!.emit("messageToRoom", {
+      console.log(chatSocket.connected);
+      chatSocket.emit("messageToRoom", {
         id: String($ui.chat.room.labelFocusId),
         message: value,
       });
@@ -23,13 +25,7 @@
 <div class="messages-container">
   <div class="messages-section" />
   <div class="input-section">
-    {#if chatSocket}
-      <input
-        role="textbox"
-        bind:value
-        on:keypress={(k) => handleInput(k.key)}
-      />
-    {/if}
+    <input role="textbox" bind:value on:keypress={(k) => handleInput(k.key)} />
   </div>
 </div>
 

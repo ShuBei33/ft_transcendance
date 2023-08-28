@@ -6,7 +6,8 @@
   import { user } from "$lib/stores";
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
-  import { ui } from "$lib/stores/ui";
+  import { ui, token } from "$lib/stores";
+  import { io } from "socket.io-client";
 
   onMount(() => {
     console.log($user);
@@ -39,14 +40,32 @@
       href: "/game",
     },
   ];
+
+  $: chatSocket = io("http://localhost:5500/chat", {
+    auth: {
+      token: $token,
+    },
+  })
+    .on("connect", () => {
+      console.log("connect ok");
+    })
+    .on("disconnect", () => {
+      console.log("I identify as disconnected");
+    })
+    .on("message", (data: any) => {
+      console.log("message received", data);
+    });
 </script>
 
 <AuthRouter>
+  <button on:click={() => token.clear()}>logout</button>
   <span slot="nav">
     <Nav {navItems} />
   </span>
   <slot />
-  <SocialModal />
+  {#if chatSocket.connected}
+    <SocialModal {chatSocket} />
+  {/if}
   <div class="bottom-acion-section">
     <button
       class="chat-toggle"
