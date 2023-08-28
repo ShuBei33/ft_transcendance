@@ -16,7 +16,7 @@ import { UserStatus } from '@prisma/client';
 import { SocketService } from './sockets/socket.service';
 import { ENS } from './sockets/dto';
 
-@WebSocketGateway({ cors: '*:*' })
+@WebSocketGateway({ namespace: "/lobby", cors: '*:*' })
 export class LobbyGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
