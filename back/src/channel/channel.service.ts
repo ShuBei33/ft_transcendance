@@ -133,7 +133,10 @@ export class ChannelService {
                         status: 'BANNED'
                     }
                 },
-                // include: { channel: true } // display channel info
+                include: { channel: { select: {
+                                                id: true,
+                                                name: true,
+                                                visibility: true, } } }
             })
             return memberships;
         }
