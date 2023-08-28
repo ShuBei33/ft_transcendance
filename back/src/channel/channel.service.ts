@@ -5,6 +5,8 @@ import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
 import { ChanUsrRole, UserStatusMSGs, ChanVisibility, StatusInv } from '@prisma/client';
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { error } from 'src/utils/utils_error';
+import * as bcrypt from 'bcrypt';
+import { ChannelLite } from './dto/channelLite';
 
 const logger = new Logger();
 
@@ -42,15 +44,18 @@ export class ChannelService {
 
     async createChannel(userId: number, newChanDto: DTOCreateChan): Promise<Channel> {
         try {
-            const { name, visibility } = newChanDto;
+            const { name, visibility, hash } = newChanDto;
             const newChannel = await this.prisma.channel.create({
                 data: {
                     name,
                     visibility,
+                    hash
                 }
             });
-            await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
+            if (hash)
+                newChannel.hash = await bcrypt.hash(hash, 10);
 
+            await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
             return newChannel;
 
         } catch (e) {
@@ -95,14 +100,19 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async getAllChannels(): Promise<Channel[]> {
+    async getAllChannels(): Promise<ChannelLite[]> {
         try {
-            const nonPrivateChannels = await this.prisma.channel.findMany({
+            const nonPrivChannels = await this.prisma.channel.findMany({
                 where: {
                     NOT: { visibility: 'PRIVATE' },
                 },
             });
-            return nonPrivateChannels;
+            const liteChannels: ChannelLite[] = nonPrivChannels.map(channel => {
+                const { createdAt, updatedAt, hash, ...rest } = channel;
+                return rest;
+            });
+    
+            return liteChannels;
         }
         catch (e) {
             error.unexpected(e);
@@ -123,7 +133,10 @@ export class ChannelService {
                         status: 'BANNED'
                     }
                 },
-                include: { channel: true } // display channel info
+                include: { channel: { select: {
+                                                id: true,
+                                                name: true,
+                                                visibility: true, } } }
             })
             return memberships;
         }
@@ -202,7 +215,7 @@ export class ChannelService {
                 case 'PROTECTED':
                     // check that user provided correct password
                     const hash = joinChanDto;
-                    if (hash != channel.hash)
+                    if (!await bcrypt.compare(hash, channel.hash))
                         error.notAuthorized("Password mismatch.");
                     else
                         await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
@@ -350,12 +363,15 @@ export class ChannelService {
                     role: { in: ['ADMIN', 'OWNER'] },
                 }
             })
-            // delete hash from the db if switching to public of private
+            // delete hash from the db if switching from protected to public / private
             if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
                 channelModified.hash = null;
             if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
                 error.badRequest("You must provide a password.");
             
+            // handle hash update
+            if (channelModified.hash)
+                channelModified.hash = await bcrypt.hash(channelModified.hash, 10);
             await this.prisma.channel.update({
                 where: {
                     id: chanId,

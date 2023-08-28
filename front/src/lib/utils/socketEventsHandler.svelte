@@ -7,7 +7,7 @@
 
   onMount(() => {
     if ($events) return;
-    const socket = io("http://localhost:5500", {
+    const socket = io("http://localhost:5500/chat", {
       auth: {
         token: $token,
       },

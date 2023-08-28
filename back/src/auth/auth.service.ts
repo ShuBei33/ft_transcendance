@@ -33,7 +33,7 @@ export class AuthService {
 	async get_user(login: string): Promise<UserLite> {
 		try {
 			const user = await this.prisma.user.findFirst({ where: { login: login } });
-			const { createdAt, updateAt, twoFA, status, avatar, rank, ...rest } = user;
+			const { createdAt, updatedAt, twoFA, status, avatar, rank, ...rest } = user;
 			return rest;
 		} catch (error) {
 			logger.error("Erreur lors de la recuperation du user");
@@ -57,7 +57,7 @@ export class AuthService {
 			rank: 1,
 		},
 		});
-		const { createdAt, updateAt, twoFA, avatar, rank, ...rest } = user;
+		const { createdAt, updatedAt, twoFA, avatar, rank, ...rest } = user;
 		return rest;
 	}
 
