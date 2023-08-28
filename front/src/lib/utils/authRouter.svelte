@@ -6,6 +6,7 @@
   import Cookies from "js-cookie";
   import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
   import SocketEventsHandler from "./socketEventsHandler.svelte";
+  import RetrieveUserData from "./retrieveUserData.svelte";
 
   let allowSlot = false;
 
@@ -70,6 +71,7 @@
     {#if allowSlot}
       {#if $user && $axiosConfig}
         <SocketEventsHandler />
+        <RetrieveUserData />
         <slot name="nav" />
       {/if}
       <slot />

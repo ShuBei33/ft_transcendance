@@ -15,6 +15,7 @@ import { ChatGateway } from './chat.gateway';
 import { UserService } from './user/user.service';
 import { DiscussionService } from './discussion/discussion.service';
 import { ChannelService } from './channel/channel.service';
+import { FriendService } from './friend/friend.service';
 import { SocketService } from './sockets/socket.service';
 
 @Module({
@@ -37,6 +38,7 @@ import { SocketService } from './sockets/socket.service';
 		UserService,
 		DiscussionService,
 		ChannelService,
+		FriendService,
 		SocketService
 	],
 	exports: []

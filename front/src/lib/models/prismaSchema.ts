@@ -11,9 +11,10 @@ export enum ChanVisibility {
   PRIVATE = "PRIVATE",
 }
 
-export enum ChanUsrStatus {
+export enum UserStatusMSGs {
   NORMAL = "NORMAL",
   MUTED = "MUTED",
+  BLOCKED = "BLOCKED",
   BANNED = "BANNED",
 }
 
@@ -103,10 +104,13 @@ export interface Channel {
   createdAt: Date;
   updateAt: Date;
   visibility: ChanVisibility;
-  channelUsers?: ChanUsr[];
-  channelMsgs?: ChannelMsg[];
   hash?: string | null;
 }
+
+export type ChannelExtended = Channel & {
+  channelUsers?: ChanUsr[];
+  channelMsgs?: ChannelMsg[];
+};
 
 export interface ChannelMsg {
   id: number;
@@ -124,9 +128,12 @@ export interface ChanUsr {
   updateAt: Date;
   user: User;
   userId: number;
-  channel?: Channel | null;
   chanId: number;
   role: ChanUsrRole;
-  status: ChanUsrStatus;
+  status: UserStatusMSGs;
   statusDuration?: Date | null;
 }
+
+export type ChanUserExtended = Channel & {
+  channel?: Channel | null;
+};

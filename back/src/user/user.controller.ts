@@ -26,7 +26,6 @@ export class UserController {
         login: true,
       },
     });
-    console.log(id);
     return success.general(res, 'sucess', userRes);
   }
 }

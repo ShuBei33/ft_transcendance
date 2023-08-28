@@ -1,19 +1,22 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { DiscussionService } from 'src/discussion/discussion.service';
 import { ChannelService } from 'src/channel/channel.service';
-import { SocketService } from './sockets/socket.service';
-import { ChanUsr, Discussion } from '@prisma/client';
+import { SocketService } from 'src/sockets/socket.service';
+import { FriendService } from 'src/friend/friend.service';
+import { ChanUsr, Discussion, Friendship, User } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { UserLite } from './user/dto';
 import { ENS } from './sockets/dto';
+import { SubscribeMessage } from '@nestjs/websockets';
 
-@WebSocketGateway({ namespace: '/chat', cors: '*:*', })
+@WebSocketGateway({ cors: '*:*', })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(
 		private chanService: ChannelService,
 		private discService: DiscussionService,
+		private friendService: FriendService,
 		private socketService: SocketService
 	) {}
 
@@ -31,7 +34,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	handleConnection(client: Socket, ...args: any[]) {
 		const token = client.handshake.auth.token;
 		const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
-
 		if (!user) {
 			client.disconnect();
 			return;
@@ -83,12 +85,22 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	//     EVENTS    //
 	///////////////////
 
-	// @SubscribeMessage("message")
-	// caseMessage(client: Socket, payload: string): void {
-	// 	this.serv.emit("message", payload);
-	// }
-	// @SubscribeMessage("messageToRoom")
-	// caseToRoom(client: Socket, payload: any): void {
-	// 	this.serv.to(payload.destination).emit("message", payload.message);
-	// }
+	@SubscribeMessage("message")
+	async caseMessage(client: Socket, payload: {senderId: string, receiverId: string, message: string}): Promise<void> {
+
+		const friendList = await this.friendService.getFriendsList(Number(payload.senderId))
+
+		if (friendList.find(User => User.id === Number(payload.receiverId)))
+			this.wss.to(payload.receiverId).emit("message", payload.message);
+	}
+
+	@SubscribeMessage("messageToRoom")
+	async caseToRoom(client: Socket, payload: { id: string, message: string}): Promise<void> {
+		
+		const writer = this.socketService.getUser(payload.id);
+		const writerChanUsr = await this.chanService.getChanUsr(Number(writer.id), Number(payload.id));
+		
+		if (writerChanUsr.status == 'NORMAL')
+			this.wss.to(payload.id).emit("message", payload.message);
+	}
 };

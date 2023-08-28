@@ -7,11 +7,8 @@
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
 
-  console.log("callback");
-
   onMount(async () => {
-    if (!browser)
-      return ;
+    if (!browser) return;
     const retrivedToken = $page.url.searchParams.get("token");
     const redirect = $page.url.searchParams.get("redirect");
 
@@ -39,7 +36,6 @@
           goto("/login");
         });
     });
-    // const userApiInstance = axios.create(config);
   });
 </script>
 

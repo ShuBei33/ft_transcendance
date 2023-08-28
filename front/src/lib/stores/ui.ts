@@ -4,6 +4,10 @@ interface ui {
   chat: {
     toggle: boolean;
     selected: "DM" | "ROOM" | "FRIEND";
+    room: {
+      labelFocusId: number;
+      textInputMap: Map<number, string>;
+    };
   };
   game: {
     state: "NONE" | "PLAYING" | "QUEUE";
@@ -15,6 +19,10 @@ export const uiInitialValue: ui = {
   chat: {
     toggle: false,
     selected: "FRIEND",
+    room: {
+      textInputMap: new Map<number, string>(),
+      labelFocusId: -1,
+    },
   },
   game: {
     state: "NONE",
