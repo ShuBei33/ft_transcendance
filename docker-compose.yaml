@@ -24,7 +24,6 @@ services:
       - "${BACK_PORT:-5500}:${BACK_PORT:-5500}"
       - "5555:5555"
     restart: always
-    # command: "tail -f"
     command: /bin/sh -c "apk add bash; npm install; npm run start:dev"
     environment:
       BACK_PORT: ${BACK_PORT:-5500}
