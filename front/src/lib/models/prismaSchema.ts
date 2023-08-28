@@ -35,7 +35,7 @@ export interface User {
 export type UserExtended = User & {
   twoFA: boolean;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
   sentInvites?: Friendship[];
   receivedInvites?: Friendship[];
   asUser1?: Discussion[];
@@ -90,7 +90,7 @@ export interface Discussion {
 export interface DiscussionMsg {
   id: number;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
   content: string;
   user: User;
   userId: number;
@@ -102,7 +102,7 @@ export interface Channel {
   id: number;
   name: string;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
   visibility: ChanVisibility;
   channelUsers?: ChanUsr[];
   channelMsgs?: ChannelMsg[];
@@ -122,7 +122,7 @@ export interface ChannelMsg {
 export interface ChanUsr {
   id: number;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
   user: User;
   userId: number;
   channel?: Channel | null;

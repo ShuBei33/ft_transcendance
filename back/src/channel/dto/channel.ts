@@ -9,6 +9,8 @@ export class DTOCreateChan {
 	
 	@IsEnum(ChanVisibility)
 	visibility: Channel['visibility'];
+
+	hash?: Channel['hash'];
 }
 
 export class DTOJoinChan {
@@ -20,7 +22,7 @@ export class DTOInviteChan {
 	userId: User['id'];
 }
 
-export class DTOUpdateChan {	
+export class DTOUpdateChan {
 	name?: Channel['name'];
 	visibility?: Channel['visibility'];
 	hash?: Channel['hash'];
@@ -34,4 +36,3 @@ export class DTOUpdateChanUsr {
 	status?: UserStatusMSGs;
 	statusDuration?: Date;
 }
-
