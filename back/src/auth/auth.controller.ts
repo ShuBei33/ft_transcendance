@@ -10,7 +10,7 @@ import {
 import { FtGuard, JwtGuard } from './guard';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { GetToken, GetUser } from './decorator';
+import { GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 
@@ -23,11 +23,9 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
-  async checkJWT(@GetUser() user, @GetToken() tokens) {
-    // console.log('user: ', user);
-    // console.log('tokens: ', tokens);
-    const { createdAt, updateAt, twoFA, ...rest } = user;
-    return { user: rest };
+  async checkJWT(@GetUser() user) {
+    console.log('user: ', user);
+    return { user: user };
   }
 
   @UseGuards(FtGuard)

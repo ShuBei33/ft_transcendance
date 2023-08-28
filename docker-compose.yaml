@@ -3,8 +3,6 @@ services:
   postgres:
     container_name: ${DB_NAME:-db}
     image: postgres:latest
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -24,8 +22,7 @@ services:
       - "${BACK_PORT:-5500}:${BACK_PORT:-5500}"
       - "5555:5555"
     restart: always
-    # command: "tail -f"
-    command: /bin/sh -c "apk add bash; npm install; npm run start:dev"
+    command: /bin/sh -c "apk add bash; npm install; npx prisma generate && npx prisma migrate reset; npx prisma migrate dev --name build; npx prisma db seed; npm run start:dev"
     environment:
       BACK_PORT: ${BACK_PORT:-5500}
       CORS: ${CORS}
