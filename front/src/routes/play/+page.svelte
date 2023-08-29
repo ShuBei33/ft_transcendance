@@ -16,11 +16,11 @@
 <main>
   <h1>play page</h1>
   {#if $ui.game.state == "PLAYING"}
-    <svelte:component
-      this={GameInstance}
-      userId={$user && $user.id}
-      gameId={$ui.game.id}
-    />
+	<svelte:component
+	  this={GameInstance}
+	  userId={$user && $user.id}
+	  gameId={$ui.game.id}
+	/>
   {:else}
     <button on:click={() => handleQueueClick()}
       >{$ui.game.state == "NONE" ? "Queue" : "Leave queue"}</button

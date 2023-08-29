@@ -23,7 +23,7 @@ export async function load({ params }) {
       browser && goto("/404");
     });
   return {
-    id: "test",
+    id: params.id,
     user,
   };
 }

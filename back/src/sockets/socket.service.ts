@@ -43,19 +43,11 @@ export class SocketService {
   ///////////////////
 
   isConnected(uid: number, type: ENS) {
-    console.log(
-      [...this.clientsMap.entries()].find(
-        ([key, value]) => key.id === uid && value[type]?.id,
-      ),
-    );
-
     for (const [key, value] of this.clientsMap) {
-      if (key.id == uid) {
-        console.log('REAL TRUE ');
+      if (key.id == uid && value[type]) {
         return true;
       }
     }
-    console.log('REAL FALSE ');
     return false;
   }
 
@@ -77,7 +69,6 @@ export class SocketService {
       const decoded = this.jwt.verify(token, {
         secret: process.env.JWT_SECRET,
       });
-      logger.log('!decoded', decoded);
       return decoded.user;
     } catch (e) {
       return null;

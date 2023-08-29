@@ -5,7 +5,6 @@
   const email = field("email", "", [required()]);
   const password = field("password", "", [required()]);
   const loginForm = form(email, password);
-  // your script goes here
 </script>
 
 <main>

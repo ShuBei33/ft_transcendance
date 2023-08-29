@@ -24,12 +24,21 @@ export enum ChanUsrRole {
   OWNER = "OWNER",
 }
 
+export enum UserStatus {
+  OFFLINE = "OFFLINE",
+  ONLINE = "ONLINE",
+  OCCUPED = "OCCUPED",
+  INQUEUE = "INQUEUE",
+  INGAME = "INGAME",
+}
+
 export interface User {
   id: number;
   login: string;
   pseudo: string;
   avatar?: string | null;
   rank: number;
+  status: UserStatus;
 }
 
 export type UserExtended = User & {
@@ -108,8 +117,8 @@ export interface Channel {
 }
 
 export type ChannelExtended = Channel & {
-  channelUsers?: ChanUsr[];
-  channelMsgs?: ChannelMsg[];
+  channelUsers: ChanUserExtended[];
+  channelMsgs: ChannelMsg[];
 };
 
 export interface ChannelMsg {
@@ -126,7 +135,6 @@ export interface ChanUsr {
   id: number;
   createdAt: Date;
   updatedAt: Date;
-  user: User;
   userId: number;
   chanId: number;
   role: ChanUsrRole;
@@ -134,6 +142,7 @@ export interface ChanUsr {
   statusDuration?: Date | null;
 }
 
-export type ChanUserExtended = Channel & {
-  channel?: Channel | null;
+export type ChanUserExtended = ChanUsr & {
+  channel: ChannelExtended;
+  user: User;
 };

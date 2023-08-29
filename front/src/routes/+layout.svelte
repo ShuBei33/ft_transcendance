@@ -6,7 +6,11 @@
   import { user } from "$lib/stores";
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
-  import { ui } from "$lib/stores/ui";
+  import { ui, token, data } from "$lib/stores";
+  import { socketIsConnected } from "$lib/stores/session";
+  import { io } from "socket.io-client";
+  import type { Socket } from "socket.io-client";
+  import type { ChannelMsg } from "$lib/models/prismaSchema";
 
   onMount(() => {
     console.log($user);
@@ -39,14 +43,43 @@
       href: "/game",
     },
   ];
+  let chatSocket: Socket | undefined = undefined;
+  $: if (!$socketIsConnected && $token) {
+    chatSocket = io("http://localhost:5500/chat", {
+      auth: {
+        token: $token,
+      },
+    })
+      .on("connect", () => {
+        $socketIsConnected = true;
+        console.log("connect ok");
+      })
+      .on("disconnect", () => {
+        $socketIsConnected = false;
+      })
+      .on("message", (data: ChannelMsg) => {
+        $data.myChannels.forEach((chanUsr, index) => {
+          if (chanUsr.channel.id == Number(data.channelId)) {
+            $data.myChannels[index].channel.channelMsgs = [
+              ...$data.myChannels[index].channel.channelMsgs,
+              data,
+            ];
+            return;
+          }
+        });
+      });
+  }
 </script>
 
 <AuthRouter>
   <span slot="nav">
+    <button on:click={() => token.clear()}>logout</button>
     <Nav {navItems} />
   </span>
   <slot />
-  <SocialModal />
+  {#if chatSocket}
+    <SocialModal {chatSocket} />
+  {/if}
   <div class="bottom-acion-section">
     <button
       class="chat-toggle"
