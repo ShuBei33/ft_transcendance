@@ -349,23 +349,39 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+    async isHighAccessUser(userId: number, chanId: number): Promise<ChanUsr> | null {
+        try {
+            const requestedChanUsr = await this.prisma.chanUsr.findFirstOrThrow({
+            where: {
+                userId,
+                chanId,
+                OR: [
+                    { invitedToChan: 'ACCEPTED' },
+                    { invitedToChan: null },
+                ],
+                NOT: {
+                    status: 'BANNED'
+                },
+                role: { in: ['ADMIN', 'OWNER'] },
+            }
+        })
+            return requestedChanUsr;
+        }
+        catch (e) {
+            if (e instanceof PrismaClientKnownRequestError)
+                error.notFound("Channel User not found.");
+            else
+                error.unexpected(e);
+        }
+    }
+
     async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
-            await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
-                    OR: [
-                        { invitedToChan: 'ACCEPTED' },
-                        { invitedToChan: null },
-                    ],
-                    NOT: {
-                        status: 'BANNED'
-                    },
-                    role: { in: ['ADMIN', 'OWNER'] },
-                }
-            })
+            const currentUsr = this.isHighAccessUser(userId, chanId);
+            if (!currentUsr)
+                return;
+
             // delete hash from the db if switching from protected to public / private
             if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
                 channelModified.hash = null;
@@ -401,20 +417,10 @@ export class ChannelService {
     async updateChanUsr(userId: number, chanId: number, userToModify: DTOUpdateChanUsr): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
-            await this.prisma.chanUsr.findFirstOrThrow({
-                where: {
-                    userId,
-                    chanId,
-                    OR: [
-                        { invitedToChan: 'ACCEPTED' },
-                        { invitedToChan: null },
-                    ],
-                    NOT: {
-                        status: 'BANNED'
-                    },
-                    role: { in: ['ADMIN', 'OWNER'] },
-                }
-            })
+            const currentUsr = this.isHighAccessUser(userId, chanId);
+            if (!currentUsr)
+                return;
+
             // check the userToModify is not owner of the channel
             const isUserOwner = await this.prisma.chanUsr.findFirst({
                 where: {
@@ -452,13 +458,42 @@ export class ChannelService {
         }
     }
 
+    async kickChanUsr(userId: number, chanId: number, usrToKickId: number): Promise<Boolean> {
+        try {
+            // check that the user can access that channel and has the correct rights
+            const currentUsr = this.isHighAccessUser(userId, chanId);
+            if (!currentUsr)
+                return false;
+            
+            // check that usrToKick is kickable
+            const toKick = this.getChanUsr(usrToKickId, chanId);
+            if (!toKick)
+                return false;
+            if ((await toKick).role == 'OWNER')
+                error.notAuthorized("You cannot kick the owner of the channel.")
+            
+            // kicking means deleting :)
+            await this.prisma.chanUsr.delete({
+                where: { id: (await toKick).id },
+            })
+            return true;
+
+        }
+        catch (e) {
+            if (e instanceof HttpException)
+                throw e;
+            else
+                error.unexpected(e);
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////
     //																							//
     //		Utils Back		                                                                    //
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    // These functions do not have controllers yet
+    // These functions do not have controllers
 
     async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> | null {
         try {

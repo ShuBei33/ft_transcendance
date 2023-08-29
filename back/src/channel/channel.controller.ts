@@ -130,6 +130,22 @@ export class ChannelController {
 		return success.general(res, "Channel left successfully.", channelLeft);
 	}
 
+	@Delete('kick/:chanId/:usrToKickId')
+	@ApiOperation({ summary: 'Leave a channel' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	@ApiParam({ name: 'usrToKickId', description: 'User ID', type: 'number', example: 1 })
+	async kick(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@Param('usrToKickId', ParseIntPipe) usrToKickId: number,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const userToKick = await this.channelService.kickChanUsr(user.id, chanId, usrToKickId);
+		return success.general(res, 'User kicked successfully.', userToKick);
+	}
+
 	@Patch('admin/:chanId')
 	@ApiOperation({ summary: 'Update channel settings' })
 	@ApiResponse({ status: 200, description: 'Success' })
