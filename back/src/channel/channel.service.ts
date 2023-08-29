@@ -445,8 +445,8 @@ export class ChannelService {
             if (!currentUsr)
                 return;
 
-            // check the userToModify is not owner of the channel
-            const isUserOwner = await this.prisma.chanUsr.findFirst({
+            // retrieve the correct chanUsr
+            const modified = await this.prisma.chanUsr.findFirst({
                 where: {
                     userId: userToModify.id,
                     chanId,
@@ -454,25 +454,28 @@ export class ChannelService {
                         { invitedToChan: 'ACCEPTED' },
                         { invitedToChan: null },
                     ],
-                    role: { in: ['OWNER'] },
                 }
             })
-            if (isUserOwner)
-                error.notAuthorized("You cannot modify a channel owner's status.")
-            await this.prisma.chanUsr.update({
-                where: {
-                    id: userToModify.id,
-                },
-                data: {
-                    ...userToModify,
-                }
+            // check that it's not owner of the channel
+            if (modified.role == 'OWNER')
+              error.notAuthorized("You cannot modify a channel owner's status.")
+
+            const muted = await this.prisma.chanUsr.update({
+              where: { id: modified.id },
+              data: {
+                      role: userToModify.role,
+                      status: userToModify.status,
+                      statusDuration: userToModify.statusDuration,
+              }
             })
             if (!userToModify.role && !userToModify.status)
-                error.notFound("You must provide at least one element.");
-        }
-        catch (e) {
-            if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized("Unauthorized operation.");
+            error.notFound("You must provide at least one element.");
+          }
+          catch (e) {
+            if (e instanceof PrismaClientKnownRequestError) {
+              logger.error(e);
+              error.notAuthorized("Unauthorized operation.");
+            }
             else if (e instanceof PrismaClientValidationError)
                 error.badRequest("You did not send the correct information.");
             else if (e instanceof HttpException)
