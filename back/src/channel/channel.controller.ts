@@ -68,8 +68,8 @@ export class ChannelController {
 		@Body() channelToCreate: DTOCreateChan,
 		@Res() res: Response
 	) {
-		const newChannel = await this.channelService.createChannel(user.id, channelToCreate);
-		return success.general(res, "Channel created successfully.", newChannel);
+		await this.channelService.createChannel(user.id, channelToCreate);
+		return success.general(res, "Channel created successfully.");
 	}
 
 	@Delete('delete/:chanId')
