@@ -60,7 +60,6 @@ export class ChatGateway
     connectedClients.set(client.id, user);
     socketMap.set(client.id, client);
     this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
-    this.socketService.addClient(user, ENS.CHAT, client);
     this.joinAllMyDiscs(user.id, client);
     this.joinAllMyChans(user.id, client);
   }

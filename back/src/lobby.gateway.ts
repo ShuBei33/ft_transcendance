@@ -16,7 +16,10 @@ import { UserStatus } from '@prisma/client';
 import { SocketService } from './sockets/socket.service';
 import { ENS } from './sockets/dto';
 
-@WebSocketGateway({ namespace: "/lobby", cors: '*:*' })
+// lhs: sid, rhs: userId
+const connectedClients = new Map<string, UserLite>();
+const socketMap = new Map<string, Socket>();
+@WebSocketGateway({ namespace: '/lobby', cors: '*:*' })
 export class LobbyGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -37,40 +40,35 @@ export class LobbyGateway
   }
 
   handleConnection(client: Socket, ...args: any[]) {
+    if (socketMap.has(client.id)) {
+      this.logger.warn(`Socket $${client.id} already connected.`);
+      return;
+    }
+
     const token = client.handshake.auth.token;
     const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
 
     if (!user) {
+      this.logger.error('Failed to retrive user, socket disconnected.');
       client.disconnect();
       return;
     }
 
-    // A VOIR COMMENT ON GERE LES DOUBLE CONNECTION ( DEMANDER A FCATINAU )
-    if (this.socketService.isConnected(user.id, ENS.LOBBY)) {
-      this.logger.error(`USER ${user.login} ALREADY LOGGED IN LobbyGateway`);
-      client.disconnect();
-      return;
-    } else {
-      this.logger.log(`USER ${user.login} [${user.id}] CONNECTED`);
-      this.socketService.addClient(user, ENS.LOBBY, client);
-      this.userService.updateUserStatus(user.id, UserStatus.ONLINE);
-      this.wss.emit('loginToClient', user.id);
-    }
+    connectedClients.set(client.id, user);
+    socketMap.set(client.id, client);
+    this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
+    this.userService.updateUserStatus(user.id, UserStatus.ONLINE);
+    this.wss.emit('loginToClient', user.id);
   }
 
   handleDisconnect(client: Socket) {
-    const user = this.socketService.getUser(client.id) || undefined;
-    if (user != undefined) {
-      this.socketService.removeClient(user, ENS.LOBBY);
-      this.logger.log(`USER ${user.login} [${user.id}] DISCONNECTED`);
-      this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
-      this.wss.emit('logoutToClient', user.id);
-    } else {
-      this.logger.error(`USER UNDEFINED`);
-    }
+    const user = connectedClients.get(client.id);
+    connectedClients.delete(client.id);
+    socketMap.delete(client.id);
+    this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
+    this.wss.emit('logoutToClient', user.id);
   }
 
-  ///////////////////
   //     EVENTS    //
   ///////////////////
 
