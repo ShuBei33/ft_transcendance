@@ -131,7 +131,7 @@ export class ChannelController {
 	}
 
 	@Delete('kick/:chanId/:usrToKickId')
-	@ApiOperation({ summary: 'Leave a channel' })
+	@ApiOperation({ summary: 'Kick a user from a channel' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
