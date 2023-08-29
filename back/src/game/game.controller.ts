@@ -1,5 +1,6 @@
 import {
   ApiBearerAuth,
+  ApiHeader,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -21,6 +22,7 @@ import { Response } from 'express';
 import { success } from 'src/utils/utils_success';
 
 @UseGuards(JwtGuard)
+@ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
 @ApiTags('Game')
 @ApiBearerAuth()
 @Controller('game')

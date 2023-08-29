@@ -13,6 +13,8 @@ import { AuthService } from './auth.service';
 import { GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
+import { ApiHeader } from '@nestjs/swagger';
+import { UserLite } from 'src/user/dto';
 
 const logger = new Logger();
 
@@ -21,9 +23,10 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @UseGuards(JwtGuard)
+  @ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
-  async checkJWT(@GetUser() user) {
+  async checkJWT(@GetUser() user: UserLite) {
     console.log('user: ', user);
     return { user: user };
   }

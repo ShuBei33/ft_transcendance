@@ -4,21 +4,13 @@ import { JwtGuard } from 'src/auth/guard';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DTO_AnswerInvitation, DTO_AnswerInvitationSchema } from './dto';
-
-// FRIENDS {
-//     - addFriend // SEULEMENT EN SERVICE
-// }
-
-const user1 = {
-	id: 3,
-};
-
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UserLite } from 'src/user/dto';
 
 @UseGuards(JwtGuard) 
-@ApiTags('Friend')
 @ApiBearerAuth()
+@ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
+@ApiTags('Friend')
 @Controller('friend')
 export class FriendController {
 	constructor(private friendService: FriendService) {}
@@ -28,7 +20,7 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de la Requete' })
     @ApiResponse({ status: 400, description: 'Echec de la Requete' })
 	async get(
-		@GetUser() user: User, 
+		@GetUser() user: UserLite, 
 		@Res() res: Response 
 	) { try {
 			console.log('FUNCTION Get Friend was called and retrieved friends list for user of id ' + user.id);
@@ -57,7 +49,7 @@ export class FriendController {
 	@ApiParam({ name: 'uid', description: 'ID de l\'user cible', type: 'number', example: 1 })
 	async remove(
 		@Param('uid', ParseIntPipe) uid: number, 
-		@GetUser() user: User, 
+		@GetUser() user: UserLite, 
 		@Res() res: Response,
 	) { try {
 			console.log('FUNCTION Remove Friend was called');
@@ -79,7 +71,7 @@ export class FriendController {
     @ApiResponse({ status: 200, description: 'Succes de la Recuperation' })
     @ApiResponse({ status: 400, description: 'Echec de la Recuperation' })
 	async getInvitation(
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION GetInvitation Friend was called');
@@ -100,7 +92,7 @@ export class FriendController {
     @ApiResponse({ status: 400, description: 'Echec de l\'envoie de l\'invitation' })
 	async sendInvitation(
 		@Body('usernameToAdd') usernameToAdd: string,
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION SendInvitation Friend was called');
@@ -121,7 +113,7 @@ export class FriendController {
 	async resolveInvitation(
 		@Body() answer: boolean,
 		@Body() fromUser: string,
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) { try {
 			console.log('FUNCTION ResolveInvitation Friend was called');
@@ -130,7 +122,7 @@ export class FriendController {
 
 			const response = await this.friendService.acceptFriendInvitation(user.id, answer, fromUser);
 
-            return res.status(200).json({success: true });
+            return res.status(200).json({success: true});
 		} catch (err: any) {
             return res.status(400).json({success: false, message: err.message});
 		}

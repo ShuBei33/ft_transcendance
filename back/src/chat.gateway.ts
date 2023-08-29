@@ -9,12 +9,13 @@ import { DiscussionService } from 'src/discussion/discussion.service';
 import { ChannelService } from 'src/channel/channel.service';
 import { SocketService } from 'src/sockets/socket.service';
 import { FriendService } from 'src/friend/friend.service';
-import { ChanUsr, Discussion, Friendship, User } from '@prisma/client';
+import { ChanUsr, Discussion } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { UserLite } from './user/dto';
-import { ENS } from './sockets/dto';
+import { DTO_SocketChanMessage, DTO_SocketDiscMessage, ENS } from './sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
+import { DiscussionLite } from './discussion/dto';
 
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
@@ -83,9 +84,7 @@ export class ChatGateway
   }
 
   async joinAllMyDiscs(userId: number, client: Socket) {
-    const discussions: Discussion[] = await this.discService.getAllDiscussions(
-      userId,
-    );
+    const discussions: DiscussionLite[] = await this.discService.get_discussions( userId );
     for (const discussion of discussions) {
       const roomName: string = 'disc_' + discussion.id;
       client.join(roomName);
