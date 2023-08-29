@@ -44,7 +44,7 @@
     },
   ];
   let chatSocket: Socket | undefined = undefined;
-  $: if (!$socketIsConnected) {
+  $: if (!$socketIsConnected && $token) {
     chatSocket = io("http://localhost:5500/chat", {
       auth: {
         token: $token,
@@ -72,8 +72,8 @@
 </script>
 
 <AuthRouter>
-  <button on:click={() => token.clear()}>logout</button>
   <span slot="nav">
+    <button on:click={() => token.clear()}>logout</button>
     <Nav {navItems} />
   </span>
   <slot />

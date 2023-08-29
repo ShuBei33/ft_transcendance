@@ -55,7 +55,7 @@
 
 <style lang="scss">
   .social-modal {
-    height: 744px;
+    height: 80vh;
     width: 875px;
     background-color: lightgrey;
     position: absolute;

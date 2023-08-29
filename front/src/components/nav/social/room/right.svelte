@@ -2,8 +2,12 @@
   import { ui, data, token } from "$lib/stores";
   import { onMount } from "svelte";
   import { io } from "socket.io-client";
-  import Message from "../../message.svelte";
+  import Message from "./message.svelte";
   import type { Socket } from "socket.io-client";
+  import type { ChanUserExtended, ChannelMsg } from "$lib/models/prismaSchema";
+  import { goto } from "$app/navigation";
+  import { getChannelDropDownActions, getChannelMessageWriter } from "./right";
+  import ActionButton from "../../../actionButton.svelte";
 
   export let chatSocket: Socket;
   let value = "";
@@ -29,7 +33,20 @@
   <div class="messages-section">
     {#if messages}
       {#each messages as message}
-        <Message content={message.content} />
+        <Message {message}>
+          <div class="channel-message-header">
+            <button
+              class="message-user-pseudo"
+              on:click={() => {
+                goto(`/profile/${getChannelMessageWriter(message)?.user.id}`);
+                $ui.chat.toggle = false;
+              }}>{getChannelMessageWriter(message)?.user.pseudo}</button
+            >
+            <ActionButton
+              actions={getChannelDropDownActions(message)}>...</ActionButton
+            >
+          </div>
+        </Message>
       {/each}
     {/if}
   </div>
@@ -55,6 +72,21 @@
     background-color: lightgrey;
     padding-top: 1em;
     // padding: 1em;
+  }
+  .channel-message-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .message-user-pseudo {
+    all: unset;
+    &:focus {
+      outline: revert;
+    }
+    &:hover {
+      color: grey;
+    }
+    cursor: pointer;
   }
   input {
     height: 100%;

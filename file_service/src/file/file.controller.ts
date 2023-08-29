@@ -70,7 +70,6 @@ class UserInterceptor implements NestInterceptor {
         const user = await this.httpService
           .checkJWT(BearerHeader.split(" ")[1])
           .then((data) => data.data.user);
-
         ctx.getRequest()["user"] = user;
       } catch (e) {
         if (e instanceof AxiosError && e.code == AxiosError.ERR_BAD_REQUEST)

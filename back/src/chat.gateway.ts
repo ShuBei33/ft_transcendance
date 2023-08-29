@@ -16,6 +16,10 @@ import { UserLite } from './user/dto';
 import { ENS } from './sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
 
+// lhs: sid, rhs: userId
+const connectedClients = new Map<string, UserLite>();
+const socketMap = new Map<string, Socket>();
+
 @WebSocketGateway({ namespace: '/chat', cors: '*:*' })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -39,33 +43,31 @@ export class ChatGateway
   }
 
   handleConnection(client: Socket, ...args: any[]) {
+    if (socketMap.has(client.id)) {
+      this.logger.warn(`Socket $${client.id} already connected.`);
+      return;
+    }
+
     const token = client.handshake.auth.token;
     const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
+
     if (!user) {
+      this.logger.error('Failed to retrive user, socket disconnected.');
       client.disconnect();
       return;
     }
 
-    if (this.socketService.isConnected(user.id, ENS.CHAT)) {
-      this.logger.error(`USER ${user.login} ALREADY LOGGED IN ChatGateway`);
-      client.disconnect();
-      return;
-    } else {
-      this.logger.log(`USER ${user.login} [${user.id}] CONNECTED on CHAT`);
-      this.socketService.addClient(user, ENS.CHAT, client);
-      this.joinAllMyDiscs(user.id, client);
-      this.joinAllMyChans(user.id, client);
-    }
+    connectedClients.set(client.id, user);
+    socketMap.set(client.id, client);
+    this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
+    this.socketService.addClient(user, ENS.CHAT, client);
+    this.joinAllMyDiscs(user.id, client);
+    this.joinAllMyChans(user.id, client);
   }
 
   handleDisconnect(client: Socket) {
-    const user = this.socketService.getUser(client.id) || undefined;
-    if (user != undefined) {
-      this.socketService.removeClient(user, ENS.CHAT);
-      this.logger.log(`USER ${user.login} [${user.id}] DISCONNECTED of CHAT`);
-    } else {
-      this.logger.error(`USER UNDEFINED`);
-    }
+    connectedClients.delete(client.id);
+    socketMap.delete(client.id);
   }
 
   ///////////////////
@@ -113,12 +115,21 @@ export class ChatGateway
     payload: { id: string; message: string },
   ): Promise<void> {
     this.logger.log('message received ok bref', payload);
-    const writer = this.socketService.getUser(client.id);
+    const writer = connectedClients.get(client.id);
     const writerChanUsr = await this.chanService.getChanUsr(
       Number(writer.id),
       Number(payload.id),
     );
-    if (writerChanUsr.status == 'NORMAL')
-      this.wss.to(`chan_${payload.id}`).emit('message', payload.message);
+    if (writerChanUsr.status == 'NORMAL') {
+      await this.chanService
+        .createMessage({
+          userId: writer.id,
+          channelId: Number(payload.id),
+          content: payload.message,
+        })
+        .then((data) => {
+          this.wss.to(`chan_${payload.id}`).emit('message', data);
+        });
+    }
   }
 }

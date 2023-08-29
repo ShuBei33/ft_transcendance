@@ -1,4 +1,6 @@
 <script lang="ts">
+  import AvatarFrame from "../../../components/nav/social/avatarFrame.svelte";
+
   export let data;
   console.log("profile");
 
@@ -7,7 +9,7 @@
 
 <main>
   {#if user}
-    <h1>Profile page {user?.pseudo}</h1>
+    <AvatarFrame userId={id} />
   {:else}
     <h1>{`User not found`}</h1>
   {/if}
