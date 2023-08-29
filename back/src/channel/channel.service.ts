@@ -6,6 +6,7 @@ import {
   DTOJoinChan,
   DTOUpdateChan,
   DTOUpdateChanUsr,
+  DTOCreateMessage,
 } from './dto';
 import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
 import {
@@ -57,6 +58,10 @@ export class ChannelService {
         error.hasConflict('Channel user already exists.');
       } else error.unexpected(e);
     }
+  }
+
+  async createMessage(data: DTOCreateMessage) {
+    return await this.prisma.channelMsg.create({ data });
   }
 
   async createChannel(
@@ -139,7 +144,7 @@ export class ChannelService {
     }
   }
 
-  async getMyChannels(userId: number): Promise<ChanUsr[]> | null {
+  async getMyChannels(userId: number): Promise<ChanUsr[]> {
     try {
       // only get channels to which we've subscribed and in which user is not banned
       const memberships = await this.prisma.chanUsr.findMany({
@@ -156,13 +161,19 @@ export class ChannelService {
               id: true,
               name: true,
               visibility: true,
+              channelUsers: {
+                include: {
+                  user: true,
+                },
+              },
             },
           },
         },
       });
       return memberships;
     } catch (e) {
-      error.unexpected(e);
+      if (e instanceof HttpException) throw e;
+      else error.unexpected(e);
     }
   }
 
