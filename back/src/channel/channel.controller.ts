@@ -1,21 +1,20 @@
 import { UseGuards, Controller, Get, Post, Delete, Patch } from '@nestjs/common';
-import { Param, Body, Query, ParseIntPipe, Res } from '@nestjs/common';
-import { Logger } from '@nestjs/common'; // for testing purposes
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Param, Body, ParseIntPipe, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { ChannelService } from './channel.service';
-import { DTOCreateChan, DTOJoinChan, DTOInviteChan, DTOUpdateChan, DTOUpdateChanUsr } from './dto';
-import { ChanVisibility, ChanUsrRole } from '@prisma/client';
+import { DTO_CreateChan, DTO_JoinChan, DTO_InviteChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
 import { success } from 'src/utils/utils_success';
+import { UserLite } from 'src/user/dto';
 
 // const logger = new Logger();
 
 @UseGuards(JwtGuard)
+@ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
 @ApiTags('Channel')
 @ApiBearerAuth()
 @Controller('channel')
@@ -38,7 +37,7 @@ export class ChannelController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	async getMine(
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response,
 	) {
 		const channelList = await this.channelService.getMyChannels(user.id);
@@ -52,7 +51,7 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async getMessage(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelMsgs = await this.channelService.getChannelMsgs(user.id, chanId);
@@ -64,8 +63,8 @@ export class ChannelController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	async create(
-		@GetUser() user: User,
-		@Body() channelToCreate: DTOCreateChan,
+		@GetUser() user: UserLite,
+		@Body() channelToCreate: DTO_CreateChan,
 		@Res() res: Response
 	) {
 		await this.channelService.createChannel(user.id, channelToCreate);
@@ -79,7 +78,7 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel Id', type: 'number', example: 1 })
 	async delete(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelDeleted = await this.channelService.deleteChannel(user.id, chanId);
@@ -93,8 +92,8 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async join(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() channelToJoin: DTOJoinChan,
-		@GetUser() user: User,
+		@Body() channelToJoin: DTO_JoinChan,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelJoined = await this.channelService.joinChannel(user.id, chanId, channelToJoin);
@@ -108,8 +107,8 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async inviteTo(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() userToInvite: DTOInviteChan,
-		@GetUser() user: User,
+		@Body() userToInvite: DTO_InviteChan,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelJoined = await this.channelService.inviteToChannel(user.id, chanId, userToInvite);
@@ -123,7 +122,7 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async leave(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: User,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
@@ -153,8 +152,8 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async update(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() channelToUpdate: DTOUpdateChan,
-		@GetUser() user: User,
+		@Body() channelToUpdate: DTO_UpdateChan,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelModified = await this.channelService.updateChannel(user.id, chanId, channelToUpdate);
@@ -168,8 +167,8 @@ export class ChannelController {
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
 	async setPrivileges(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() usrToModify: DTOUpdateChanUsr,
-		@GetUser() user: User,
+		@Body() usrToModify: DTO_UpdateChanUsr,
+		@GetUser() user: UserLite,
 		@Res() res: Response
 	) {
 		const channelModified = await this.channelService.updateChanUsr(user.id, chanId, usrToModify);

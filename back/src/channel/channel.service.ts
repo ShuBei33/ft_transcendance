@@ -1,18 +1,17 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  DTOCreateChan,
-  DTOInviteChan,
-  DTOJoinChan,
-  DTOUpdateChan,
-  DTOUpdateChanUsr,
-  DTOCreateMessage,
+  DTO_CreateChan,
+  DTO_InviteChan,
+  DTO_JoinChan,
+  DTO_UpdateChan,
+  DTO_UpdateChanUsr,
+  DTO_CreateMessage,
 } from './dto';
-import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
+import { ChannelMsg, ChanUsr } from '@prisma/client';
 import {
   ChanUsrRole,
   UserStatusMSGs,
-  ChanVisibility,
   StatusInv,
 } from '@prisma/client';
 import {
@@ -60,13 +59,13 @@ export class ChannelService {
     }
   }
 
-  async createMessage(data: DTOCreateMessage) {
+  async createMessage(data: DTO_CreateMessage) {
     return await this.prisma.channelMsg.create({ data });
   }
 
   async createChannel(
     userId: number,
-    newChanDto: DTOCreateChan,
+    newChanDto: DTO_CreateChan,
   ): Promise<ChannelLite> | null {
     try {
       const { name, visibility, DTOhash } = newChanDto;
@@ -212,7 +211,7 @@ export class ChannelService {
   async joinChannel(
     userId: number,
     chanId: number,
-    joinChanDto?: DTOJoinChan,
+    joinChanDto?: DTO_JoinChan,
   ): Promise<void> {
     try {
       // check that channel exists
@@ -280,7 +279,7 @@ export class ChannelService {
   async inviteToChannel(
     userId: number,
     chanId: number,
-    invitedUser: DTOInviteChan,
+    invitedUser: DTO_InviteChan,
   ): Promise<void> {
     try {
       // check current user's rights
@@ -399,7 +398,7 @@ export class ChannelService {
         }
     }
 
-    async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan): Promise<void> {
+    async updateChannel(userId: number, chanId: number, channelModified: DTO_UpdateChan): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
             const currentUsr = this.isHighAccessUser(userId, chanId);
@@ -438,7 +437,7 @@ export class ChannelService {
         }
     }
 
-    async updateChanUsr(userId: number, chanId: number, userToModify: DTOUpdateChanUsr): Promise<void> {
+    async updateChanUsr(userId: number, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
             const currentUsr = this.isHighAccessUser(userId, chanId);
