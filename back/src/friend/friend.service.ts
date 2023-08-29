@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { Friendship } from '@prisma/client';
+import { UserLite } from 'src/user/dto';
 
 @Injectable()
 export class FriendService {
@@ -165,7 +166,7 @@ export class FriendService {
 //! ############################################################################################################
 
 
-  async sendFriendInvitation(senderUser: User, userToAdd: string): Promise<Friendship> {
+  async sendFriendInvitation(senderUser: UserLite, userToAdd: string): Promise<Friendship> {
 	// Check if the sender and receiver are not the same user
 	if (senderUser.pseudo === userToAdd) {
 	  throw new Error('You cannot send a friend invitation to yourself');

@@ -3,12 +3,13 @@ import { DiscussionService } from 'src/discussion/discussion.service';
 import { ChannelService } from 'src/channel/channel.service';
 import { SocketService } from 'src/sockets/socket.service';
 import { FriendService } from 'src/friend/friend.service';
-import { ChanUsr, Discussion, Friendship, User } from '@prisma/client';
+import { ChanUsr, Discussion } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { UserLite } from './user/dto';
-import { ENS } from './sockets/dto';
+import { DTO_SocketChanMessage, DTO_SocketDiscMessage, ENS } from './sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
+import { DiscussionLite } from './discussion/dto';
 
 @WebSocketGateway({namespace: "/chat", cors: '*:*', })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -16,7 +17,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	constructor(
 		private chanService: ChannelService,
 		private discService: DiscussionService,
-		private friendService: FriendService,
 		private socketService: SocketService
 	) {}
 
@@ -74,7 +74,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
 	async joinAllMyDiscs(userId: number, client: Socket) {
-        const discussions: Discussion[] = await this.discService.getAllDiscussions(userId);
+        const discussions: DiscussionLite[] = await this.discService.get_discussions(userId);
         for (const discussion of discussions) {
 			const roomName: string = 'disc_' + discussion.id; 
 			client.join(roomName);
@@ -86,21 +86,37 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 	///////////////////
 
 	@SubscribeMessage("message")
-	async caseMessage(client: Socket, payload: {senderId: string, receiverId: string, message: string}): Promise<void> {
-
-		const friendList = await this.friendService.getFriendsList(Number(payload.senderId))
-
-		if (friendList.find(User => User.id === Number(payload.receiverId)))
-			this.wss.to(payload.receiverId).emit("message", payload.message);
+	async message_discussion(client: Socket, data: DTO_SocketDiscMessage): Promise<void> {
+		try {
+			const user: UserLite = this.socketService.getUser(client.id);
+			const validation_body: boolean = await this.discService.isValideDiscusion(user.id, data.discId);
+			if ( !validation_body ) {
+				this.logger.error(`STOP - Tu essaye de faire des betises donc arrete!`);
+				return ;
+			}
+			this.discService.create_discussion_message(user.id, data);
+			this.wss.to("disc_" + data.discId.toString()).emit("message", data.message);
+		} catch (e) {
+			this.logger.error("EVENT MESSAGE : THROW NOT CATCHED");
+		}
 	}
 
 	@SubscribeMessage("messageToRoom")
-	async caseToRoom(client: Socket, payload: { id: string, message: string}): Promise<void> {
+	async message_channel(client: Socket, data: DTO_SocketChanMessage): Promise<void> {
+
+		// RECUPERATION UTILISATEUR
+		const user: UserLite = this.socketService.getUser(client.id);
+
+		// CHECK DU BODY ( CHAN ID )
+
+
+
+		// const writerChanUsr = await this.chanService.getChanUsr(user.id, );
+		// if (writerChanUsr.status == 'NORMAL') {
+		// 	this.wss.to("chan_" + data.chanId).emit("message", data.message);
+		// }
+
+
 		
-		const writer = this.socketService.getUser(payload.id);
-		const writerChanUsr = await this.chanService.getChanUsr(Number(writer.id), Number(payload.id));
-		
-		if (writerChanUsr.status == 'NORMAL')
-			this.wss.to(payload.id).emit("message", payload.message);
 	}
 };

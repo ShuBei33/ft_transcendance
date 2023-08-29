@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsEnum, IsInt, Length, IsDate } from 'class-validator';
+import { IsNotEmpty, IsEnum, IsInt, Length } from 'class-validator';
 import { User, Channel, ChanUsr } from '@prisma/client';
 import { ChanVisibility, ChanUsrRole, UserStatusMSGs } from '@prisma/client';
 
-export class DTOCreateChan {
+export class DTO_CreateChan {
 	@IsNotEmpty()
 	@Length(1, 50)
 	name: Channel['name'];
@@ -13,22 +13,22 @@ export class DTOCreateChan {
 	hash?: Channel['hash'];
 }
 
-export class DTOJoinChan {
+export class DTO_JoinChan {
 	hash?: Channel['hash'];
 }
 
-export class DTOInviteChan {
+export class DTO_InviteChan {
 	@IsInt()
 	userId: User['id'];
 }
 
-export class DTOUpdateChan {
+export class DTO_UpdateChan {
 	name?: Channel['name'];
 	visibility?: Channel['visibility'];
 	hash?: Channel['hash'];
 }
 
-export class DTOUpdateChanUsr {
+export class DTO_UpdateChanUsr {
 	@IsInt()
 	id: ChanUsr['id'];
 	

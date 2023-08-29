@@ -33,6 +33,7 @@ services:
       API_TOKEN_URL: ${API_TOKEN_URL}
       RED_URI: ${RED_URI}
       JWT_SECRET: ${JWT_SECRET}
+      SWAGGER: ${SWAGGER}
     volumes:
       - "./back:/app"
     working_dir: /app

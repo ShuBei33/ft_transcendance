@@ -1,23 +1,21 @@
-import { UseGuards, Controller, Get, Post, Delete, Patch } from '@nestjs/common';
-import { Param, Body, Query, ParseIntPipe, Res } from '@nestjs/common';
-import { Logger } from '@nestjs/common'; // for testing purposes
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { UseGuards, Controller, Get, Delete, Logger } from '@nestjs/common';
+import { Param, ParseIntPipe, Res } from '@nestjs/common';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { DiscussionService } from './discussion.service';
-import { DTORestrainUsr, DTOdm } from './dto';
 import { success } from 'src/utils/utils_success';
+import { error } from 'src/utils/utils_error';
 
 @UseGuards(JwtGuard)
+@ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
 @ApiTags('Discussion')
 @ApiBearerAuth()
 @Controller('discussion')
 export class DiscussionController {
-	constructor(private DiscussionService: DiscussionService) {}
+	constructor(private discService: DiscussionService) {}
 
 	@Get('all')
 	@ApiOperation({ summary: 'Retrieve all of a user\'s discussions' })
@@ -27,8 +25,13 @@ export class DiscussionController {
 		@GetUser() user: User,
 		@Res() res: Response
 	) {
-		const DMs = await this.DiscussionService.getAllDiscussions(user.id);
-		return success.general(res, "All discussions retrieved successfully.", DMs);
+		try {
+			const discussions = await this.discService.get_discussions( user.id );
+			console.log(discussions)
+			return success.general(res, "All discussions retrieved successfully.", discussions);
+		} catch {
+			return error.hasConflict(' ERROR : /discussion/all ');
+		}
 	}
 
 	@Get('msgs/:discId')
@@ -41,51 +44,16 @@ export class DiscussionController {
 		@GetUser() user: User,
 		@Res() res: Response
 	) {
-		const DMs = await this.DiscussionService.getDMs(user.id, discId);
-		return success.general(res, "DMs retrieved successfully.", DMs);
+		try {
+			const discussion = await this.discService.get_discussion( user.id, discId );
+			console.log(discussion)
+			return success.general(res, "DMs retrieved successfully.", discussion);
+		} catch {
+			return error.hasConflict(' ERROR : /discussion/msgs/:discId ');
+		}
 	}
 
-	@Patch('msgs/usr')
-	@ApiOperation({ summary: 'Update user status' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'discId', description: 'Discussion ID', type: 'number', example: 1 })
-	async update(
-		@Body() usrToRestrain: DTORestrainUsr,
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		const restrainedUsr = await this.DiscussionService.muteOrBlockUser(user.id, usrToRestrain);
-		return success.general(res, "User status updated successfully.", restrainedUsr);
-	}
-
-	@Post('create/:secondUserId') // for testing purposes
-	@ApiOperation({ summary: 'Create a new discussion' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	async create(
-		@Param('secondUserId', ParseIntPipe) secondUserId: number,
-		@GetUser() user: User,
-		@Res() res: Response
-	) {
-		const newDisc = await this.DiscussionService.createDiscussion(user.id, secondUserId);
-		return success.general(res, "DM created successfully.", newDisc);
-	}
-
-	@Post('create/msg/') // for testing purposes
-	@ApiOperation({ summary: 'Create a new discussion' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	async createMSG(
-		@GetUser() user: User,
-		@Body() DTOdM: DTOdm,
-		@Res() res: Response
-	) {
-		const newDiscMsg = await this.DiscussionService.createDiscussionMSG(user.id, DTOdM);
-		return success.general(res, "Direct message created successfully.", newDiscMsg);
-	}
-
-	@Delete('delete/:msgId') // for testing purposes
+	@Delete('delete/:msgId')
 	@ApiOperation({ summary: 'Delete one of your messages in DM' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
@@ -95,7 +63,11 @@ export class DiscussionController {
 		@GetUser() user: User,
 		@Res() res: Response
 	) {
-		const msgDeleted = await this.DiscussionService.deleteMessage(user.id, msgId);
-		return success.general(res, "Message deleted successfully.", msgDeleted);
+		try {
+			await this.discService.delete_message(user.id, msgId);
+			return success.general(res, "Message deleted successfully.");
+		} catch {
+			return error.hasConflict(' ERROR : /discussion/msgs/:msgId ');
+		}
 	}
 }

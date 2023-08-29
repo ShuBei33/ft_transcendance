@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DTOCreateChan, DTOInviteChan, DTOJoinChan, DTOUpdateChan, DTOUpdateChanUsr } from './dto';
+import { DTO_CreateChan, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
 import { Prisma, Channel, ChannelMsg, ChanUsr } from '@prisma/client';
 import { ChanUsrRole, UserStatusMSGs, ChanVisibility, StatusInv } from '@prisma/client';
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
@@ -42,7 +42,7 @@ export class ChannelService {
         }
     }
 
-    async createChannel(userId: number, newChanDto: DTOCreateChan): Promise<Channel> {
+    async createChannel(userId: number, newChanDto: DTO_CreateChan): Promise<Channel> {
         try {
             const { name, visibility, hash } = newChanDto;
             const newChannel = await this.prisma.channel.create({
@@ -185,7 +185,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async joinChannel(userId: number, chanId: number, joinChanDto?: DTOJoinChan): Promise<void> {
+    async joinChannel(userId: number, chanId: number, joinChanDto?: DTO_JoinChan): Promise<void> {
         try {
             // check that channel exists
             const channel = await this.prisma.channel.findUniqueOrThrow({
@@ -252,7 +252,7 @@ export class ChannelService {
         }
     }
 
-    async inviteToChannel(userId: number, chanId: number, invitedUser: DTOInviteChan): Promise<void> {
+    async inviteToChannel(userId: number, chanId: number, invitedUser: DTO_InviteChan): Promise<void> {
         try {
             // check current user's rights
             await this.prisma.chanUsr.findFirstOrThrow({
@@ -346,7 +346,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async updateChannel(userId: number, chanId: number, channelModified: DTOUpdateChan): Promise<void> {
+    async updateChannel(userId: number, chanId: number, channelModified: DTO_UpdateChan): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
             await this.prisma.chanUsr.findFirstOrThrow({
@@ -395,7 +395,7 @@ export class ChannelService {
         }
     }
 
-    async updateChanUsr(userId: number, chanId: number, userToModify: DTOUpdateChanUsr): Promise<void> {
+    async updateChanUsr(userId: number, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
         try {
             // check that the user can access that channel and has the correct rights
             await this.prisma.chanUsr.findFirstOrThrow({
