@@ -3,11 +3,12 @@ import type {
   ChannelExtended,
   ChanUserExtended,
   Channel as ChannelType,
-  ChannelMsg
+  ChannelMsg,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
 import { get } from "svelte/store";
+import type { channel } from "./models/dtos";
 
 export class ApiTemplate {
   instance: AxiosInstance = axios.create();
@@ -44,5 +45,13 @@ export class Channel {
 
   async msgs(chanId: number) {
     return await this.instance.get<{ data: ChannelMsg[] }>(`msgs/${chanId}`);
+  }
+
+  async setPrivileges(chanId: number, data: channel.DTOUpdateChanUsr) {
+    return await this.instance.patch(`admin/${chanId}/usr`, data);
+  }
+
+  async kick(chanId: number, userId: number) {
+    return await this.instance.delete(`kick/${chanId}/${userId}`);
   }
 }

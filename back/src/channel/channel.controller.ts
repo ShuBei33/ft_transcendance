@@ -173,6 +173,6 @@ export class ChannelController {
 		@Res() res: Response
 	) {
 		const channelModified = await this.channelService.updateChanUsr(user.id, chanId, usrToModify);
-		return success.general(res, "Channel settings updated successfully.", channelModified);
+		return success.general(res, "Channel settings updated successfully.", usrToModify);
 	}
 }
