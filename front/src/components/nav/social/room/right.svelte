@@ -1,7 +1,6 @@
 <script lang="ts">
   import { ui, data, token } from "$lib/stores";
   import { onMount } from "svelte";
-  import { events } from "$lib/stores/socket";
   import { io } from "socket.io-client";
   import Message from "../../message.svelte";
   import type { Socket } from "socket.io-client";

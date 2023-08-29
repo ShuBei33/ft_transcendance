@@ -18,3 +18,5 @@ export const token = writableHook<string>({
     Cookies.remove(COOKIE_TOKEN_NAME);
   },
 });
+
+export const socketIsConnected = writable(false);
