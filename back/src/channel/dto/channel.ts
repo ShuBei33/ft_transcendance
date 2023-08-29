@@ -10,7 +10,7 @@ export class DTOCreateChan {
 	@IsEnum(ChanVisibility)
 	visibility: Channel['visibility'];
 
-	hash?: Channel['hash'];
+	DTOhash?: Channel['hash'];
 }
 
 export class DTOJoinChan {

@@ -22,7 +22,7 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> {
+    async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> | null {
         try {
             const newChanUsr = await this.prisma.chanUsr.create({
                 data: {
@@ -42,26 +42,36 @@ export class ChannelService {
         }
     }
 
-    async createChannel(userId: number, newChanDto: DTOCreateChan): Promise<Channel> {
+    async createChannel(userId: number, newChanDto: DTOCreateChan): Promise<ChannelLite> | null {
         try {
-            const { name, visibility, hash } = newChanDto;
+            const { name, visibility, DTOhash } = newChanDto;
+            
+            // check that DTO data is correct
+            if (visibility == 'PROTECTED')
+                if (!DTOhash)
+                    error.badRequest('You must provide a password.');
             const newChannel = await this.prisma.channel.create({
                 data: {
                     name,
                     visibility,
-                    hash
+                    hash: DTOhash
                 }
             });
-            if (hash)
-                newChannel.hash = await bcrypt.hash(hash, 10);
+            // hash pwd if provided
+            if (DTOhash)
+                newChannel.hash = await bcrypt.hash(DTOhash, 10);
 
             await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
-            return newChannel;
+            // return channel without hash
+			const { hash, ...rest } = newChannel;
+            return rest;
 
         } catch (e) {
-            if (e instanceof PrismaClientKnownRequestError) {
+            if (e instanceof PrismaClientKnownRequestError)
                 error.hasConflict("Channel already exists.");
-            } else
+            else if (e instanceof HttpException)
+                throw e;
+            else
                 error.unexpected(e);
         }
     }
@@ -100,18 +110,17 @@ export class ChannelService {
     //																							//
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    async getAllChannels(): Promise<ChannelLite[]> {
+    async getAllChannels(): Promise<ChannelLite[]> | null {
         try {
             const nonPrivChannels = await this.prisma.channel.findMany({
                 where: {
                     NOT: { visibility: 'PRIVATE' },
-                },
+             },
             });
             const liteChannels: ChannelLite[] = nonPrivChannels.map(channel => {
                 const { createdAt, updatedAt, hash, ...rest } = channel;
                 return rest;
             });
-    
             return liteChannels;
         }
         catch (e) {
@@ -119,7 +128,7 @@ export class ChannelService {
         }
     }
 
-    async getMyChannels(userId: number): Promise<ChanUsr[]> {
+    async getMyChannels(userId: number): Promise<ChanUsr[]> | null {
         try {
             // only get channels to which we've subscribed and in which user is not banned
             const memberships = await this.prisma.chanUsr.findMany({
@@ -141,14 +150,11 @@ export class ChannelService {
             return memberships;
         }
         catch (e) {
-            if (e instanceof HttpException)
-                throw e;
-            else
-                error.unexpected(e);
+            error.unexpected(e);
         }
     }
 
-    async getChannelMsgs(userId: number, channelId: number): Promise<ChannelMsg[]> {
+    async getChannelMsgs(userId: number, channelId: number): Promise<ChannelMsg[]> | null {
         try {
             // check user's access to the channel
             await this.prisma.chanUsr.findFirstOrThrow({
@@ -172,10 +178,7 @@ export class ChannelService {
             if (e instanceof PrismaClientKnownRequestError)
                 error.notAuthorized("You are not allowed to access this channel.")
             else
-                if (e instanceof HttpException)
-                    throw e;
-                else
-                    error.unexpected(e);
+                error.unexpected(e);
         }
     }
 
@@ -457,7 +460,7 @@ export class ChannelService {
 
     // These functions do not have controllers yet
 
-    async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> {
+    async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> | null {
         try {
             // check that the chanUsr exists
             const requestedChanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
