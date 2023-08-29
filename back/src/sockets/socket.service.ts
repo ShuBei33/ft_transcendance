@@ -43,19 +43,11 @@ export class SocketService {
   ///////////////////
 
   isConnected(uid: number, type: ENS) {
-    console.log(
-      [...this.clientsMap.entries()].find(
-        ([key, value]) => key.id === uid && value[type]?.id,
-      ),
-    );
-
     for (const [key, value] of this.clientsMap) {
-      if (key.id == uid) {
-        console.log('REAL TRUE ');
+      if (key.id == uid && value[type] ) {
         return true;
       }
     }
-    console.log('REAL FALSE ');
     return false;
   }
 
