@@ -17,7 +17,6 @@
 		"@types/node": "^20.5.3",
 		"axios": "^1.4.0",
 		"sass": "^1.65.1",
-		"svelte": "^4.0.5",
 		"svelte-check": "^3.5.0",
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.0",
@@ -28,8 +27,10 @@
 		"@types/express-serve-static-core": "^4.17.36",
 		"js-cookie": "^3.0.5",
 		"path": "^0.12.7",
+		"prettier": "^3.0.2",
 		"socket.io": "^4.7.2",
 		"socket.io-client": "^4.7.2",
-		"svelte-forms": "^2.3.1"
+		"svelte-forms": "^2.3.1",
+		"svelte": "^4.0.5"
 	}
 }

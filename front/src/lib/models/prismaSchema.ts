@@ -108,8 +108,8 @@ export interface Channel {
 }
 
 export type ChannelExtended = Channel & {
-  channelUsers?: ChanUsr[];
-  channelMsgs?: ChannelMsg[];
+  channelUsers: ChanUsr[];
+  channelMsgs: ChannelMsg[];
 };
 
 export interface ChannelMsg {
@@ -134,6 +134,6 @@ export interface ChanUsr {
   statusDuration?: Date | null;
 }
 
-export type ChanUserExtended = Channel & {
-  channel: Channel;
+export type ChanUserExtended = ChanUsr & {
+  channel: ChannelExtended;
 };

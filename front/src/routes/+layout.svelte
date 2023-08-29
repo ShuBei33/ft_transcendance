@@ -6,8 +6,9 @@
   import { user } from "$lib/stores";
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
-  import { ui, token } from "$lib/stores";
+  import { ui, token, data } from "$lib/stores";
   import { io } from "socket.io-client";
+    import type {ChannelMsg} from "$lib/models/prismaSchema";
 
   onMount(() => {
     console.log($user);
@@ -49,12 +50,17 @@
     .on("connect", () => {
       console.log("connect ok");
     })
-    .on("disconnect", () => {
-      console.log("I identify as disconnected");
-    })
-    .on("message", (data: any) => {
-      console.log("message received", data);
-    });
+    .on(
+      "message",
+	  (data: ChannelMsg) => {
+		$data.myChannels.forEach((chanUsr, index) => {
+			if (chanUsr.channel.id == Number(data.channelId)) {
+				$data.myChannels[index].channel.channelMsgs = [...$data.myChannels[index].channel.channelMsgs, data];
+				return ;
+			}
+		});
+      }
+    );
 </script>
 
 <AuthRouter>
