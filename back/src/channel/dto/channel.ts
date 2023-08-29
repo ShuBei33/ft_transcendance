@@ -36,7 +36,7 @@ export class DTO_UpdateChan {
 export class DTO_UpdateChanUsr {
 	@IsInt()
 	id: ChanUsr['id'];
-	
+
 	role?: ChanUsrRole;
 	status?: UserStatusMSGs;
 	statusDuration?: Date;
