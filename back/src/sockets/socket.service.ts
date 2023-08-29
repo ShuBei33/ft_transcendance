@@ -44,7 +44,7 @@ export class SocketService {
 
   isConnected(uid: number, type: ENS) {
     for (const [key, value] of this.clientsMap) {
-      if (key.id == uid && value[type] ) {
+      if (key.id == uid && value[type]) {
         return true;
       }
     }
@@ -69,7 +69,6 @@ export class SocketService {
       const decoded = this.jwt.verify(token, {
         secret: process.env.JWT_SECRET,
       });
-      logger.log('!decoded', decoded);
       return decoded.user;
     } catch (e) {
       return null;

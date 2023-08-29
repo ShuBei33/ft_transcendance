@@ -67,8 +67,8 @@ export class ChannelController {
 		@Body() channelToCreate: DTO_CreateChan,
 		@Res() res: Response
 	) {
-		const newChannel = await this.channelService.createChannel(user.id, channelToCreate);
-		return success.general(res, "Channel created successfully.", newChannel);
+		await this.channelService.createChannel(user.id, channelToCreate);
+		return success.general(res, "Channel created successfully.");
 	}
 
 	@Delete('delete/:chanId')
@@ -127,6 +127,22 @@ export class ChannelController {
 	) {
 		const channelLeft = await this.channelService.leaveChannel(user.id, chanId);
 		return success.general(res, "Channel left successfully.", channelLeft);
+	}
+
+	@Delete('kick/:chanId/:usrToKickId')
+	@ApiOperation({ summary: 'Kick a user from a channel' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	@ApiParam({ name: 'usrToKickId', description: 'User ID', type: 'number', example: 1 })
+	async kick(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@Param('usrToKickId', ParseIntPipe) usrToKickId: number,
+		@GetUser() user: User,
+		@Res() res: Response
+	) {
+		const userToKick = await this.channelService.kickChanUsr(user.id, chanId, usrToKickId);
+		return success.general(res, 'User kicked successfully.', userToKick);
 	}
 
 	@Patch('admin/:chanId')

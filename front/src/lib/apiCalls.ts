@@ -3,6 +3,7 @@ import type {
   ChannelExtended,
   ChanUserExtended,
   Channel as ChannelType,
+  ChannelMsg
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
@@ -39,5 +40,9 @@ export class Channel {
 
   async mine() {
     return await this.instance.get<{ data: ChanUserExtended[] }>("mine");
+  }
+
+  async msgs(chanId: number) {
+    return await this.instance.get<{ data: ChannelMsg[] }>(`msgs/${chanId}`);
   }
 }

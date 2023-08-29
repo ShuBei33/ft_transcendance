@@ -1,4 +1,10 @@
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { DiscussionService } from 'src/discussion/discussion.service';
 import { ChannelService } from 'src/channel/channel.service';
 import { SocketService } from 'src/sockets/socket.service';
@@ -11,112 +17,118 @@ import { DTO_SocketChanMessage, DTO_SocketDiscMessage, ENS } from './sockets/dto
 import { SubscribeMessage } from '@nestjs/websockets';
 import { DiscussionLite } from './discussion/dto';
 
-@WebSocketGateway({namespace: "/chat", cors: '*:*', })
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+// lhs: sid, rhs: userId
+const connectedClients = new Map<string, UserLite>();
+const socketMap = new Map<string, Socket>();
 
-	constructor(
-		private chanService: ChannelService,
-		private discService: DiscussionService,
-		private socketService: SocketService
-	) {}
+@WebSocketGateway({ namespace: '/chat', cors: '*:*' })
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(
+    private chanService: ChannelService,
+    private discService: DiscussionService,
+    private friendService: FriendService,
+    private socketService: SocketService,
+  ) {}
 
-	@WebSocketServer() wss: Server;
-	private logger: Logger = new Logger('ChatGateway');
+  @WebSocketServer() wss: Server;
+  private logger: Logger = new Logger('ChatGateway');
 
-	///////////////////////////////////////////
-	//      INIT, CONNECTION, DISCONNECT     //
-	///////////////////////////////////////////
+  ///////////////////////////////////////////
+  //      INIT, CONNECTION, DISCONNECT     //
+  ///////////////////////////////////////////
 
-	afterInit(server: Server) {
-		this.logger.log('ChatGateway Initialized');
-	}
+  afterInit(server: Server) {
+    this.logger.log('ChatGateway Initialized');
+  }
 
-	handleConnection(client: Socket, ...args: any[]) {
-		const token = client.handshake.auth.token;
-		const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
-		if (!user) {
-			client.disconnect();
-			return;
-		}
-
-		if ( this.socketService.isConnected( user.id, ENS.CHAT )) {
-			this.logger.error(`USER ${user.login} ALREADY LOGGED IN ChatGateway`);
-			client.disconnect();
-			return ;
-		} else {
-			this.logger.log(`USER ${user.login} [${user.id}] CONNECTED on CHAT`);
-			this.socketService.addClient(user, ENS.CHAT, client);
-			this.joinAllMyDiscs(user.id, client);
-			this.joinAllMyChans(user.id, client);
-		}
-	}
-
-	handleDisconnect(client: Socket) {
-		const user = this.socketService.getUser(client.id) || undefined;
-		if ( user != undefined ) {
-			this.socketService.removeClient(user, ENS.CHAT);
-			this.logger.log(`USER ${user.login} [${user.id}] DISCONNECTED of CHAT`);
-		} else {
-			this.logger.error(`USER UNDEFINED`);
-		}
-	}
-
-	///////////////////
-	//    METHODES   //
-	///////////////////
-
-    async joinAllMyChans(userId: number, client: Socket) {
-        const channels: ChanUsr[] = await this.chanService.getMyChannels(userId);
-        for (const channel of channels) {
-			const roomName: string = 'chan_' + channel.chanId; 
-			client.join(roomName)
-        }
+  handleConnection(client: Socket, ...args: any[]) {
+    if (socketMap.has(client.id)) {
+      this.logger.warn(`Socket $${client.id} already connected.`);
+      return;
     }
 
-	async joinAllMyDiscs(userId: number, client: Socket) {
-        const discussions: DiscussionLite[] = await this.discService.get_discussions(userId);
-        for (const discussion of discussions) {
-			const roomName: string = 'disc_' + discussion.id; 
-			client.join(roomName);
-        }
+    const token = client.handshake.auth.token;
+    const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
+
+    if (!user) {
+      this.logger.error('Failed to retrive user, socket disconnected.');
+      client.disconnect();
+      return;
     }
 
-	///////////////////
-	//     EVENTS    //
-	///////////////////
+    connectedClients.set(client.id, user);
+    socketMap.set(client.id, client);
+    this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
+    this.socketService.addClient(user, ENS.CHAT, client);
+    this.joinAllMyDiscs(user.id, client);
+    this.joinAllMyChans(user.id, client);
+  }
 
-	@SubscribeMessage("message")
-	async message_discussion(client: Socket, data: DTO_SocketDiscMessage): Promise<void> {
-		try {
-			const user: UserLite = this.socketService.getUser(client.id);
-			const validation_body: boolean = await this.discService.isValideDiscusion(user.id, data.discId);
-			if ( !validation_body ) {
-				this.logger.error(`STOP - Tu essaye de faire des betises donc arrete!`);
-				return ;
-			}
-			this.discService.create_discussion_message(user.id, data);
-			this.wss.to("disc_" + data.discId.toString()).emit("message", data.message);
-		} catch (e) {
-			this.logger.error("EVENT MESSAGE : THROW NOT CATCHED");
-		}
-	}
+  handleDisconnect(client: Socket) {
+    connectedClients.delete(client.id);
+    socketMap.delete(client.id);
+  }
 
-	@SubscribeMessage("messageToRoom")
-	async message_channel(client: Socket, data: DTO_SocketChanMessage): Promise<void> {
+  ///////////////////
+  //    METHODES   //
+  ///////////////////
 
-		// RECUPERATION UTILISATEUR
-		const user: UserLite = this.socketService.getUser(client.id);
+  async joinAllMyChans(userId: number, client: Socket) {
+    const channels: ChanUsr[] = await this.chanService.getMyChannels(userId);
+    for (const channel of channels) {
+      const roomName: string = 'chan_' + channel.chanId;
+      client.join(roomName);
+    }
+  }
 
-		// CHECK DU BODY ( CHAN ID )
+  async joinAllMyDiscs(userId: number, client: Socket) {
+    const discussions: DiscussionLite[] = await this.discService.get_discussions( userId );
+    for (const discussion of discussions) {
+      const roomName: string = 'disc_' + discussion.id;
+      client.join(roomName);
+    }
+  }
 
+  ///////////////////
+  //     EVENTS    //
+  ///////////////////
 
+  @SubscribeMessage('message')
+  async caseMessage(
+    client: Socket,
+    payload: { senderId: string; receiverId: string; message: string },
+  ): Promise<void> {
+    const friendList = await this.friendService.getFriendsList(
+      Number(payload.senderId),
+    );
 
-		// const writerChanUsr = await this.chanService.getChanUsr(user.id, );
-		// if (writerChanUsr.status == 'NORMAL') {
-		// 	this.wss.to("chan_" + data.chanId).emit("message", data.message);
-		// }
+    if (friendList.find((User) => User.id === Number(payload.receiverId)))
+      this.wss.to(payload.receiverId).emit('message', payload.message);
+  }
 
-
-		
-	}
-};
+  @SubscribeMessage('messageToRoom')
+  async caseToRoom(
+    client: Socket,
+    payload: { id: string; message: string },
+  ): Promise<void> {
+    this.logger.log('message received ok bref', payload);
+    const writer = connectedClients.get(client.id);
+    const writerChanUsr = await this.chanService.getChanUsr(
+      Number(writer.id),
+      Number(payload.id),
+    );
+    if (writerChanUsr.status == 'NORMAL') {
+      await this.chanService
+        .createMessage({
+          userId: writer.id,
+          channelId: Number(payload.id),
+          content: payload.message,
+        })
+        .then((data) => {
+          this.wss.to(`chan_${payload.id}`).emit('message', data);
+        });
+    }
+  }
+}
