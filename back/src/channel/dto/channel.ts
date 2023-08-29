@@ -41,3 +41,9 @@ export class DTO_UpdateChanUsr {
 	status?: UserStatusMSGs;
 	statusDuration?: Date;
 }
+
+export class DTO_CreateMessage {
+	content: string;
+    userId: number;
+    channelId: number;
+}
