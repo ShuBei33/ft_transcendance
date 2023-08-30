@@ -4,6 +4,8 @@ import type {
   ChanUserExtended,
   Channel as ChannelType,
   ChannelMsg,
+  User,
+  UserExtended,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
@@ -48,10 +50,30 @@ export class Channel {
   }
 
   async setPrivileges(chanId: number, data: channel.DTOUpdateChanUsr) {
-    return await this.instance.patch(`admin/${chanId}/usr`, data);
+    return await this.instance.patch<{ data: channel.DTOUpdateChanUsr }>(
+      `admin/${chanId}/usr`,
+      data
+    );
   }
 
   async kick(chanId: number, userId: number) {
     return await this.instance.delete(`kick/${chanId}/${userId}`);
   }
+}
+
+export class Friend {
+  constructor(
+    private instance: AxiosInstance = axios.create({
+      ...get(axiosConfig),
+      baseURL: `${get(axiosConfig)?.baseURL}/friend`,
+    })
+  ) {}
+
+  async getFriends() {
+    return await this.instance.get<{ data: UserExtended[] }>("get");
+  }
+
+  // async sendInvitation() {
+
+  // }
 }
