@@ -122,6 +122,12 @@ export class ChatGateway
         this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId } );
     }
 
+	async channelRemoved(chanId: number) {
+		const channel: ChannelLite = await this.chanService.get_channel( chanId );
+		this.wss.to(`chan_${chanId}`).emit('channelRemoved', channel );
+	}
+
+
   ///////////////////
   //     EVENTS    //
   ///////////////////

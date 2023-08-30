@@ -15,20 +15,37 @@ export class ChanAdminService {
 
     private logger: Logger = new Logger('Channel Admin Service');
 
-	async isAdminChannel( userId, chanId ) : Promise<boolean> {
-		const user = await this.prisma.chanUsr.findFirst({
+	async isAdminChannel( userId: number, chanId: number ) : Promise<ChanUsrRole> {
+		const userRole = await this.prisma.chanUsr.findFirst({
 			where: {
 				chanId: chanId,
 				userId: userId,
 				role: ( ChanUsrRole.ADMIN || ChanUsrRole.OWNER )
+			},
+			select: {
+				role: true,
 			}
 		})
-		if (!user)
-			return false;
-		return true;
+		if (userRole.role === ChanUsrRole.NORMAL )
+			error.notAuthorized("Fonctionnaliter reserver au priviligier")
+		return userRole.role;
 	}
 
-	async updateChanUsr( chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
+	async getRoleUser( userId: number, chanId: number ) : Promise<ChanUsrRole> {
+		const userRole = await this.prisma.chanUsr.findFirst({
+			where: {
+				chanId: chanId,
+				userId: userId,
+			},
+			select: {
+				role: true,
+			}
+		})
+		return userRole.role;
+	}
+
+
+	async updateUserChannel( chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
 		const user = await this.prisma.chanUsr.update({
 			where: { id: userToModify.id },
 			data: {
@@ -67,4 +84,14 @@ export class ChanAdminService {
 			this.chatGateway.channelSettingsEdited( chanId, channel );
 		}
 	}
+
+	async kickUserChannel( role: ChanUsrRole, chanId: number, cibleId: number,) {
+		if ( role != 'OWNER' && await this.isAdminChannel( chanId, cibleId ) )
+			return error.notAuthorized("You cannot kick other admin.");
+		await this.prisma.chanUsr.delete({
+			where: { id: cibleId },
+		})
+	}
+
+
 }
