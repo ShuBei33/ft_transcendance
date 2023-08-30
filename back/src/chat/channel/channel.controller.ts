@@ -148,19 +148,4 @@ export class ChannelController {
 		return success.general(res, 'User kicked successfully.', userToKick);
 	}
 
-	@Patch('admin/:chanId')
-	@ApiOperation({ summary: 'Update channel settings' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async update(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() channelToUpdate: DTO_UpdateChan,
-		@GetUser() user: UserLite,
-		@Res() res: Response
-	) {
-		const channelModified = await this.channelService.updateChannel(user.id, chanId, channelToUpdate);
-		return success.general(res, "Channel settings updated successfully.", channelModified);
-	}
-
 }

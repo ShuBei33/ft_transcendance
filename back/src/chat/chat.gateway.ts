@@ -102,6 +102,14 @@ export class ChatGateway
 		this.wss.emit('channelNew', channel);
 	}
 
+	channelSettingsEditedPrivate( chanId: number, channel: ChannelLite ) {
+		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', )
+	}
+
+	channelSettingsEdited( chanId: number, channel: ChannelLite ) {
+		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel)
+	}
+
 	channelUserRoleEdited( chanId: number, userUpdate: DTO_UpdateChanUsr) {
 		this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
 	}

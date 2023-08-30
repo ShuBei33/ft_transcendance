@@ -26,7 +26,7 @@ export class ChatController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async setPrivileges(
+	async updateChannelUser(
 		@Param('chanId', ParseIntPipe) chanId: number,
 		@Body() usrToModify: DTO_UpdateChanUsr,
 		@GetUser() user: UserLite,
@@ -37,6 +37,27 @@ export class ChatController {
 			await this.chanAdmin.updateChanUsr( chanId, usrToModify)
             return res.status(200).json({success: true });
 		} catch (err) {
+            return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+		}
+	}
+
+	@Patch('channel/admin/:chanId/settings')
+	@ApiOperation({ summary: 'Update channel settings' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	async updateChannelSetting(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@Body() usrToModify: DTO_UpdateChanUsr,
+		@GetUser() user: UserLite,
+		@Res() res: Response,
+	) {
+		try {
+			await this.chanAdmin.isAdminChannel( user.id, chanId );
+			// await this.chanAdmin.updateChanUsr( chanId, usrToModify)
+            return res.status(200).json({success: true });
+		} catch (err) {
+			console.log(err);
             return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
 		}
 	}

@@ -1,8 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ChatGateway } from "src/chat/chat.gateway";
-import { DTO_UpdateChanUsr } from "../dto";
+import { DTO_UpdateChan, DTO_UpdateChanUsr } from "../dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChanUsrRole } from "@prisma/client";
+import { error } from "src/utils/utils_error";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChanAdminService {
@@ -37,5 +39,32 @@ export class ChanAdminService {
 		})
 		if (user)
 			this.chatGateway.channelUserRoleEdited(chanId, userToModify)
+	}
+
+	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<void> {
+		if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
+			channelModified.hash = null;
+		if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
+			error.badRequest("You must provide a password.");
+		if (channelModified.hash)
+			channelModified.hash = await bcrypt.hash(channelModified.hash, process.env.HASH_BCRYPT);
+		const channel = await this.prisma.channel.update({
+			where: {
+				id: chanId,
+			},
+			data: {
+				...channelModified,
+			},
+			select: {
+				id: true,
+				name: true,
+				visibility: true,
+			}
+		})
+		if (channelModified.visibility == 'PRIVATE') {
+			this.chatGateway.channelSettingsEditedPrivate( chanId, channel );
+		} else {
+			this.chatGateway.channelSettingsEdited( chanId, channel );
+		}
 	}
 }
