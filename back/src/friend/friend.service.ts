@@ -187,7 +187,6 @@ export class FriendService {
     senderId: number,
     receiverId: number,
   ): Promise<Friendship> {
-    logger.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
     const friendShipExists = await this.prisma.friendship.findFirst({
       where: {
         OR: [
