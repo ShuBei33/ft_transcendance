@@ -1,43 +1,49 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { StatusInv, User } from '@prisma/client';
 import { Friendship } from '@prisma/client';
 import { UserLite } from 'src/user/dto';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger();
 
 @Injectable()
 export class FriendService {
   constructor(private prisma: PrismaService) {}
 
   async getFriendsList(userId: number): Promise<User[]> {
-	const user = await this.prisma.user.findUnique({
-	  where: { id: userId },
-	  include: {
-		sentInvites: {
-		  where: { inviteStatus: 'ACCEPTED' },
-		  include: { receiver: true },
-		},
-		receivedInvites: {
-		  where: { inviteStatus: 'ACCEPTED' },
-		  include: { sender: true },
-		},
-	  },
-	});
-  
-	if (!user) {
-	  throw new Error('User not found');
-	}
-  
-	// Find mutual friends by iterating through accepted invites
-	const friends = user.sentInvites
-	  .filter((sentInvite) =>
-		user.receivedInvites.some(
-		  (receivedInvite) =>
-			receivedInvite.senderId === sentInvite.receiverId
-		)
-	  )
-	  .map((sentInvite) => sentInvite.receiver);
-  
-	return friends;
+    const friendShip = await this.prisma.friendship.findMany({
+      where: {
+        OR: [
+          {
+            senderId: {
+              equals: userId,
+            },
+          },
+          {
+            receiverId: {
+              equals: userId,
+            },
+          },
+        ],
+        NOT: {
+          inviteStatus: {
+            not: StatusInv.ACCEPTED,
+          },
+        },
+      },
+      include: {
+        receiver: true,
+        sender: true,
+      },
+    });
+    if (!friendShip) return [];
+    const friends: User[] = friendShip.map(
+      (friendship) =>
+        (friendship.receiverId != userId && friendship.receiver) ||
+        friendship.sender,
+    );
+    return friends;
   }
 
   async deleteFriend(userId: number, friendId: number) {
@@ -52,9 +58,9 @@ export class FriendService {
       },
     });
 
-	if (userId === friendId) {
-		throw new Error('You cannot delete yourself');
-	}
+    if (userId === friendId) {
+      throw new Error('You cannot delete yourself');
+    }
 
     if (!friendship) {
       throw new NotFoundException('Friendship not found');
@@ -69,17 +75,17 @@ export class FriendService {
   }
 
   async getReceivedPendingInvites(userId: number): Promise<Friendship[]> {
-	const receivedPendingInvites = await this.prisma.friendship.findMany({
-	  where: {
-		receiverId: userId,
-		inviteStatus: 'PENDING',
-	  },
-	  include: {
-		sender: true,
-	  },
-	});
-  
-	return receivedPendingInvites;
+    const receivedPendingInvites = await this.prisma.friendship.findMany({
+      where: {
+        receiverId: userId,
+        inviteStatus: 'PENDING',
+      },
+      include: {
+        sender: true,
+      },
+    });
+
+    return receivedPendingInvites;
   }
 
   async acceptFriendInvitation(
@@ -95,7 +101,9 @@ export class FriendService {
 
       // Check if the answer is a valid boolean
       if (typeof answer !== 'boolean') {
-        throw new Error('Invalid answer format. Use true for accept or false for deny.');
+        throw new Error(
+          'Invalid answer format. Use true for accept or false for deny.',
+        );
       }
 
       // Find the sender user by their pseudo (assuming 'pseudo' is the property for the user's pseudo)
@@ -119,7 +127,9 @@ export class FriendService {
       });
 
       if (!pendingRequest) {
-        throw new Error('No pending friend request found from the specified user.');
+        throw new Error(
+          'No pending friend request found from the specified user.',
+        );
       }
 
       // If the answer is true, update the inviteStatus to 'ACCEPTED'
@@ -135,13 +145,13 @@ export class FriendService {
 
         console.log('Friend request accepted');
 
-		await this.prisma.friendship.create({
-			data: {
-				senderId: userId,
-				receiverId: sender.id,
-				inviteStatus: 'ACCEPTED',
-			},
-		});
+        await this.prisma.friendship.create({
+          data: {
+            senderId: userId,
+            receiverId: sender.id,
+            inviteStatus: 'ACCEPTED',
+          },
+        });
 
         return updatedFriendship;
       } else {
@@ -154,60 +164,74 @@ export class FriendService {
 
         console.log('Friend request denied');
         // Return a placeholder Friendship object as it's customary to return something even in the case of denial
-        return { id: -1, inviteStatus: 'REJECT', senderId: -1, receiverId: -1, 
-                countResendSndr: 0, countResendRcvr: 0, senderIsBlocked: false, receiverIsBlocked: false };
+        return {
+          id: -1,
+          inviteStatus: 'REJECT',
+          senderId: -1,
+          receiverId: -1,
+          countResendSndr: 0,
+          countResendRcvr: 0,
+          senderIsBlocked: false,
+          receiverIsBlocked: false,
+        };
       }
     } catch (err: any) {
       throw new Error(err.message);
     }
   }
 
+  //! ############################################################################################################
 
-//! ############################################################################################################
+  async sendFriendInvitation(
+    senderUser: UserLite,
+    userToAdd: string,
+  ): Promise<Friendship> {
+    // Check if the sender and receiver are not the same user
+    if (senderUser.pseudo === userToAdd) {
+      throw new Error('You cannot send a friend invitation to yourself');
+    }
 
+    // Find the sender user
+    const sender = await this.prisma.user.findUnique({
+      where: { id: senderUser.id },
+    });
+    if (!sender) {
+      throw new Error('Sender user does not exist');
+    }
 
-  async sendFriendInvitation(senderUser: UserLite, userToAdd: string): Promise<Friendship> {
-	// Check if the sender and receiver are not the same user
-	if (senderUser.pseudo === userToAdd) {
-	  throw new Error('You cannot send a friend invitation to yourself');
-	}
-  
-	// Find the sender user
-	const sender = await this.prisma.user.findUnique({ where: { id: senderUser.id } });
-	if (!sender) {
-	  throw new Error('Sender user does not exist');
-	}
-  
-	// Find the receiver user
-	const receiver = await this.prisma.user.findUnique({ where: { pseudo: userToAdd } });
-  
-	if (!receiver) {
-	  throw new Error('Receiver user does not exist');
-	}
-  
-	// Check if a friendship request already exists between the sender and receiver
-	const existingFriendship = await this.prisma.friendship.findFirst({
-	  where: {
-		OR: [
-		  { senderId: senderUser.id, receiverId: receiver.id },
-		  { senderId: receiver.id, receiverId: senderUser.id },
-		],
-	  },
-	});
-  
-	if (existingFriendship) {
-	  throw new Error('A friendship invitation already exists between these users');
-	}
-  
-	const newFriendship = await this.prisma.friendship.create({
-	  data: {
-		senderId: senderUser.id,
-		receiverId: receiver.id,
-		inviteStatus: 'PENDING',
-	  },
-	});
+    // Find the receiver user
+    const receiver = await this.prisma.user.findUnique({
+      where: { pseudo: userToAdd },
+    });
 
-	return newFriendship;
+    if (!receiver) {
+      throw new Error('Receiver user does not exist');
+    }
+
+    // Check if a friendship request already exists between the sender and receiver
+    const existingFriendship = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { senderId: senderUser.id, receiverId: receiver.id },
+          { senderId: receiver.id, receiverId: senderUser.id },
+        ],
+      },
+    });
+
+    if (existingFriendship) {
+      throw new Error(
+        'A friendship invitation already exists between these users',
+      );
+    }
+
+    const newFriendship = await this.prisma.friendship.create({
+      data: {
+        senderId: senderUser.id,
+        receiverId: receiver.id,
+        inviteStatus: 'PENDING',
+      },
+    });
+
+    return newFriendship;
   }
-
 }
