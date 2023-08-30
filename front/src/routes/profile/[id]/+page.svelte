@@ -10,13 +10,20 @@
   console.log("profile");
 
   const handleAddFriend = async (receiverId: number) => {
-    console.log("+++++id is", id);
     await _Friend
       .sendInvitation(receiverId)
       .then(({ data }) => {
         $dataStore.friendShips = [...$dataStore.friendShips, data.data];
+        addAnnouncement({
+          message: "Friend request sent",
+          level: "success",
+        });
       })
       .catch((e) => {
+        addAnnouncement({
+          message: "Failed to send friend request",
+          level: "error",
+        });
         console.log("error happened", e);
       });
   };

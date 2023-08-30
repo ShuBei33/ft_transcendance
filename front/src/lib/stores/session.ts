@@ -35,7 +35,7 @@ export const removeAnnouncement = (id: number) => {
 
 export const addAnnouncement = (data: Omit<announcement, "id">) => {
   announcements.update((arr) => {
-    const id = arr.length;
+    const id = 1000000 + arr.length;
     setTimeout(() => {
       removeAnnouncement(id);
     }, 3000);
