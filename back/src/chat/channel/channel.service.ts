@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   DTO_CreateChan,
@@ -21,12 +21,15 @@ import {
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
 import { ChannelLite } from './dto/channelLite';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 const logger = new Logger();
 
 @Injectable()
 export class ChannelService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+	private prisma: PrismaService,
+	) {}
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //																							//
@@ -398,91 +401,7 @@ export class ChannelService {
         }
     }
 
-    async updateChannel(userId: number, chanId: number, channelModified: DTO_UpdateChan): Promise<void> {
-        try {
-            // check that the user can access that channel and has the correct rights
-            const currentUsr = this.isHighAccessUser(userId, chanId);
-            if (!currentUsr)
-                return;
-
-            // delete hash from the db if switching from protected to public / private
-            if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
-                channelModified.hash = null;
-            if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
-                error.badRequest("You must provide a password.");
-            
-            // handle hash update
-            if (channelModified.hash)
-                channelModified.hash = await bcrypt.hash(channelModified.hash, 10);
-            await this.prisma.channel.update({
-                where: {
-                    id: chanId,
-                },
-                data: {
-                    ...channelModified,
-                }
-            })
-            if (!channelModified.name && !channelModified.visibility && !channelModified.hash)
-                error.notFound("You must provide at least one element.");
-        }
-        catch (e) {
-            if (e instanceof PrismaClientKnownRequestError)
-                error.notAuthorized("Unauthorized operation.");
-            else if (e instanceof PrismaClientValidationError)
-                error.badRequest("You sent invalid data.");
-            else if (e instanceof HttpException)
-                throw e;
-            else
-                error.unexpected(e);
-        }
-    }
-
-    async updateChanUsr(userId: number, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
-        try {
-            // check that the user can access that channel and has the correct rights
-            const currentUsr = this.isHighAccessUser(userId, chanId);
-            if (!currentUsr)
-                return;
-
-            // retrieve the correct chanUsr
-            const modified = await this.prisma.chanUsr.findFirst({
-                where: {
-                    userId: userToModify.id,
-                    chanId,
-                    OR: [
-                        { invitedToChan: 'ACCEPTED' },
-                        { invitedToChan: null },
-                    ],
-                }
-            })
-            // check that it's not owner of the channel
-            if (modified.role == 'OWNER')
-              error.notAuthorized("You cannot modify a channel owner's status.")
-
-            const muted = await this.prisma.chanUsr.update({
-              where: { id: modified.id },
-              data: {
-                      role: userToModify.role,
-                      status: userToModify.status,
-                      statusDuration: userToModify.statusDuration,
-              }
-            })
-            if (!userToModify.role && !userToModify.status)
-            error.notFound("You must provide at least one element.");
-          }
-          catch (e) {
-            if (e instanceof PrismaClientKnownRequestError) {
-              logger.error(e);
-              error.notAuthorized("Unauthorized operation.");
-            }
-            else if (e instanceof PrismaClientValidationError)
-                error.badRequest("You did not send the correct information.");
-            else if (e instanceof HttpException)
-                throw e;
-            else
-                error.unexpected(e);
-        }
-    }
+ 
 
     async kickChanUsr(userId: number, chanId: number, usrToKickId: number): Promise<Boolean> {
         try {

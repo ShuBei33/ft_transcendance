@@ -9,9 +9,9 @@ import {
 
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import Pong from './game/pongEngine';
-import { PrismaService } from './prisma/prisma.service';
-import { GameService } from './game/game.service';
+import Pong from '../game/pongEngine';
+import { PrismaService } from '../prisma/prisma.service';
+import { GameService } from '../game/game.service';
 
 interface PongInstance {
   playersUserIds: number[];
