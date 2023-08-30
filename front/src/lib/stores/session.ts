@@ -19,4 +19,28 @@ export const token = writableHook<string>({
   },
 });
 
+interface announcement {
+  id: number;
+  message: string;
+  level: "error" | "success";
+}
+
+export const announcements = writableHook<announcement[]>({
+  initialValue: [],
+});
+
+export const removeAnnouncement = (id: number) => {
+  announcements.update((arr) => arr.filter((value) => value.id != id));
+};
+
+export const addAnnouncement = (data: Omit<announcement, "id">) => {
+  announcements.update((arr) => {
+    const id = 1000000 + arr.length;
+    setTimeout(() => {
+      removeAnnouncement(id);
+    }, 3000);
+    return [...arr, { id, ...data }];
+  });
+};
+
 export const socketIsConnected = writable(false);

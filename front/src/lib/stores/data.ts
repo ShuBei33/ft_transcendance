@@ -10,13 +10,15 @@ interface dataType {
   channels: ChannelExtended[];
   myChannels: ChanUserExtended[];
   friends: UserExtended[];
+  friendShips: Friendship[];
 }
 
 export const data = writableHook<dataType>({
   initialValue: {
     channels: [],
     myChannels: [],
-    friends: []
+    friends: [],
+    friendShips: [],
   },
   onSet(value) {
     console.log("!!!!!!!!!! value", value);

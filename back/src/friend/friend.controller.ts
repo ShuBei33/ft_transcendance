@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { JwtGuard } from 'src/auth/guard';
-import { User } from '@prisma/client';
+import { Friendship, User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
 import {
@@ -26,8 +27,8 @@ import {
 import { UserLite } from 'src/user/dto';
 import { success } from 'src/utils/utils_success';
 import { error } from 'src/utils/utils_error';
-import { LobbyGateway } from './lobby.gateway';
-
+import { Logger } from '@nestjs/common';
+const logger = new Logger();
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
 @ApiHeader({ name: 'Authorization', description: "Token d'authentification" })
@@ -52,8 +53,10 @@ export class FriendController {
     }
   }
 
-  @Delete('remove/:uid')
-  @ApiOperation({ summary: "Suppresion d'un utilisateur de votre liste d'amis",})
+  @Delete('remove/:uid') //! => THIS IS THE EXAMPLE FUNCTION
+  @ApiOperation({
+    summary: "Suppresion d'un utilisateur de votre liste d'amis",
+  })
   @ApiResponse({ status: 200, description: 'Succes de la suppresion ' })
   @ApiResponse({ status: 400, description: 'Echec de la suppresion' })
   @ApiParam({
@@ -72,8 +75,8 @@ export class FriendController {
       console.log('JWT User: ', user);
       console.log('User Id Cible: ', uid);
 
-      await this.friendService.deleteFriend(user.id, uid); //! Maybe change uid to a string ? idk...
-      await this.friendService.deleteFriend(uid, user.id); //! Cause the user is not going to give an id right ? Or maybe we show id in the front ?
+      await this.friendService.deleteFriend(user.id, uid);
+      await this.friendService.deleteFriend(uid, user.id);
 
       return res.status(200).json({ success: true });
     } catch (err: any) {
@@ -99,7 +102,7 @@ export class FriendController {
     }
   }
 
-  @Post('sendInvitation')
+  @Post('sendInvitation/:uid') //! => THIS IS THE FUNCTION TO CHANGE
   @ApiOperation({ summary: "Envoie D'une invitation Ami" })
   @ApiResponse({
     status: 200,
@@ -111,46 +114,45 @@ export class FriendController {
   })
   @ApiBody({ description: "Username to Add", type: String, })
   async sendInvitation(
-    @Body('usernameToAdd') usernameToAdd: string,
+    @Body('data')
+    data: Pick<Friendship, 'receiverId'>,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
     try {
-      console.log('FUNCTION SendInvitation Friend was called');
-      console.log('JWT User: ', user);
-
+      Logger.log('@2222222222222222222222', data);
       const response = await this.friendService.sendFriendInvitation(
-        user,
-        'Fantomas',
-      ); // Hamtaro id 3
-
-      return res.status(200).json({ success: true, response: response });
+        user.id,
+        data.receiverId,
+      );
+      return success.general(res, 'Friend request sent', response);
     } catch (err: any) {
-      return res.status(400).json({ success: false, message: err.message });
+      if (err instanceof HttpException) throw err;
+      else return error.unexpected(err);
     }
   }
 
-  @Post('resolveInvitation')
+  @Post('resolveInvitation/:fromUserId')
   @ApiOperation({ summary: "Envoi de la Resolution d'une requete d'ami" })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })
   @ApiResponse({ status: 400, description: 'Echec de la Requete' })
   @ApiBody({ description: "La reponse a l'invitation", type: Boolean, })
   @ApiBody({ description: "Username to Add", type: String, })
   async resolveInvitation(
-    @Body() answer: boolean,
-    @Body() fromUser: string,
+    @Body() payload: { answer: number },
+    @Param('fromUserId', ParseIntPipe) fromUserId: number,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
     try {
       console.log('FUNCTION ResolveInvitation Friend was called');
       console.log('JWT User: ', user);
-      console.log('Answer Invitation: ', answer);
+      console.log('Answer Invitation: ', payload.answer);
 
       const response = await this.friendService.acceptFriendInvitation(
         user.id,
-        answer,
-        fromUser,
+        payload.answer,
+        fromUserId,
       );
 
       return res.status(200).json({ success: true });

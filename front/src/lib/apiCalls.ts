@@ -6,11 +6,13 @@ import type {
   ChannelMsg,
   User,
   UserExtended,
+  Friendship,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
 import { get } from "svelte/store";
 import type { channel } from "./models/dtos";
+import { user } from "./stores";
 
 export class ApiTemplate {
   instance: AxiosInstance = axios.create();
@@ -33,7 +35,7 @@ export class Channel {
   constructor(
     private instance: AxiosInstance = axios.create({
       ...get(axiosConfig),
-      baseURL: `${get(axiosConfig)?.baseURL}/channel`,
+      baseURL: `${get(axiosConfig)?.baseURL}/chat/channel`,
     })
   ) {}
 
@@ -71,6 +73,14 @@ export class Friend {
 
   async getFriends() {
     return await this.instance.get<{ data: UserExtended[] }>("get");
+  }
+
+  async sendInvitation(receiverId: number) {
+    return await this.instance.post<{ data: Friendship }>(`sendInvitation`, {
+      data: {
+        receiverId,
+      },
+    });
   }
 
   // async sendInvitation() {
