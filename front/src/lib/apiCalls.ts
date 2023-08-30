@@ -53,7 +53,7 @@ export class Channel {
 
   async setPrivileges(chanId: number, data: channel.DTOUpdateChanUsr) {
     return await this.instance.patch<{ data: channel.DTOUpdateChanUsr }>(
-      `admin/${chanId}/usr`,
+      `chat/admin/${chanId}/settings`,
       data
     );
   }
