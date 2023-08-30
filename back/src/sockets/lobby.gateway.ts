@@ -15,12 +15,14 @@ import { UserService } from '../user/user.service';
 import { UserStatus } from '@prisma/client';
 import { SocketService } from '../sockets/socket.service';
 import { ENS } from '../sockets/dto';
+import { JwtService } from '@nestjs/jwt';
 
 @WebSocketGateway({ namespace: "/lobby", cors: '*:*' })
 export class LobbyGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 	{
 	constructor(
+		private jwt: JwtService,
 		private userService: UserService,
 		private socketService: SocketService,
 	) {}
@@ -38,7 +40,7 @@ export class LobbyGateway
 
 	handleConnection(client: Socket, ...args: any[]) {
 		const token = client.handshake.auth.token;
-		const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
+		const user: UserLite = this.verifyTokenAndGetUser(token);
 
 		if (!user) {
 		client.disconnect();
@@ -67,6 +69,18 @@ export class LobbyGateway
 			this.logger.error(`USER UNDEFINED`);
 		}
 	}
+
+
+	verifyTokenAndGetUser(token: string): UserLite | null {
+		try {
+		  const decoded = this.jwt.verify(token, {
+			secret: process.env.JWT_SECRET,
+		  });
+		  return decoded.user;
+		} catch (e) {
+		  return null;
+		}
+	  }
 
   ///////////////////
   //     EVENTS    //

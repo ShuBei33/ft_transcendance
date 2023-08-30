@@ -64,14 +64,5 @@ export class SocketService {
     }
   }
 
-  verifyTokenAndGetUser(token: string): UserLite | null {
-    try {
-      const decoded = this.jwt.verify(token, {
-        secret: process.env.JWT_SECRET,
-      });
-      return decoded.user;
-    } catch (e) {
-      return null;
-    }
-  }
+
 }

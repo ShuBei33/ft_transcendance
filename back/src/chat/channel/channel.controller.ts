@@ -10,7 +10,6 @@ import { ChannelService } from './channel.service';
 import { DTO_CreateChan, DTO_JoinChan, DTO_InviteChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
 import { success } from 'src/utils/utils_success';
 import { UserLite } from 'src/user/dto';
-import { ChanAdminService } from './admin/chan_admin.service';
 
 // const logger = new Logger();
 
@@ -73,52 +72,5 @@ export class ChannelController {
 		await this.channelService.createChannel(user.id, channelToCreate);
 		return success.general(res, "Channel created successfully.");
 	}
-
-	@Delete('delete/:chanId')
-	@ApiOperation({ summary: 'Delete a channel that you own' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel Id', type: 'number', example: 1 })
-	async delete(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@GetUser() user: UserLite,
-		@Res() res: Response
-	) {
-		const channelDeleted = await this.channelService.deleteChannel(user.id, chanId);
-		return success.general(res, "Channel deleted successfully.", channelDeleted);
-	}
-
-	@Post('join/:chanId')
-	@ApiOperation({ summary: 'Join any kind of channels' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async join(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() channelToJoin: DTO_JoinChan,
-		@GetUser() user: UserLite,
-		@Res() res: Response
-	) {
-		const channelJoined = await this.channelService.joinChannel(user.id, chanId, channelToJoin);
-		return success.general(res, "Channel joined successfully.", channelJoined);
-	}
-
-	@Post('invite/:chanId')
-	@ApiOperation({ summary: 'Send an invitation to a user to join a channel' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async inviteTo(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() userToInvite: DTO_InviteChan,
-		@GetUser() user: UserLite,
-		@Res() res: Response
-	) {
-		const channelJoined = await this.channelService.inviteToChannel(user.id, chanId, userToInvite);
-		return success.general(res, "User invited successfully.", channelJoined);
-	}
-
-
-
 
 }

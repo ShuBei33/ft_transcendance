@@ -1,24 +1,26 @@
-import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChanAdminService } from './channel/admin/chan_admin.service';
-import { DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
+import { DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from 'src/user/dto';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { ChannelService } from './channel/channel.service';
 import { ChatGateway } from './chat.gateway';
+import { UserService } from 'src/user/user.service';
 
 @UseGuards(JwtGuard) 
 @ApiBearerAuth()
 @ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
-@ApiTags('Chat')
+@ApiTags('Socket')
 @Controller('chat')
 export class ChatController {
 	constructor(
 		private chatGate: ChatGateway,
         private chanAdmin: ChanAdminService,
-		private chanService: ChannelService
+		private chanService: ChannelService,
+		private userService: UserService
 	) {}
 
     private logger: Logger = new Logger('ChatService');
@@ -28,6 +30,7 @@ export class ChatController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	@ApiBody({ description: "DTO pour Update les droit Channel d'un User", type: DTO_UpdateChanUsr, })
 	async updateChannelUser(
 		@Param('chanId', ParseIntPipe) chanId: number,
 		@Body() usrToModify: DTO_UpdateChanUsr,
@@ -49,6 +52,7 @@ export class ChatController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	@ApiBody({ description: "DTO pour Update les settings d'un channels", type: DTO_UpdateChan, })
 	async updateChannelSetting(
 		@Param('chanId', ParseIntPipe) chanId: number,
 		@Body() channelModified: DTO_UpdateChan,
@@ -92,7 +96,7 @@ export class ChatController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async leave(
+	async leaveChannel(
 		@Param('chanId', ParseIntPipe) chanId: number,
 		@GetUser() user: UserLite,
 		@Res() res: Response
@@ -112,7 +116,74 @@ export class ChatController {
 			this.logger.error(err);
 			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
 		}
+	}
 
+	@Delete('channel/delete/:chanId')
+	@ApiOperation({ summary: 'Delete a channel that you own' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel Id', type: 'number', example: 1 })
+	async deleteChannel(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@GetUser() user: UserLite,
+		@Res() res: Response
+	) {
+		try {
+			const role = await this.chanAdmin.getRoleUser( user.id, chanId );
+			if ( role == 'OWNER' ) {
+				this.chatGate.channelRemoved( chanId );
+				this.chanService.removeChannel( chanId );
+				return res.status(200).json({success: true, message: 'Channel Destroye' });
+			}
+		} catch (err) {
+			this.logger.error(err);
+			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+		}
+	}
+
+	@Post('channel/join/:chanId')
+	@ApiOperation({ summary: 'Join any kind of channels' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiBody({ description: "Mot de passe si channel Protected", type: DTO_JoinChan, })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	async joinChannel(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@Body() channelToJoin: DTO_JoinChan,
+		@GetUser() user: UserLite,
+		@Res() res: Response
+	) {
+		try {
+			await this.chanService.joinChannel(user.id, chanId, channelToJoin);
+			this.chatGate.channelNewUser(chanId, user )
+			return res.status(200).json({success: true, message: 'Vous avez rejoint un channel.' });
+		} catch (err) {
+			this.logger.error(err);
+			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+		}
+	}
+
+	@Post('channel/invite/:chanId')
+	@ApiOperation({ summary: 'Send an invitation to a user to join a channel' })
+	@ApiResponse({ status: 200, description: 'Success' })
+	@ApiResponse({ status: 400, description: 'Failure' })
+	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
+	@ApiBody({ description: "Id de la personne a invite", type: DTO_InviteChan, })
+	async inviteToChannel(
+		@Param('chanId', ParseIntPipe) chanId: number,
+		@Body() userToInvite: DTO_InviteChan,
+		@GetUser() user: UserLite,
+		@Res() res: Response
+	) {
+		try {
+			const userCible = await this.userService.get_user( userToInvite.userId );
+			const channelJoined = await this.chanService.inviteToChannel(user.id, chanId, userToInvite);
+			this.chatGate.channelNewUser(chanId, userCible )
+			return res.status(200).json({success: true, message: 'Vous avez invite une personne dans un channel' });
+		} catch ( err ) {
+			console.log(err);
+			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+		}
 	}
 
 	

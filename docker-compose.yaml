@@ -34,6 +34,7 @@ services:
       RED_URI: ${RED_URI}
       JWT_SECRET: ${JWT_SECRET}
       SWAGGER: ${SWAGGER}
+      NEST_DEBUG: true
     volumes:
       - "./back:/app"
     working_dir: /app

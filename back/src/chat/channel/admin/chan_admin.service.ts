@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, forwardRef } from "@nestjs/common";
 import { ChatGateway } from "src/chat/chat.gateway";
 import { DTO_UpdateChan, DTO_UpdateChanUsr } from "../dto";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -9,7 +9,7 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class ChanAdminService {
 	constructor(
-        private chatGateway: ChatGateway,
+		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
 		private prisma: PrismaService,
 	) {}
 

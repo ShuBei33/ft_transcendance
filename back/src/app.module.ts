@@ -8,6 +8,7 @@ import { DiscussionModule } from './chat/discussion/discussion.module';
 import { ChannelModule } from './chat/channel/channel.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
@@ -22,6 +23,7 @@ import { JwtModule } from '@nestjs/jwt';
 		ChannelModule,
 		UserModule,
 		JwtModule,
+		ChatModule
 	],
 })
 export class AppModule {}

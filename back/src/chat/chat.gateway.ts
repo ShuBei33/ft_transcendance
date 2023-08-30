@@ -7,31 +7,31 @@ import {
 } from '@nestjs/websockets';
 import { DiscussionService } from 'src/chat/discussion/discussion.service';
 import { ChannelService } from 'src/chat/channel/channel.service';
-import { SocketService } from 'src/sockets/socket.service';
 import { FriendService } from 'src/friend/friend.service';
 import { ChanUsr } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Global, Logger } from '@nestjs/common';
 import { UserLite } from '../user/dto';
-import { ENS } from '../sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
 import { DiscussionLite } from './discussion/dto';
 import { DTO_UpdateChanUsr } from './channel/dto';
 import { ChannelLite } from './channel/dto/channelLite';
+import { JwtService } from '@nestjs/jwt';
 
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
 const socketMap = new Map<string, Socket>();
 
+@Global()
 @WebSocketGateway({ namespace: '/chat', cors: '*:*' })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private chanService: ChannelService,
-    private discService: DiscussionService,
-    private friendService: FriendService,
-    private socketService: SocketService,
+	  private friendService: FriendService,
+	  private discService: DiscussionService,
+	  private jwt: JwtService,
+	  private chanService: ChannelService,
   ) {}
 
   @WebSocketServer() wss: Server;
@@ -43,6 +43,7 @@ export class ChatGateway
 
   afterInit(server: Server) {
     this.logger.log('ChatGateway Initialized');
+	console.log(server);
   }
 
   handleConnection(client: Socket, ...args: any[]) {
@@ -52,7 +53,7 @@ export class ChatGateway
     }
 
     const token = client.handshake.auth.token;
-    const user: UserLite = this.socketService.verifyTokenAndGetUser(token);
+    const user: UserLite = this.verifyTokenAndGetUser(token);
 
     if (!user) {
       this.logger.error('Failed to retrive user, socket disconnected.');
@@ -63,7 +64,7 @@ export class ChatGateway
     connectedClients.set(client.id, user);
     socketMap.set(client.id, client);
     this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
-    this.socketService.addClient(user, ENS.CHAT, client);
+    // this.socketService.addClient(user, ENS.CHAT, client);
     this.joinAllMyDiscs(user.id, client);
     this.joinAllMyChans(user.id, client);
   }
@@ -93,40 +94,56 @@ export class ChatGateway
     }
   }
 
+	verifyTokenAndGetUser(token: string): UserLite | null {
+		try {
+		const decoded = this.jwt.verify(token, {
+			secret: process.env.JWT_SECRET,
+		});
+		return decoded.user;
+		} catch (e) {
+		return null;
+		}
+	}
 
   //////////////////////////////////
   //    METHODES CHANNEL ADMIN    //
   //////////////////////////////////
 
   	channelNew( channel: ChannelLite ) {
+		this.logger.log(`Channel [${channel.id}]:[${channel.name}] was Created`)
 		this.wss.emit('channelNew', channel);
 	}
 
 	channelSettingsEditedPrivate( chanId: number, channel: ChannelLite ) {
-		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', )
+		this.logger.log(`Channel [${chanId}]:[${channel.name}] was Edited`);
+		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
 	}
 
 	channelSettingsEdited( chanId: number, channel: ChannelLite ) {
+		this.logger.log("Channel Public | Protected was Edited");
 		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel)
 	}
 
 	channelUserRoleEdited( chanId: number, userUpdate: DTO_UpdateChanUsr) {
+		this.logger.log(`User Channel ${userUpdate.id} was Edited`);
 		this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
 	}
 
 	channelNewUser(chanId: number, user: UserLite) {
+		this.logger.log(`User [${user.login}] Join Channel [${chanId}]`);
         this.wss.to(`chan_${chanId}`).emit('userJoinChannel', { user, chanId } );
     }
 
     channelDelUser(chanId: number, user: UserLite) {
+		this.logger.log(`User [${user.login}] Leave Channel [${chanId}]`);
         this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId } );
     }
 
 	async channelRemoved(chanId: number) {
+		this.logger.log(`Channel [${chanId}] was removed`);
 		const channel: ChannelLite = await this.chanService.get_channel( chanId );
 		this.wss.to(`chan_${chanId}`).emit('channelRemoved', channel );
 	}
-
 
   ///////////////////
   //     EVENTS    //
