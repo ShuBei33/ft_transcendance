@@ -1,26 +1,12 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  DTO_CreateChan,
-  DTO_InviteChan,
-  DTO_JoinChan,
-  DTO_UpdateChan,
-  DTO_UpdateChanUsr,
-  DTO_CreateMessage,
-} from './dto';
+import { DTO_CreateChan, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr, DTO_CreateMessage } from './dto';
+import { ChannelLite } from './dto/channelLite';
 import { ChannelMsg, ChanUsr } from '@prisma/client';
-import {
-  ChanUsrRole,
-  UserStatusMSGs,
-  StatusInv,
-} from '@prisma/client';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library';
+import { ChanUsrRole, UserStatusMSGs, StatusInv } from '@prisma/client';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
-import { ChannelLite } from './dto/channelLite';
 
 const logger = new Logger();
 
@@ -29,18 +15,12 @@ export class ChannelService {
   constructor(private prisma: PrismaService) {}
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Creation		                                                                    //
-  //																							//
+  //																							                                            //
+  //		Creation		                                                                          //
+  //																							                                            //
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  async createChanUsr(
-    userId: number,
-    chanId: number,
-    role: ChanUsrRole,
-    status: UserStatusMSGs,
-    invitedToChan?: StatusInv,
-  ): Promise<ChanUsr> | null {
+  async createChanUsr( userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv ): Promise<ChanUsr> | null {
     try {
       const newChanUsr = await this.prisma.chanUsr.create({
         data: {
@@ -96,9 +76,9 @@ export class ChannelService {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Deletion		                                                                    //
-  //																							//
+  //																							                                            //
+  //		Deletion		                                                                          //
+  //																							                                            //
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   async deleteChannel(userId: number, chanId: number): Promise<void> {
@@ -121,59 +101,53 @@ export class ChannelService {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Retriever		                                                                    //
-  //																							//
+  //																							                                            //
+  //		GETTER			                                                                          //
+  //																							                                            //
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   async getAllChannels(): Promise<ChannelLite[]> | null {
-    try {
+
+      // get all non private channels and only display relevant infos
       const nonPrivChannels = await this.prisma.channel.findMany({
-        where: {
-          NOT: { visibility: 'PRIVATE' },
-        },
-      });
-      const liteChannels: ChannelLite[] = nonPrivChannels.map((channel) => {
-        const { createdAt, updatedAt, hash, ...rest } = channel;
-        return rest;
-      });
-      return liteChannels;
-    } catch (e) {
-      error.unexpected(e);
-    }
+        where: { 
+                  NOT: { visibility: 'PRIVATE' },
+              },
+        select: {
+                  id: true,
+	                name: true,
+                  createdAt: false,
+                  updatedAt: false,
+	                visibility: true,
+                  hash: false,
+              }
+        });
+      return nonPrivChannels;
   }
 
   async getMyChannels(userId: number): Promise<ChanUsr[]> {
-    try {
-      // only get channels to which we've subscribed and in which user is not banned
+      
+    // only get channels to which we've subscribed and in which user is not banned
       const memberships = await this.prisma.chanUsr.findMany({
         where: {
-          userId,
-          OR: [{ invitedToChan: 'ACCEPTED' }, { invitedToChan: null }],
-          NOT: {
-            status: 'BANNED',
-          },
+                userId,
+                OR: [{ invitedToChan: 'ACCEPTED' }, { invitedToChan: null }],
+                NOT: { status: 'BANNED' },
         },
-        include: {
-          channel: {
-            select: {
-              id: true,
-              name: true,
-              visibility: true,
-              channelUsers: {
-                include: {
-                  user: true,
-                },
-              },
-            },
-          },
-        },
+        include: { channel: { select: {
+                                        id: true,
+                                        name: true,
+                                        createdAt: false,
+                                        updatedAt: false,
+                                        visibility: true,
+                                        hash: false,
+                                        channelUsers: { include: { user: true, } },
+                                        }, 
+                            },
+                  },
       });
+      logger.error(memberships);
       return memberships;
-    } catch (e) {
-      if (e instanceof HttpException) throw e;
-      else error.unexpected(e);
-    }
   }
 
   async getChannelMsgs(

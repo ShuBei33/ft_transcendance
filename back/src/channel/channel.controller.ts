@@ -8,8 +8,9 @@ import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { ChannelService } from './channel.service';
 import { DTO_CreateChan, DTO_JoinChan, DTO_InviteChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
-import { success } from 'src/utils/utils_success';
 import { UserLite } from 'src/user/dto';
+import { success } from 'src/utils/utils_success';
+import { error } from 'src/utils/utils_error';
 
 // const logger = new Logger();
 
@@ -28,8 +29,13 @@ export class ChannelController {
 	async getAll(
 		@Res() res: Response,
 	) {
-		const channelList = await this.channelService.getAllChannels();
-		return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
+		try {
+			const channelList = await this.channelService.getAllChannels();
+			console.log(channelList);
+			return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
+		} catch {
+			return error.unexpected(' ERROR: /channel/all ');
+		}
 	}
 
 	@Get('mine')
@@ -40,8 +46,13 @@ export class ChannelController {
 		@GetUser() user: UserLite,
 		@Res() res: Response,
 	) {
-		const channelList = await this.channelService.getMyChannels(user.id);
-		return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
+		try {
+			const channelList = await this.channelService.getMyChannels(user.id);
+			console.log(channelList);
+			return success.general(res, "Subscribed channel list retrieved successfully.", channelList);
+		} catch {
+			return error.unexpected(' ERROR: /channel/mine ');
+		}
 	}
 
 	@Get('msgs/:chanId')
