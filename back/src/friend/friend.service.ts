@@ -41,8 +41,7 @@ export class FriendService {
     if (!friendShip) return [];
     const friends: User[] = friendShip.map(
       (friendship) =>
-        (friendship.receiverId != userId && friendship.receiver) ||
-        friendship.sender,
+        (friendship.receiverId != userId && friendship.receiver)
     );
     return friends;
   }
@@ -91,26 +90,31 @@ export class FriendService {
 
   async acceptFriendInvitation(
     userId: number,
-    answer: boolean,
-    fromUserPseudo: string,
+    answer: number,
+    fromUserId: number,
   ): Promise<Friendship> {
     try {
       console.log('FUNCTION AcceptFriendInvitation was called');
       console.log('User ID: ', userId);
       console.log('Answer: ', answer);
-      console.log('From User Pseudo: ', fromUserPseudo);
+      console.log('From User Id: ', fromUserId);
 
       // Check if the answer is a valid boolean
-      if (typeof answer !== 'boolean') {
+      if (typeof answer !== 'number') {
         throw new Error(
-          'Invalid answer format. Use true for accept or false for deny.',
+          'Invalid answer format. Answer must be a number (0 or 1)'
         );
       }
+	  
+	  if (answer !== 0 && answer !== 1) {
+		throw new Error(
+		  'Invalid answer format. Use a number between 0 and 1 : ' + answer
+		);}
 
-      // Find the sender user by their pseudo (assuming 'pseudo' is the property for the user's pseudo)
+      // Find the sender user by their id
       const sender = await this.prisma.user.findUnique({
         where: {
-          pseudo: fromUserPseudo,
+          id: fromUserId,
         },
       });
 
@@ -134,7 +138,7 @@ export class FriendService {
       }
 
       // If the answer is true, update the inviteStatus to 'ACCEPTED'
-      if (answer) {
+      if (answer === 1) {
         const updatedFriendship = await this.prisma.friendship.update({
           where: {
             id: pendingRequest.id,
