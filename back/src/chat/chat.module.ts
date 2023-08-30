@@ -8,7 +8,6 @@ import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "src/user/user.module";
 import { ChatGateway } from "./chat.gateway";
 
-@Global()
 @Module({
     imports: [
 		FriendModule,
@@ -25,6 +24,7 @@ import { ChatGateway } from "./chat.gateway";
 		ChatGateway
 	],
 	exports: [
+		ChatGateway
 	]
 
 })

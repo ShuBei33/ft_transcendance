@@ -32,7 +32,9 @@ export class ChatGateway
 	  private discService: DiscussionService,
 	  private jwt: JwtService,
 	  private chanService: ChannelService,
-  ) {}
+  ) {
+	console.log("COUCOU FLO")
+  }
 
   @WebSocketServer() wss: Server;
   private logger: Logger = new Logger('ChatGateway');
@@ -43,7 +45,7 @@ export class ChatGateway
 
   afterInit(server: Server) {
     this.logger.log('ChatGateway Initialized');
-	console.log(server);
+	// console.log(server);
   }
 
   handleConnection(client: Socket, ...args: any[]) {

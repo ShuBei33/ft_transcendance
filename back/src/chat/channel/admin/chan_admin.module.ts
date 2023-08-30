@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ChanAdminService } from './chan_admin.service';
 import { ChannelModule } from '../channel.module';
 import { DiscussionModule } from 'src/chat/discussion/discussion.module';
 import { FriendModule } from 'src/friend/friend.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ChatGateway } from 'src/chat/chat.gateway';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [
@@ -12,11 +12,11 @@ import { ChatGateway } from 'src/chat/chat.gateway';
 		FriendModule,
 		ChannelModule,
 		JwtModule,
+		forwardRef(() => ChatModule),
 	],
 	controllers: [],
 	providers: [
 		ChanAdminService,
-		ChatGateway
 	],
 	exports: [ChanAdminService],
 })
