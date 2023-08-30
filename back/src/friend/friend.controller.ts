@@ -50,7 +50,7 @@ export class FriendController {
     }
   }
 
-  @Delete('remove/:uid')
+  @Delete('remove/:uid') //! => THIS IS THE EXAMPLE FUNCTION
   @ApiOperation({
     summary: "Suppresion d'un utilisateur de votre liste d'amis",
   })
@@ -72,8 +72,8 @@ export class FriendController {
       console.log('JWT User: ', user);
       console.log('User Id Cible: ', uid);
 
-      await this.friendService.deleteFriend(user.id, uid); //! Maybe change uid to a string ? idk...
-      await this.friendService.deleteFriend(uid, user.id); //! Cause the user is not going to give an id right ? Or maybe we show id in the front ?
+      await this.friendService.deleteFriend(user.id, uid);
+      await this.friendService.deleteFriend(uid, user.id);
 
       return res.status(200).json({ success: true });
     } catch (err: any) {
@@ -99,7 +99,7 @@ export class FriendController {
     }
   }
 
-  @Post('sendInvitation')
+  @Post('sendInvitation/:uid') //! => THIS IS THE FUNCTION TO CHANGE
   @ApiOperation({ summary: "Envoie D'une invitation Ami" })
   @ApiResponse({
     status: 200,
@@ -110,7 +110,7 @@ export class FriendController {
     description: "Echec de l'envoie de l'invitation",
   })
   async sendInvitation(
-    @Body('usernameToAdd') usernameToAdd: string,
+    @Param('uid', ParseIntPipe) uid: number,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
@@ -120,8 +120,8 @@ export class FriendController {
 
       const response = await this.friendService.sendFriendInvitation(
         user,
-        'Fantomas',
-      ); // Hamtaro id 3
+        uid,
+      );
 
       return res.status(200).json({ success: true, response: response });
     } catch (err: any) {
@@ -129,25 +129,25 @@ export class FriendController {
     }
   }
 
-  @Post('resolveInvitation')
+  @Post('resolveInvitation/:fromUserId')
   @ApiOperation({ summary: "Envoi de la Resolution d'une requete d'ami" })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })
   @ApiResponse({ status: 400, description: 'Echec de la Requete' })
   async resolveInvitation(
-    @Body() answer: boolean,
-    @Body() fromUser: string,
+    @Body() payload: { answer: number },
+    @Param('fromUserId', ParseIntPipe) fromUserId: number,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
     try {
       console.log('FUNCTION ResolveInvitation Friend was called');
       console.log('JWT User: ', user);
-      console.log('Answer Invitation: ', answer);
+      console.log('Answer Invitation: ', payload.answer);
 
       const response = await this.friendService.acceptFriendInvitation(
         user.id,
-        answer,
-        fromUser,
+        payload.answer,
+        fromUserId,
       );
 
       return res.status(200).json({ success: true });
