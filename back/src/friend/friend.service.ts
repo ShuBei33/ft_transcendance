@@ -4,6 +4,7 @@ import { StatusInv, User } from '@prisma/client';
 import { Friendship } from '@prisma/client';
 import { UserLite } from 'src/user/dto';
 import { Logger } from '@nestjs/common';
+import { error } from 'src/utils/utils_error';
 
 const logger = new Logger();
 
@@ -183,55 +184,45 @@ export class FriendService {
   //! ############################################################################################################
 
   async sendFriendInvitation(
-    senderUser: UserLite,
-    userToAdd: string,
+    senderId: number,
+    receiverId: number,
   ): Promise<Friendship> {
-    // Check if the sender and receiver are not the same user
-    if (senderUser.pseudo === userToAdd) {
-      throw new Error('You cannot send a friend invitation to yourself');
-    }
-
-    // Find the sender user
-    const sender = await this.prisma.user.findUnique({
-      where: { id: senderUser.id },
-    });
-    if (!sender) {
-      throw new Error('Sender user does not exist');
-    }
-
-    // Find the receiver user
-    const receiver = await this.prisma.user.findUnique({
-      where: { pseudo: userToAdd },
-    });
-
-    if (!receiver) {
-      throw new Error('Receiver user does not exist');
-    }
-
-    // Check if a friendship request already exists between the sender and receiver
-    const existingFriendship = await this.prisma.friendship.findFirst({
+    logger.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
+    const friendShipExists = await this.prisma.friendship.findFirst({
       where: {
         OR: [
-          { senderId: senderUser.id, receiverId: receiver.id },
-          { senderId: receiver.id, receiverId: senderUser.id },
+          {
+            senderId: receiverId,
+            receiverId: senderId,
+          },
+          {
+            receiverId: receiverId,
+            senderId: senderId,
+          },
         ],
       },
     });
-
-    if (existingFriendship) {
-      throw new Error(
-        'A friendship invitation already exists between these users',
-      );
+    if (!friendShipExists)
+      return await this.prisma.friendship.create({
+        data: {
+          sender: {
+            connect: {
+              id: senderId,
+            },
+          },
+          receiver: {
+            connect: {
+              id: receiverId,
+            },
+          },
+        },
+        include: {
+          receiver: true,
+          sender: true,
+        },
+      });
+    else {
+      error.hasConflict('Friend request already sent');
     }
-
-    const newFriendship = await this.prisma.friendship.create({
-      data: {
-        senderId: senderUser.id,
-        receiverId: receiver.id,
-        inviteStatus: 'PENDING',
-      },
-    });
-
-    return newFriendship;
   }
 }

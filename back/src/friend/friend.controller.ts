@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { JwtGuard } from 'src/auth/guard';
-import { User } from '@prisma/client';
+import { Friendship, User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
 import {
@@ -25,7 +26,8 @@ import {
 import { UserLite } from 'src/user/dto';
 import { success } from 'src/utils/utils_success';
 import { error } from 'src/utils/utils_error';
-
+import { Logger } from '@nestjs/common';
+const logger = new Logger();
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
 @ApiHeader({ name: 'Authorization', description: "Token d'authentification" })
@@ -110,22 +112,21 @@ export class FriendController {
     description: "Echec de l'envoie de l'invitation",
   })
   async sendInvitation(
-    @Body('usernameToAdd') usernameToAdd: string,
+    @Body('data')
+    data: Pick<Friendship, 'receiverId'>,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
     try {
-      console.log('FUNCTION SendInvitation Friend was called');
-      console.log('JWT User: ', user);
-
+      Logger.log('@2222222222222222222222', data);
       const response = await this.friendService.sendFriendInvitation(
-        user,
-        'Fantomas',
-      ); // Hamtaro id 3
-
-      return res.status(200).json({ success: true, response: response });
+        user.id,
+        data.receiverId,
+      );
+      return success.general(res, 'Friend request sent', response);
     } catch (err: any) {
-      return res.status(400).json({ success: false, message: err.message });
+      if (err instanceof HttpException) throw err;
+      else return error.unexpected(err);
     }
   }
 
