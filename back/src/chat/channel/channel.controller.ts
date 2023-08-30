@@ -1,4 +1,4 @@
-import { UseGuards, Controller, Get, Post, Delete, Patch } from '@nestjs/common';
+import { UseGuards, Controller, Get, Post, Delete, Patch, Inject, forwardRef } from '@nestjs/common';
 import { Param, Body, ParseIntPipe, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
@@ -10,6 +10,7 @@ import { ChannelService } from './channel.service';
 import { DTO_CreateChan, DTO_JoinChan, DTO_InviteChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
 import { success } from 'src/utils/utils_success';
 import { UserLite } from 'src/user/dto';
+import { ChanAdminService } from './admin/chan_admin.service';
 
 // const logger = new Logger();
 
@@ -19,7 +20,9 @@ import { UserLite } from 'src/user/dto';
 @ApiBearerAuth()
 @Controller('channel')
 export class ChannelController {
-	constructor(private channelService: ChannelService, private prisma: PrismaService) { }
+	constructor(
+		private channelService: ChannelService,
+	) {}
 
 	@Get('all')
 	@ApiOperation({ summary: 'Retrieve all non-private channels' })
@@ -160,18 +163,4 @@ export class ChannelController {
 		return success.general(res, "Channel settings updated successfully.", channelModified);
 	}
 
-	@Patch('admin/:chanId/usr')
-	@ApiOperation({ summary: 'Update channel settings' })
-	@ApiResponse({ status: 200, description: 'Success' })
-	@ApiResponse({ status: 400, description: 'Failure' })
-	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	async setPrivileges(
-		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() usrToModify: DTO_UpdateChanUsr,
-		@GetUser() user: UserLite,
-		@Res() res: Response
-	) {
-		const channelModified = await this.channelService.updateChanUsr(user.id, chanId, usrToModify);
-		return success.general(res, "Channel settings updated successfully.", usrToModify);
-	}
 }

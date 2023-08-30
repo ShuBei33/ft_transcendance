@@ -10,11 +10,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UserLite } from './user/dto';
-import { UserService } from './user/user.service';
+import { UserLite } from '../user/dto';
+import { UserService } from '../user/user.service';
 import { UserStatus } from '@prisma/client';
-import { SocketService } from './sockets/socket.service';
-import { ENS } from './sockets/dto';
+import { SocketService } from '../sockets/socket.service';
+import { ENS } from '../sockets/dto';
 
 @WebSocketGateway({ namespace: "/lobby", cors: '*:*' })
 export class LobbyGateway
@@ -59,12 +59,12 @@ export class LobbyGateway
 	handleDisconnect(client: Socket) {
 		const user = this.socketService.getUser(client.id) || undefined;
 		if (user != undefined) {
-		this.socketService.removeClient(user, ENS.LOBBY);
-		this.logger.log(`USER ${user.login} [${user.id}] DISCONNECTED`);
-		this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
-		this.wss.emit('logoutToClient', user.id);
+			this.socketService.removeClient(user, ENS.LOBBY);
+			this.logger.log(`USER ${user.login} [${user.id}] DISCONNECTED`);
+			this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
+			this.wss.emit('logoutToClient', user.id);
 		} else {
-		this.logger.error(`USER UNDEFINED`);
+			this.logger.error(`USER UNDEFINED`);
 		}
 	}
 

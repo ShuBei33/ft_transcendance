@@ -15,7 +15,8 @@ import { error } from 'src/utils/utils_error';
 @ApiBearerAuth()
 @Controller('discussion')
 export class DiscussionController {
-	constructor(private discService: DiscussionService) {}
+	constructor(private discService: DiscussionService,
+	) {}
 
 	@Get('all')
 	@ApiOperation({ summary: 'Retrieve all of a user\'s discussions' })

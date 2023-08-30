@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   DTO_CreateChan,
@@ -21,12 +21,15 @@ import {
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
 import { ChannelLite } from './dto/channelLite';
+import { ChatGateway } from 'src/chat/chat.gateway';
 
 const logger = new Logger();
 
 @Injectable()
 export class ChannelService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+	private prisma: PrismaService,
+	) {}
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //																							//
@@ -437,7 +440,7 @@ export class ChannelService {
         }
     }
 
-    async updateChanUsr(userId: number, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
+    async updateChanUsr(userId: number, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<boolean> {
         try {
             // check that the user can access that channel and has the correct rights
             const currentUsr = this.isHighAccessUser(userId, chanId);
@@ -468,7 +471,8 @@ export class ChannelService {
               }
             })
             if (!userToModify.role && !userToModify.status)
-            error.notFound("You must provide at least one element.");
+            	error.notFound("You must provide at least one element.");
+			return true;
           }
           catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {

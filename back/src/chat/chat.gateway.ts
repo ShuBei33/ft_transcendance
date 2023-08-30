@@ -5,17 +5,19 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { DiscussionService } from 'src/discussion/discussion.service';
-import { ChannelService } from 'src/channel/channel.service';
+import { DiscussionService } from 'src/chat/discussion/discussion.service';
+import { ChannelService } from 'src/chat/channel/channel.service';
 import { SocketService } from 'src/sockets/socket.service';
 import { FriendService } from 'src/friend/friend.service';
-import { ChanUsr, Discussion } from '@prisma/client';
+import { ChanUsr } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
-import { UserLite } from './user/dto';
-import { DTO_SocketChanMessage, DTO_SocketDiscMessage, ENS } from './sockets/dto';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { UserLite } from '../user/dto';
+import { ENS } from '../sockets/dto';
 import { SubscribeMessage } from '@nestjs/websockets';
 import { DiscussionLite } from './discussion/dto';
+import { DTO_UpdateChanUsr } from './channel/dto';
+import { ChannelLite } from './channel/dto/channelLite';
 
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
@@ -91,6 +93,27 @@ export class ChatGateway
     }
   }
 
+
+  //////////////////////////////////
+  //    METHODES CHANNEL ADMIN    //
+  //////////////////////////////////
+
+  	channelNew( channel: ChannelLite ) {
+		this.wss.emit('channelNew', channel);
+	}
+
+	channelUserRoleEdited( chanId: number, userUpdate: DTO_UpdateChanUsr) {
+		this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
+	}
+
+	channelNewUser(chanId: number, user: UserLite) {
+        this.wss.to(`chan_${chanId}`).emit('userJoinChannel', { user, chanId } );
+    }
+
+    channelDelUser(chanId: number, user: UserLite) {
+        this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId } );
+    }
+
   ///////////////////
   //     EVENTS    //
   ///////////////////
@@ -105,7 +128,7 @@ export class ChatGateway
     );
 
     if (friendList.find((User) => User.id === Number(payload.receiverId)))
-      this.wss.to(payload.receiverId).emit('message', payload.message);
+      this.wss.to("disc_" + payload.receiverId).emit('message', payload.message);
   }
 
   @SubscribeMessage('messageToRoom')
@@ -131,4 +154,6 @@ export class ChatGateway
         });
     }
   }
+  
+
 }
