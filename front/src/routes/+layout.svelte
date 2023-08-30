@@ -11,6 +11,7 @@
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
   import type { ChannelMsg } from "$lib/models/prismaSchema";
+  import Notifications from "$lib/utils/notifications.svelte";
 
   onMount(() => {
     console.log($user);

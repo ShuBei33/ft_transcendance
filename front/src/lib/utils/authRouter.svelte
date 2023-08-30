@@ -7,6 +7,7 @@
   import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
   import SocketEventsHandler from "./socketEventsHandler.svelte";
   import RetrieveUserData from "./retrieveUserData.svelte";
+  import Notifications from "./notifications.svelte";
 
   let allowSlot = false;
 
@@ -58,6 +59,7 @@
 </script>
 
 <main>
+  <Notifications />
   <div class="app-container">
     {#if allowSlot}
       {#if $user && $axiosConfig}

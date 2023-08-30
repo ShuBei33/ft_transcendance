@@ -3,6 +3,7 @@
   import { user as myUser } from "$lib/stores";
   import { Friend } from "$lib/apiCalls";
   import { data as dataStore } from "$lib/stores";
+  import { addAnnouncement } from "$lib/stores/session";
 
   export let data;
   const _Friend = new Friend();
@@ -14,7 +15,6 @@
       .sendInvitation(receiverId)
       .then(({ data }) => {
         $dataStore.friendShips = [...$dataStore.friendShips, data.data];
-        // console.log("ok friendship", friendship);
       })
       .catch((e) => {
         console.log("error happened", e);
@@ -33,6 +33,16 @@
         class="generic-button"
         on:click={() => handleAddFriend(Number(id))}>add friend</button
       >
+      <button
+        class="generic-button"
+        on:click={() =>
+          addAnnouncement({
+            message: "test",
+            level: "success",
+          })}
+      >
+        test notify
+      </button>
       {user.id}
     {/if}
   {:else}
