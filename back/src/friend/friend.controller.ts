@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { JwtGuard } from 'src/auth/guard';
-import { Friendship, User } from '@prisma/client';
+import { Friendship } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
 import {
@@ -28,7 +28,11 @@ import { UserLite } from 'src/user/dto';
 import { success } from 'src/utils/utils_success';
 import { error } from 'src/utils/utils_error';
 import { Logger } from '@nestjs/common';
+
+
 const logger = new Logger();
+
+
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
 @ApiHeader({ name: 'Authorization', description: "Token d'authentification" })
@@ -37,7 +41,6 @@ const logger = new Logger();
 export class FriendController {
   	constructor(
 		private friendService: FriendService,
-		private lobbyGate: LobbyGateway,
 	) {}
 
   @Get('get')
