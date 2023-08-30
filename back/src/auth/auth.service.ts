@@ -64,7 +64,6 @@ export class AuthService {
 	async signToken( refresh_token: string, access_token: string, login: string ): Promise<{ token: string }>
 	{
 		const user_lite: UserLite = await this.get_user(login);
-		console.log("USERLITE: ", user_lite);
 		const payload = {
 			refresh: refresh_token,
 			access: access_token,
