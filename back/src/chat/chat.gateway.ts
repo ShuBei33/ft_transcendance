@@ -32,9 +32,7 @@ export class ChatGateway
 	  private discService: DiscussionService,
 	  private jwt: JwtService,
 	  private chanService: ChannelService,
-  ) {
-	console.log("COUCOU FLO")
-  }
+  ) {}
 
   @WebSocketServer() wss: Server;
   private logger: Logger = new Logger('ChatGateway');
@@ -156,12 +154,14 @@ export class ChatGateway
     client: Socket,
     payload: { senderId: string; receiverId: string; message: string },
   ): Promise<void> {
-    const friendList = await this.friendService.getFriendsList(
-      Number(payload.senderId),
-    );
-
-    if (friendList.find((User) => User.id === Number(payload.receiverId)))
-      this.wss.to("disc_" + payload.receiverId).emit('message', payload.message);
+	try {
+		const friendList = await this.friendService.getFriendsList(
+		  Number(payload.senderId),
+		);
+	
+		if (friendList.find((User) => User.id === Number(payload.receiverId)))
+		  this.wss.to("disc_" + payload.receiverId).emit('message', payload.message);
+	} catch (err) {}
   }
 
   @SubscribeMessage('messageToRoom')
@@ -169,23 +169,25 @@ export class ChatGateway
     client: Socket,
     payload: { id: string; message: string },
   ): Promise<void> {
-    this.logger.log('message received ok bref', payload);
-    const writer = connectedClients.get(client.id);
-    const writerChanUsr = await this.chanService.getChanUsr(
-      Number(writer.id),
-      Number(payload.id),
-    );
-    if (writerChanUsr.status == 'NORMAL') {
-      await this.chanService
-        .createMessage({
-          userId: writer.id,
-          channelId: Number(payload.id),
-          content: payload.message,
-        })
-        .then((data) => {
-          this.wss.to(`chan_${payload.id}`).emit('message', data);
-        });
-    }
+	try {
+		this.logger.log('message received ok bref', payload);
+		const writer = connectedClients.get(client.id);
+		const writerChanUsr = await this.chanService.getChanUsr(
+		  Number(writer.id),
+		  Number(payload.id),
+		);
+		if (writerChanUsr.status == 'NORMAL') {
+		  await this.chanService
+			.createMessage({
+			  userId: writer.id,
+			  channelId: Number(payload.id),
+			  content: payload.message,
+			})
+			.then((data) => {
+			  this.wss.to(`chan_${payload.id}`).emit('message', data);
+			});
+		}
+	} catch (err) {}
   }
   
 

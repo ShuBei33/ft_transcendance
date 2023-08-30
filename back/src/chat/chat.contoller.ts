@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChanAdminService } from './channel/admin/chan_admin.service';
-import { DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
+import { ChannelLite, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from 'src/user/dto';
 import { JwtGuard } from 'src/auth/guard';
@@ -9,6 +9,7 @@ import { Response } from 'express';
 import { ChannelService } from './channel/channel.service';
 import { ChatGateway } from './chat.gateway';
 import { UserService } from 'src/user/user.service';
+import { ChanVisibility } from '@prisma/client';
 
 @UseGuards(JwtGuard) 
 @ApiBearerAuth()
@@ -33,13 +34,14 @@ export class ChatController {
 	@ApiBody({ description: "DTO pour Update les droit Channel d'un User", type: DTO_UpdateChanUsr, })
 	async updateChannelUser(
 		@Param('chanId', ParseIntPipe) chanId: number,
-		@Body() usrToModify: DTO_UpdateChanUsr,
+		@Body() userToModify: DTO_UpdateChanUsr,
 		@GetUser() user: UserLite,
 		@Res() res: Response,
 	) {
 		try {
 			await this.chanAdmin.isAdminChannel( user.id, chanId );
-			await this.chanAdmin.updateUserChannel( chanId, usrToModify)
+			await this.chanAdmin.updateUserChannel( chanId, userToModify);
+			this.chatGate.channelUserRoleEdited(chanId, userToModify);
             return res.status(200).json({success: true, message: 'User Channel Edited.' });
 		} catch (err) {
 			this.logger.error(err);
@@ -61,7 +63,14 @@ export class ChatController {
 	) {
 		try {
 			await this.chanAdmin.isAdminChannel( user.id, chanId );
-			await this.chanAdmin.updateChannelSettings( chanId, channelModified)
+			const channel: ChannelLite = await this.chanAdmin.updateChannelSettings( chanId, channelModified)
+			if ( channelModified.visibility == ChanVisibility.PRIVATE ) {
+				this.chatGate.channelSettingsEditedPrivate( chanId, channel );
+				// Suppression des channels Public|Protected qui devienne Private
+				this.chatGate.channelRemoved(chanId);
+			} else {
+				this.chatGate.channelSettingsEdited( chanId, channel );
+			}
 			return res.status(200).json({success: true, message: 'Settings Channel Edited.' });
 		} catch (err) {
 			this.logger.error(err);

@@ -16,6 +16,7 @@ import { GetUser } from 'src/auth/decorator';
 import { Response } from 'express';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiHeader,
   ApiOperation,
   ApiParam,
@@ -25,6 +26,7 @@ import {
 import { UserLite } from 'src/user/dto';
 import { success } from 'src/utils/utils_success';
 import { error } from 'src/utils/utils_error';
+import { LobbyGateway } from './lobby.gateway';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -32,17 +34,17 @@ import { error } from 'src/utils/utils_error';
 @ApiTags('Friend')
 @Controller('friend')
 export class FriendController {
-  constructor(private friendService: FriendService) {}
+  	constructor(
+		private friendService: FriendService,
+		private lobbyGate: LobbyGateway,
+	) {}
 
   @Get('get')
-  @ApiOperation({
-    summary: "Recuperation de la liste d'amis de l'utilisateur en court",
-  })
+  @ApiOperation({ summary: "Recuperation de la liste d'amis de l'utilisateur en court", })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })
   @ApiResponse({ status: 400, description: 'Echec de la Requete' })
   async get(@GetUser() user: UserLite, @Res() res: Response) {
     try {
-      // CODE ICI
       const data = await this.friendService.getFriendsList(user.id);
       return success.general(res, 'Friends retrieved successfully', data);
     } catch (err: any) {
@@ -51,9 +53,7 @@ export class FriendController {
   }
 
   @Delete('remove/:uid')
-  @ApiOperation({
-    summary: "Suppresion d'un utilisateur de votre liste d'amis",
-  })
+  @ApiOperation({ summary: "Suppresion d'un utilisateur de votre liste d'amis",})
   @ApiResponse({ status: 200, description: 'Succes de la suppresion ' })
   @ApiResponse({ status: 400, description: 'Echec de la suppresion' })
   @ApiParam({
@@ -109,6 +109,7 @@ export class FriendController {
     status: 400,
     description: "Echec de l'envoie de l'invitation",
   })
+  @ApiBody({ description: "Username to Add", type: String, })
   async sendInvitation(
     @Body('usernameToAdd') usernameToAdd: string,
     @GetUser() user: UserLite,
@@ -133,6 +134,8 @@ export class FriendController {
   @ApiOperation({ summary: "Envoi de la Resolution d'une requete d'ami" })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })
   @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+  @ApiBody({ description: "La reponse a l'invitation", type: Boolean, })
+  @ApiBody({ description: "Username to Add", type: String, })
   async resolveInvitation(
     @Body() answer: boolean,
     @Body() fromUser: string,

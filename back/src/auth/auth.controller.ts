@@ -13,15 +13,15 @@ import { AuthService } from './auth.service';
 import { GetUser } from './decorator';
 import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiHeader } from '@nestjs/swagger';
+import { ApiExcludeEndpoint, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { UserLite } from 'src/user/dto';
 
 const logger = new Logger();
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
-
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)

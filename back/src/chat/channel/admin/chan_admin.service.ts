@@ -1,6 +1,5 @@
-import { Inject, Injectable, Logger, forwardRef } from "@nestjs/common";
-import { ChatGateway } from "src/chat/chat.gateway";
-import { DTO_UpdateChan, DTO_UpdateChanUsr } from "../dto";
+import { Injectable } from "@nestjs/common";
+import { ChannelLite, DTO_UpdateChan, DTO_UpdateChanUsr } from "../dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { ChanUsrRole } from "@prisma/client";
 import { error } from "src/utils/utils_error";
@@ -9,11 +8,9 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class ChanAdminService {
 	constructor(
-		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
 		private prisma: PrismaService,
 	) {}
 
-    private logger: Logger = new Logger('Channel Admin Service');
 
 	async isAdminChannel( userId: number, chanId: number ) : Promise<ChanUsrRole> {
 		const userRole = await this.prisma.chanUsr.findFirst({
@@ -44,7 +41,6 @@ export class ChanAdminService {
 		return userRole.role;
 	}
 
-
 	async updateUserChannel( chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
 		const user = await this.prisma.chanUsr.update({
 			where: { id: userToModify.id },
@@ -54,11 +50,9 @@ export class ChanAdminService {
 				statusDuration: userToModify.statusDuration,
 			}
 		})
-		if (user)
-			this.chatGateway.channelUserRoleEdited(chanId, userToModify)
 	}
 
-	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<void> {
+	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<ChannelLite> {
 		if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
 			channelModified.hash = null;
 		if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
@@ -78,11 +72,7 @@ export class ChanAdminService {
 				visibility: true,
 			}
 		})
-		if (channelModified.visibility == 'PRIVATE') {
-			this.chatGateway.channelSettingsEditedPrivate( chanId, channel );
-		} else {
-			this.chatGateway.channelSettingsEdited( chanId, channel );
-		}
+		return channel;
 	}
 
 	async kickUserChannel( role: ChanUsrRole, chanId: number, cibleId: number,) {
@@ -92,6 +82,4 @@ export class ChanAdminService {
 			where: { id: cibleId },
 		})
 	}
-
-
 }
