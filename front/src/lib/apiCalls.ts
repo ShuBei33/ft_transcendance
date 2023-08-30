@@ -35,7 +35,7 @@ export class Channel {
   constructor(
     private instance: AxiosInstance = axios.create({
       ...get(axiosConfig),
-      baseURL: `${get(axiosConfig)?.baseURL}/channel`,
+      baseURL: `${get(axiosConfig)?.baseURL}/chat/channel`,
     })
   ) {}
 
@@ -53,7 +53,7 @@ export class Channel {
 
   async setPrivileges(chanId: number, data: channel.DTOUpdateChanUsr) {
     return await this.instance.patch<{ data: channel.DTOUpdateChanUsr }>(
-      `chat/admin/${chanId}/settings`,
+      `admin/${chanId}/usr`,
       data
     );
   }
