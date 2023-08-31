@@ -8,13 +8,13 @@ const prisma = new PrismaClient();
 //																							//
 //////////////////////////////////////////////////////////////////////////////////////////////
 export async function connect_friends( users: User[] ) {
-	for ( const user_sender of users ) {
-		for ( const user_recever of users ) {
-			if ( user_recever != user_sender ) {
+	for ( let i = 0; i < users.length; i++ ) {
+		for ( let j = i + 1; j < users.length; j++ ) {
+			if ( users[i] != users[j] ) {
 				await prisma.friendship.create({
 					data: {
-						sender: { connect: { id: user_sender.id }},
-						receiver: { connect: { id: user_recever.id }},
+						sender: { connect: { id: users[j].id }},
+						receiver: { connect: { id: users[i].id }},
                         inviteStatus: 'ACCEPTED'
 					}
 				})

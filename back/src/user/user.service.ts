@@ -37,7 +37,8 @@ export class UserService {
 		select: {
 			id: true,
 			login: true,
-			pseudo: true
+			pseudo: true,
+			status: true,
 		}
 	});
 	return user;
