@@ -8,6 +8,7 @@
   import SocketEventsHandler from "./socketEventsHandler.svelte";
   import RetrieveUserData from "./retrieveUserData.svelte";
   import Notifications from "./notifications.svelte";
+  import Modal from "../../components/modal/modal.svelte";
 
   let allowSlot = false;
 
@@ -57,7 +58,7 @@
   };
   $: browser && monitorPage();
 </script>
-
+<Modal />
 <main>
   <Notifications />
   <div class="app-container">

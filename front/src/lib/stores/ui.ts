@@ -1,18 +1,22 @@
 import { writableHook, type WritableHook } from "./hooks";
 
+type chatType = {
+  labelFocusId: number;
+  textInputMap: Map<number, string>;
+};
+
 interface ui {
   chat: {
     toggle: boolean;
     selected: "DM" | "ROOM" | "FRIEND";
-    room: {
-      labelFocusId: number;
-      textInputMap: Map<number, string>;
-    };
+    room: chatType;
+    dm: chatType;
   };
   game: {
     state: "NONE" | "PLAYING" | "QUEUE";
     id: number;
   };
+  modal: "NONE" | "EDITCHAN" | "BROWSECHAN";
 }
 
 export const uiInitialValue: ui = {
@@ -23,11 +27,16 @@ export const uiInitialValue: ui = {
       textInputMap: new Map<number, string>(),
       labelFocusId: -1,
     },
+    dm: {
+      textInputMap: new Map<number, string>(),
+      labelFocusId: -1,
+    },
   },
   game: {
     state: "NONE",
     id: 0,
   },
+  modal: "NONE",
 };
 
 export const ui = writableHook<ui>({

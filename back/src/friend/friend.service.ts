@@ -5,7 +5,6 @@ import { Friendship } from '@prisma/client';
 import { UserLite } from 'src/user/dto';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
-import { createSafeUser, safeUserType } from 'src/utils/models';
 import { DiscussionService } from 'src/chat/discussion/discussion.service';
 
 const logger = new Logger();

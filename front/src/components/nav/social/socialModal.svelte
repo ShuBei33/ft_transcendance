@@ -6,6 +6,7 @@
   import Tabs from "./tabs.svelte";
   import type { Socket } from "socket.io-client";
   import Test from "./dm/test.svelte";
+  import Header from "./room/header.svelte";
 
   export let chatSocket: Socket | undefined;
 </script>
@@ -16,7 +17,11 @@
       <svelte:component this={FriendContent} />
     {:else}
       <div class="social-modal">
-        <div class="header" />
+        <div class="header">
+          {#if $ui.chat.selected == "ROOM"}
+            <svelte:component this={Header} />
+          {/if}
+        </div>
         <div class="left">
           <div class="top-left">
             <Tabs />
