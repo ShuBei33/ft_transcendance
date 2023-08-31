@@ -140,11 +140,7 @@ export class FileController {
       );
 
       if (fileToSend) res.sendFile(join(directoryPath, fileToSend));
-      else
-        res.status(HttpStatus.NOT_FOUND).json({
-          success: false,
-          message: "Avatar not found",
-        });
+      else res.status(HttpStatus.OK).send(null);
     });
   }
 }

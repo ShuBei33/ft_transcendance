@@ -3,10 +3,14 @@
   import { Channel, Friend } from "$lib/apiCalls";
   import { data as dataStore } from "$lib/stores/data";
   import { ui } from "$lib/stores";
-  import type { ChannelMsg } from "$lib/models/prismaSchema";
+  import { StatusInv, type ChannelMsg, type Friendship, type UserExtended } from "$lib/models/prismaSchema";
   import type { AxiosResponse } from "axios";
+  import { addAnnouncement } from "$lib/stores/session";
+  import Page from "../../routes/+page.svelte";
+
   onMount(() => {
     const _Channel = new Channel();
+    const _Friend = new Friend();
 
     _Channel
       .all()
@@ -34,12 +38,26 @@
         $dataStore.myChannels = myChannels;
       })
       .catch((e) => {});
-
-    new Friend()
-      .getFriends()
-      .then(({ data }) => {
-        $dataStore.friends = data.data;
+	  try {
+    _Friend
+      .getFriends(StatusInv.ACCEPTED)
+			.then(({ data }) => {
+				console.log("friend data received", data);
+				$dataStore.friends = (data.data as UserExtended[]);
+	  })
+		_Friend
+      .getFriends(StatusInv.PENDING, false)
+			.then(({ data }) => {
+				console.log("friend pending result", data);
+				$dataStore.friendShips= (data.data as Friendship[]);
       })
-      .catch((e) => {});
+	  } catch (e) {
+        addAnnouncement({
+          message: "An error occured while retrieving your friendlist.",
+          level: "error",
+		});
+		$dataStore.friends = [];
+		$dataStore.friendShips = [];
+	  }
   });
 </script>

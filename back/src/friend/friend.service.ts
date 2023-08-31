@@ -5,14 +5,15 @@ import { Friendship } from '@prisma/client';
 import { UserLite } from 'src/user/dto';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
+import { createSafeUser, safeUserType } from 'src/utils/models';
+import { DiscussionService } from 'src/chat/discussion/discussion.service';
 
 const logger = new Logger();
-
 @Injectable()
 export class FriendService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private dm: DiscussionService) {}
 
-  async getFriendsList(userId: number): Promise<User[]> {
+  async getFriendsList(userId: number, status: StatusInv, filterUser: boolean) {
     const friendShip = await this.prisma.friendship.findMany({
       where: {
         OR: [
@@ -29,7 +30,7 @@ export class FriendService {
         ],
         NOT: {
           inviteStatus: {
-            not: StatusInv.ACCEPTED,
+            not: status,
           },
         },
       },
@@ -38,12 +39,19 @@ export class FriendService {
         sender: true,
       },
     });
+    if (filterUser == true) logger.log('here 1', friendShip);
     if (!friendShip) return [];
-    const friends: User[] = friendShip.map(
-      (friendship) =>
-        (friendship.receiverId != userId && friendship.receiver)
-    );
-    return friends;
+
+    if (filterUser) {
+      const friends = friendShip.map((friendship) => {
+        if (friendship.receiverId != userId) return friendship.receiver;
+        return friendship.sender;
+      });
+      return friends;
+    } else {
+      logger.log('here 2', friendShip);
+      return friendShip;
+    }
   }
 
   async deleteFriend(userId: number, friendId: number) {
@@ -89,100 +97,61 @@ export class FriendService {
   }
 
   async acceptFriendInvitation(
-    userId: number,
-    answer: number,
-    fromUserId: number,
+    receiverId: number,
+    friendShipId: number,
   ): Promise<Friendship> {
-    try {
-      console.log('FUNCTION AcceptFriendInvitation was called');
-      console.log('User ID: ', userId);
-      console.log('Answer: ', answer);
-      console.log('From User Id: ', fromUserId);
+    const updatedFriendShip = await this.prisma.friendship.update({
+      where: {
+        id: friendShipId,
+      },
+      data: {
+        inviteStatus: StatusInv.ACCEPTED,
+      },
+    });
 
-      // Check if the answer is a valid boolean
-      if (typeof answer !== 'number') {
-        throw new Error(
-          'Invalid answer format. Answer must be a number (0 or 1)'
+    if (updatedFriendShip) {
+      const discussionExist = await this.dm.discussionExist(
+        updatedFriendShip.receiverId,
+        updatedFriendShip.senderId,
+      );
+      if (!discussionExist) {
+        const dmRoom = await this.dm.create_discussion(
+          updatedFriendShip.receiverId,
+          updatedFriendShip.senderId,
         );
       }
-	  
-	  if (answer !== 0 && answer !== 1) {
-		throw new Error(
-		  'Invalid answer format. Use a number between 0 and 1 : ' + answer
-		);}
-
-      // Find the sender user by their id
-      const sender = await this.prisma.user.findUnique({
-        where: {
-          id: fromUserId,
-        },
-      });
-
-      if (!sender) {
-        throw new Error('Sender user does not exist');
-      }
-
-      // Find the pending friend requests from the sender to the user
-      const pendingRequest = await this.prisma.friendship.findFirst({
-        where: {
-          senderId: sender.id,
-          receiverId: userId,
-          inviteStatus: 'PENDING',
-        },
-      });
-
-      if (!pendingRequest) {
-        throw new Error(
-          'No pending friend request found from the specified user.',
-        );
-      }
-
-      // If the answer is true, update the inviteStatus to 'ACCEPTED'
-      if (answer === 1) {
-        const updatedFriendship = await this.prisma.friendship.update({
-          where: {
-            id: pendingRequest.id,
-          },
-          data: {
-            inviteStatus: 'ACCEPTED',
-          },
-        });
-
-        console.log('Friend request accepted');
-
-        await this.prisma.friendship.create({
-          data: {
-            senderId: userId,
-            receiverId: sender.id,
-            inviteStatus: 'ACCEPTED',
-          },
-        });
-
-        return updatedFriendship;
-      } else {
-        // If the answer is false, delete the friendship record
-        await this.prisma.friendship.delete({
-          where: {
-            id: pendingRequest.id,
-          },
-        });
-
-        console.log('Friend request denied');
-        // Return a placeholder Friendship object as it's customary to return something even in the case of denial
-        return {
-          id: -1,
-          inviteStatus: 'REJECT',
-          senderId: -1,
-          receiverId: -1,
-          countResendSndr: 0,
-          countResendRcvr: 0,
-          senderIsBlocked: false,
-          receiverIsBlocked: false,
-        };
-      }
-    } catch (err: any) {
-      throw new Error(err.message);
     }
+
+    return updatedFriendShip;
+  }
+
+  async deleteFriendShip(
+    receiverId: number,
+    friendShipId: number,
+  ): Promise<Friendship> {
+    const deletedFriendShip = await this.prisma.friendship.delete({
+      where: {
+        id: friendShipId,
+      },
+    });
+
+    deletedFriendShip.inviteStatus = StatusInv.REJECT;
+    return deletedFriendShip;
+  }
+
+  async declineFriendShip(
+    receiverId: number,
+    friendShipId: number,
+  ): Promise<Friendship> {
+    const friendShip = await this.prisma.friendship.findUnique({
+      where: {
+        id: friendShipId,
+      },
+    });
+
+    if (friendShip && friendShip.inviteStatus == 'ACCEPTED')
+      error.hasConflict('Already friends.');
+    return await this.deleteFriendShip(receiverId, friendShipId);
   }
 
   //! ############################################################################################################

@@ -10,7 +10,7 @@
   import { socketIsConnected } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
-  import type { ChannelMsg } from "$lib/models/prismaSchema";
+  import type { ChannelMsg, DiscussionMsg } from "$lib/models/prismaSchema";
   import Notifications from "$lib/utils/notifications.svelte";
 
   onMount(() => {
@@ -45,7 +45,7 @@
     },
   ];
   let chatSocket: Socket | undefined = undefined;
-  $: if (!$socketIsConnected && $token) {
+  $: if (!$socketIsConnected && $token && !chatSocket) {
     chatSocket = io("http://localhost:5500/chat", {
       auth: {
         token: $token,
@@ -61,13 +61,18 @@
       .on("message", (data: ChannelMsg) => {
         $data.myChannels.forEach((chanUsr, index) => {
           if (chanUsr.channel.id == Number(data.channelId)) {
-            $data.myChannels[index].channel.channelMsgs = [
-              ...$data.myChannels[index].channel.channelMsgs,
-              data,
-            ];
+            if ($data.myChannels[index].channel.channelMsgs)
+              $data.myChannels[index].channel.channelMsgs = [
+                ...$data.myChannels[index].channel.channelMsgs,
+                data,
+              ];
+            else $data.myChannels[index].channel.channelMsgs = [data];
             return;
           }
         });
+      })
+      .on("dm", (data: DiscussionMsg) => {
+        console.log("new dm !", data);
       });
   }
 </script>

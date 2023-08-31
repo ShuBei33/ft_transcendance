@@ -7,6 +7,7 @@ import type {
   User,
   UserExtended,
   Friendship,
+  StatusInv,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
@@ -33,9 +34,10 @@ export class Game extends ApiTemplate {
 
 export class Channel {
   constructor(
+    baseUrl?: string,
     private instance: AxiosInstance = axios.create({
       ...get(axiosConfig),
-      baseURL: `${get(axiosConfig)?.baseURL}/chat/channel`,
+      baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/channel`,
     })
   ) {}
 
@@ -65,14 +67,17 @@ export class Channel {
 
 export class Friend {
   constructor(
+    baseUrl?: string,
     private instance: AxiosInstance = axios.create({
       ...get(axiosConfig),
-      baseURL: `${get(axiosConfig)?.baseURL}/friend`,
+      baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/friend`,
     })
   ) {}
 
-  async getFriends() {
-    return await this.instance.get<{ data: UserExtended[] }>("get");
+  async getFriends(status: StatusInv, filterUser: boolean = true) {
+    return await this.instance.get<{ data: UserExtended[] | Friendship[] }>(
+      `get/${status}/${filterUser}`
+    );
   }
 
   async sendInvitation(receiverId: number) {
@@ -83,7 +88,7 @@ export class Friend {
     });
   }
 
-  // async sendInvitation() {
-
-  // }
+  async resolveInvitation(data: { accept: boolean; friendShipId: number }) {
+    return await this.instance.post('resolveInvitation', data);
+  }
 }

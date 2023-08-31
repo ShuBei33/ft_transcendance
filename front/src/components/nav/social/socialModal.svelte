@@ -2,54 +2,38 @@
   import { ui, data } from "$lib/stores";
   import LeftRoom from "./room/left.svelte";
   import RightRoom from "./room/right.svelte";
-  import { classNames, type ClassNamesObject } from "$lib/utils/classNames/";
-  import { onMount } from "svelte";
+  import FriendContent from "./friend/content.svelte";
+  import Tabs from "./tabs.svelte";
   import type { Socket } from "socket.io-client";
+  import Test from "./dm/test.svelte";
 
   export let chatSocket: Socket | undefined;
-  const tabsName = ["DM", "ROOM", "FRIEND"] as const;
-
-  $: tabClassNameObject = (name: string): ClassNamesObject => {
-    return {
-      "tab-toggle": true,
-      active: $ui.chat.selected == name,
-    };
-  };
 </script>
 
 <main>
   {#if $ui.chat.toggle && chatSocket}
-    <div class="social-modal">
-      <div class="header" />
-      <div class="left">
-        <div class="top-left">
-          {#each tabsName as tab}
-            <button
-              class={classNames(tabClassNameObject(tab))}
-              on:click={() => ($ui.chat.selected = tab)}
-            >
-              {tab}
-            </button>
-          {/each}
+    {#if $ui.chat.selected == "FRIEND"}
+      <svelte:component this={FriendContent} />
+    {:else}
+      <div class="social-modal">
+        <div class="header" />
+        <div class="left">
+          <div class="top-left">
+            <Tabs />
+          </div>
+          {#if $ui.chat.selected == "ROOM"}
+            <svelte:component this={LeftRoom} />
+          {:else}{/if}
         </div>
-        {#if $ui.chat.selected == "ROOM"}
-          <svelte:component this={LeftRoom} />
-        {:else if false}
-          <!-- else if content here -->
-        {:else}
-          <!-- else content here -->
-        {/if}
+        <div class="right">
+          {#if $ui.chat.selected == "ROOM"}
+            <svelte:component this={RightRoom} {chatSocket} />
+          {:else}
+            <svelte:component this={Test} {chatSocket} />
+          {/if}
+        </div>
       </div>
-      <div class="right">
-        {#if $ui.chat.selected == "ROOM"}
-          <svelte:component this={RightRoom} {chatSocket} />
-        {:else if false}
-          <!-- else if content here -->
-        {:else}
-          <!-- else content here -->
-        {/if}
-      </div>
-    </div>
+    {/if}
   {/if}
 </main>
 

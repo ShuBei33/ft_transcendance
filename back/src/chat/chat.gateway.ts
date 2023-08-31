@@ -8,7 +8,7 @@ import {
 import { DiscussionService } from 'src/chat/discussion/discussion.service';
 import { ChannelService } from 'src/chat/channel/channel.service';
 import { FriendService } from 'src/friend/friend.service';
-import { ChanUsr } from '@prisma/client';
+import { ChanUsr, StatusInv, User } from '@prisma/client';
 import { Server, Socket } from 'socket.io';
 import { Global, Logger } from '@nestjs/common';
 import { UserLite } from '../user/dto';
@@ -17,6 +17,7 @@ import { DiscussionLite } from './discussion/dto';
 import { DTO_UpdateChanUsr } from './channel/dto';
 import { ChannelLite } from './channel/dto/channelLite';
 import { JwtService } from '@nestjs/jwt';
+import { distinctUntilChanged } from 'rxjs';
 
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
@@ -28,10 +29,10 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-	  private friendService: FriendService,
-	  private discService: DiscussionService,
-	  private jwt: JwtService,
-	  private chanService: ChannelService,
+    private friendService: FriendService,
+    private dm: DiscussionService,
+    private jwt: JwtService,
+    private chanService: ChannelService,
   ) {}
 
   @WebSocketServer() wss: Server;
@@ -43,7 +44,7 @@ export class ChatGateway
 
   afterInit(server: Server) {
     this.logger.log('ChatGateway Initialized');
-	// console.log(server);
+    // console.log(server);
   }
 
   handleConnection(client: Socket, ...args: any[]) {
@@ -87,63 +88,63 @@ export class ChatGateway
   }
 
   async joinAllMyDiscs(userId: number, client: Socket) {
-    const discussions: DiscussionLite[] = await this.discService.get_discussions( userId );
+    const discussions: DiscussionLite[] = await this.dm.get_discussions(userId);
     for (const discussion of discussions) {
       const roomName: string = 'disc_' + discussion.id;
       client.join(roomName);
     }
   }
 
-	verifyTokenAndGetUser(token: string): UserLite | null {
-		try {
-		const decoded = this.jwt.verify(token, {
-			secret: process.env.JWT_SECRET,
-		});
-		return decoded.user;
-		} catch (e) {
-		return null;
-		}
-	}
+  verifyTokenAndGetUser(token: string): UserLite | null {
+    try {
+      const decoded = this.jwt.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      return decoded.user;
+    } catch (e) {
+      return null;
+    }
+  }
 
   //////////////////////////////////
   //    METHODES CHANNEL ADMIN    //
   //////////////////////////////////
 
-  	channelNew( channel: ChannelLite ) {
-		this.logger.log(`Channel [${channel.id}]:[${channel.name}] was Created`)
-		this.wss.emit('channelNew', channel);
-	}
+  channelNew(channel: ChannelLite) {
+    this.logger.log(`Channel [${channel.id}]:[${channel.name}] was Created`);
+    this.wss.emit('channelNew', channel);
+  }
 
-	channelSettingsEditedPrivate( chanId: number, channel: ChannelLite ) {
-		this.logger.log(`Channel [${chanId}]:[${channel.name}] was Edited`);
-		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
-	}
+  channelSettingsEditedPrivate(chanId: number, channel: ChannelLite) {
+    this.logger.log(`Channel [${chanId}]:[${channel.name}] was Edited`);
+    this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
+  }
 
-	channelSettingsEdited( chanId: number, channel: ChannelLite ) {
-		this.logger.log("Channel Public | Protected was Edited");
-		this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel)
-	}
+  channelSettingsEdited(chanId: number, channel: ChannelLite) {
+    this.logger.log('Channel Public | Protected was Edited');
+    this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
+  }
 
-	channelUserRoleEdited( chanId: number, userUpdate: DTO_UpdateChanUsr) {
-		this.logger.log(`User Channel ${userUpdate.id} was Edited`);
-		this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
-	}
+  channelUserRoleEdited(chanId: number, userUpdate: DTO_UpdateChanUsr) {
+    this.logger.log(`User Channel ${userUpdate.id} was Edited`);
+    this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
+  }
 
-	channelNewUser(chanId: number, user: UserLite) {
-		this.logger.log(`User [${user.login}] Join Channel [${chanId}]`);
-        this.wss.to(`chan_${chanId}`).emit('userJoinChannel', { user, chanId } );
-    }
+  channelNewUser(chanId: number, user: UserLite) {
+    this.logger.log(`User [${user.login}] Join Channel [${chanId}]`);
+    this.wss.to(`chan_${chanId}`).emit('userJoinChannel', { user, chanId });
+  }
 
-    channelDelUser(chanId: number, user: UserLite) {
-		this.logger.log(`User [${user.login}] Leave Channel [${chanId}]`);
-        this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId } );
-    }
+  channelDelUser(chanId: number, user: UserLite) {
+    this.logger.log(`User [${user.login}] Leave Channel [${chanId}]`);
+    this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId });
+  }
 
-	async channelRemoved(chanId: number) {
-		this.logger.log(`Channel [${chanId}] was removed`);
-		const channel: ChannelLite = await this.chanService.get_channel( chanId );
-		this.wss.to(`chan_${chanId}`).emit('channelRemoved', channel );
-	}
+  async channelRemoved(chanId: number) {
+    this.logger.log(`Channel [${chanId}] was removed`);
+    const channel: ChannelLite = await this.chanService.get_channel(chanId);
+    this.wss.to(`chan_${chanId}`).emit('channelRemoved', channel);
+  }
 
   ///////////////////
   //     EVENTS    //
@@ -154,14 +155,33 @@ export class ChatGateway
     client: Socket,
     payload: { senderId: string; receiverId: string; message: string },
   ): Promise<void> {
-	try {
-		const friendList = await this.friendService.getFriendsList(
-		  Number(payload.senderId),
-		);
-	
-		if (friendList.find((User) => User.id === Number(payload.receiverId)))
-		  this.wss.to("disc_" + payload.receiverId).emit('message', payload.message);
-	} catch (err) {}
+    try {
+      const friendList = await this.friendService.getFriendsList(
+        Number(payload.senderId),
+        StatusInv.ACCEPTED,
+        true,
+      );
+
+      const isFriendWithReceiver = (friendList as User[]).find(
+        (User) => User.id === Number(payload.receiverId),
+      );
+
+      if (isFriendWithReceiver) {
+        const disccusionExist = await this.dm.discussionExistOrThrow(
+          Number(payload.senderId),
+          Number(payload.receiverId),
+        );
+
+        await this.dm
+          .create_discussion_message(Number(payload.senderId), {
+            discId: disccusionExist.id,
+            message: payload.message,
+          })
+          .then((message) => {
+            this.wss.to(`disc_${disccusionExist.id}`).emit('dm', message);
+          });
+      }
+    } catch (err) {}
   }
 
   @SubscribeMessage('messageToRoom')
@@ -169,26 +189,24 @@ export class ChatGateway
     client: Socket,
     payload: { id: string; message: string },
   ): Promise<void> {
-	try {
-		this.logger.log('message received ok bref', payload);
-		const writer = connectedClients.get(client.id);
-		const writerChanUsr = await this.chanService.getChanUsr(
-		  Number(writer.id),
-		  Number(payload.id),
-		);
-		if (writerChanUsr.status == 'NORMAL') {
-		  await this.chanService
-			.createMessage({
-			  userId: writer.id,
-			  channelId: Number(payload.id),
-			  content: payload.message,
-			})
-			.then((data) => {
-			  this.wss.to(`chan_${payload.id}`).emit('message', data);
-			});
-		}
-	} catch (err) {}
+    try {
+      this.logger.log('message received ok bref', payload);
+      const writer = connectedClients.get(client.id);
+      const writerChanUsr = await this.chanService.getChanUsr(
+        Number(writer.id),
+        Number(payload.id),
+      );
+      if (writerChanUsr.status == 'NORMAL') {
+        await this.chanService
+          .createMessage({
+            userId: writer.id,
+            channelId: Number(payload.id),
+            content: payload.message,
+          })
+          .then((data) => {
+            this.wss.to(`chan_${payload.id}`).emit('message', data);
+          });
+      }
+    } catch (err) {}
   }
-  
-
 }

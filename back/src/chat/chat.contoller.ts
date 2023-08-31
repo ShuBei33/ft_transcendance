@@ -191,7 +191,7 @@ export class ChatController {
 			return res.status(200).json({success: true, message: 'Vous avez invite une personne dans un channel' });
 		} catch ( err ) {
 			console.log(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "Vous n'avez pas les privilege suffisant"});
 		}
 	}
 

@@ -91,10 +91,7 @@ let FileController = exports.FileController = class FileController {
             if (fileToSend)
                 res.sendFile((0, path_1.join)(directoryPath, fileToSend));
             else
-                res.status(common_1.HttpStatus.NOT_FOUND).json({
-                    success: false,
-                    message: "Avatar not found",
-                });
+                res.status(common_1.HttpStatus.OK).send(null);
         });
     }
 };

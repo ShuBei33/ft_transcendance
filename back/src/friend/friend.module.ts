@@ -4,9 +4,10 @@ import { FriendService } from './friend.service';
 import { LobbyGateway } from './lobby.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
+import { DiscussionModule } from 'src/chat/discussion/discussion.module';
 
 @Module({
-	imports: [JwtModule, UserModule ],
+	imports: [JwtModule, UserModule, DiscussionModule ],
 	controllers: [FriendController],
 	providers: [FriendService, LobbyGateway],
 	exports: [FriendService]

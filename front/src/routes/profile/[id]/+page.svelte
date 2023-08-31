@@ -4,6 +4,7 @@
   import { Friend } from "$lib/apiCalls";
   import { data as dataStore } from "$lib/stores";
   import { addAnnouncement } from "$lib/stores/session";
+  import GenericButton from "../../../components/genericButton.svelte";
 
   export let data;
   const _Friend = new Friend();
@@ -24,7 +25,6 @@
           message: "Failed to send friend request",
           level: "error",
         });
-        console.log("error happened", e);
       });
   };
   const { id, user } = data;
@@ -40,8 +40,7 @@
         class="generic-button"
         on:click={() => handleAddFriend(Number(id))}>add friend</button
       >
-      <button
-        class="generic-button"
+      <GenericButton
         on:click={() =>
           addAnnouncement({
             message: "test",
@@ -49,7 +48,7 @@
           })}
       >
         test notify
-      </button>
+      </GenericButton>
       {user.id}
     {/if}
   {:else}
@@ -58,7 +57,4 @@
 </main>
 
 <style lang="text/scss">
-  .generic-button {
-    padding: 0.5em;
-  }
 </style>

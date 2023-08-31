@@ -21,8 +21,8 @@
   onMount(async () => {
     await $axiosInstance
       .get(url)
-      .then(() => {
-        imageIsValid = true;
+      .then((data) => {
+        if (data.data) imageIsValid = true;
       })
       .catch((e) => {});
   });
