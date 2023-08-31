@@ -1,10 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { ChannelLite, DTO_UpdateChan, DTO_UpdateChanUsr } from "../dto";
-import { PrismaService } from "src/prisma/prisma.service";
-import { ChanUsrRole } from "@prisma/client";
-import { error } from "src/utils/utils_error";
+import { Injectable } from '@nestjs/common';
+import { ChannelLite, DTO_UpdateChan, DTO_UpdateChanUsr } from '../dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ChanUsrRole } from '@prisma/client';
+import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
-
+import { Logger } from '@nestjs/common';
+const logger = new Logger();
+//prettier-ignore
 @Injectable()
 export class ChanAdminService {
 	constructor(
@@ -17,13 +19,15 @@ export class ChanAdminService {
 			where: {
 				chanId: chanId,
 				userId: userId,
-				role: ( ChanUsrRole.ADMIN || ChanUsrRole.OWNER )
+				role: {
+					in: [ChanUsrRole.ADMIN, ChanUsrRole.OWNER]
+				}
 			},
 			select: {
 				role: true,
 			}
 		})
-		if (userRole.role === ChanUsrRole.NORMAL )
+		if (userRole)
 			error.notAuthorized("Fonctionnaliter reserver au priviligier")
 		return userRole.role;
 	}
@@ -83,3 +87,4 @@ export class ChanAdminService {
 		})
 	}
 }
+//prettier-ignore-end

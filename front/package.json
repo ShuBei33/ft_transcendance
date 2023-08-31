@@ -30,7 +30,8 @@
 		"prettier": "^3.0.2",
 		"socket.io": "^4.7.2",
 		"socket.io-client": "^4.7.2",
+		"svelte": "^4.0.5",
 		"svelte-forms": "^2.3.1",
-		"svelte": "^4.0.5"
+		"zod": "^3.22.2"
 	}
 }

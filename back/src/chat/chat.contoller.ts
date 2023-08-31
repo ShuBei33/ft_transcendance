@@ -1,7 +1,32 @@
-import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiHeader,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ChanAdminService } from './channel/admin/chan_admin.service';
-import { ChannelLite, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
+import {
+  ChannelLite,
+  DTO_InviteChan,
+  DTO_JoinChan,
+  DTO_UpdateChan,
+  DTO_UpdateChanUsr,
+} from './channel/dto';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from 'src/user/dto';
 import { JwtGuard } from 'src/auth/guard';
@@ -10,7 +35,7 @@ import { ChannelService } from './channel/channel.service';
 import { ChatGateway } from './chat.gateway';
 import { UserService } from 'src/user/user.service';
 import { ChanVisibility } from '@prisma/client';
-
+//prettier-ignore
 @UseGuards(JwtGuard) 
 @ApiBearerAuth()
 @ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
@@ -63,14 +88,14 @@ export class ChatController {
 	) {
 		try {
 			await this.chanAdmin.isAdminChannel( user.id, chanId );
-			const channel: ChannelLite = await this.chanAdmin.updateChannelSettings( chanId, channelModified)
-			if ( channelModified.visibility == ChanVisibility.PRIVATE ) {
-				this.chatGate.channelSettingsEditedPrivate( chanId, channel );
-				// Suppression des channels Public|Protected qui devienne Private
-				this.chatGate.channelRemoved(chanId);
-			} else {
-				this.chatGate.channelSettingsEdited( chanId, channel );
-			}
+			const channel: ChannelLite = await this.chanAdmin.updateChannelSettings( chanId, channelModified);
+			// if ( channelModified.visibility == ChanVisibility.PRIVATE ) {
+			// 	this.chatGate.channelSettingsEditedPrivate( chanId, channel );
+			// 	// Suppression des channels Public|Protected qui devienne Private
+			// 	this.chatGate.channelRemoved(chanId);
+			// } else {
+			// 	this.chatGate.channelSettingsEdited( chanId, channel );
+			// }
 			return res.status(200).json({success: true, message: 'Settings Channel Edited.' });
 		} catch (err) {
 			this.logger.error(err);
@@ -197,3 +222,4 @@ export class ChatController {
 
 	
 }
+//prettier-ignore-end

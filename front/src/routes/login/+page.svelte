@@ -25,7 +25,6 @@
       placeholder: "email",
       name: "email",
     }}
-    setter={email.set}
   />
   <TestInput
     attributes={{
@@ -33,7 +32,6 @@
       placeholder: "password",
       name: "password",
     }}
-    setter={password.set}
   />
   <a href="http://localhost:5500/auth/signin42">
     <h1>test42</h1>

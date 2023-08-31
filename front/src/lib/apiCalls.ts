@@ -63,6 +63,10 @@ export class Channel {
   async kick(chanId: number, userId: number) {
     return await this.instance.delete(`kick/${chanId}/${userId}`);
   }
+
+  async updateChannelSetting(chanId: number, channelModified: Partial<channel.DTOUpdateChan>) {
+    return await this.instance.patch(`admin/${chanId}/settings`, channelModified);
+  }
 }
 
 export class Friend {
@@ -89,6 +93,6 @@ export class Friend {
   }
 
   async resolveInvitation(data: { accept: boolean; friendShipId: number }) {
-    return await this.instance.post('resolveInvitation', data);
+    return await this.instance.post("resolveInvitation", data);
   }
 }

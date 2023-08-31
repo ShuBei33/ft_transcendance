@@ -8,7 +8,9 @@
   import SocketEventsHandler from "./socketEventsHandler.svelte";
   import RetrieveUserData from "./retrieveUserData.svelte";
   import Notifications from "./notifications.svelte";
-  import Modal from "../../components/modal/modal.svelte";
+  import ModalTwo from "../../components/modal/modalTwo.svelte";
+  import Editchan from "../../components/modal/editchan.svelte";
+  import { ui } from "$lib/stores";
 
   let allowSlot = false;
 
@@ -57,8 +59,23 @@
     }
   };
   $: browser && monitorPage();
+  let inputValue = ""; // Added variable to hold the input value
+
+  $: getModalTitle = () => {
+    switch ($ui.modal) {
+      case "BROWSECHAN":
+        return "Join a channel";
+      case "EDITCHAN":
+        return "Edit channel";
+      default:
+        return "";
+    }
+  };
 </script>
-<Modal />
+
+<ModalTwo title={getModalTitle()}>
+  <svelte:component this={Editchan} />
+</ModalTwo>
 <main>
   <Notifications />
   <div class="app-container">
