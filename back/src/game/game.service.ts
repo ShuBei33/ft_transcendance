@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Game } from '@prisma/client';
 // import { GameGateway } from '../game.gateway';
 const logger = new Logger();
 let queue: number[] = [];
@@ -38,6 +39,33 @@ export class GameService {
         },
       },
     });
+  }
+
+  async userExists(uid: number) {
+	const user = await this.prisma.user.findUnique({
+		where: {
+			id: uid,
+		},
+	});
+	if (!user)
+		error.notFound('User not found');
+}
+
+
+  async getHistory(uid: number) : Promise<Game[]> {
+	const history = await this.prisma.game.findMany({
+	  where: {
+		OR: [
+		  {
+			lhsPlayerId: uid,
+		  },
+		  {
+			rhsPlayerId: uid,
+		  },
+		],
+	  },
+	});
+	return history;
   }
 
   async createGame(userIds: number[]) {
