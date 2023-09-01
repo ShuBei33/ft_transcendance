@@ -40,30 +40,30 @@ const logger = new Logger();
 export class FriendController {
   constructor(private friendService: FriendService) {}
 
-  @Get('get/:status/:filterUser')
-  @ApiOperation({
-    summary: "Recuperation de la liste d'amis de l'utilisateur en court",
-  })
-  @ApiResponse({ status: 200, description: 'Succes de la Requete' })
-  @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-  async get(
-    @GetUser() user: UserLite,
-    @Res() res: Response,
-    @Param('status') status: StatusInv,
-    @Param('filterUser', ParseBoolPipe) filterUser: boolean,
-  ) {
-    try {
-      // console.log('xXXXXXXxXxx-x_-x_', filterUser === true);
-      const data = await this.friendService.getFriendsList(
-        user.id,
-        status,
-        filterUser,
-      );
-      return success.general(res, 'Friends retrieved successfully', data);
-    } catch (err: any) {
-      error.unexpected(err);
-    }
-  }
+	@Get('get/:status/:filterUser')
+	@ApiOperation({
+		summary: "Recuperation de la liste d'amis de l'utilisateur en court",
+	})
+	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
+	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
+	async get(
+		@GetUser() user: UserLite,
+		@Res() res: Response,
+		@Param('status') status: StatusInv,
+		@Param('filterUser', ParseBoolPipe) filterUser: boolean,
+	) {
+		try {
+		// console.log('xXXXXXXxXxx-x_-x_', filterUser === true);
+		const data = await this.friendService.getFriendsList(
+			user.id,
+			status,
+			filterUser,
+		);
+		return success.general(res, 'Friends retrieved successfully', data);
+		} catch (err: any) {
+		error.unexpected(err);
+		}
+	}
 
   @Delete('remove/:uid') //! => THIS IS THE EXAMPLE FUNCTION
   @ApiOperation({
@@ -83,10 +83,6 @@ export class FriendController {
     @Res() res: Response,
   ) {
     try {
-      console.log('FUNCTION Remove Friend was called');
-      console.log('JWT User: ', user);
-      console.log('User Id Cible: ', uid);
-
       await this.friendService.deleteFriend(user.id, uid);
       await this.friendService.deleteFriend(uid, user.id);
 

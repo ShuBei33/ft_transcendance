@@ -163,7 +163,7 @@ enum StatusInv {
 enum UserStatus {
 	OFFLINE
 	ONLINE
-	OCCUPED
+	BUSY
 	INQUEUE
 	INGAME
 }

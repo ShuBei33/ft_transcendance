@@ -27,7 +27,7 @@ export enum ChanUsrRole {
 export enum UserStatus {
   OFFLINE = "OFFLINE",
   ONLINE = "ONLINE",
-  OCCUPED = "OCCUPED",
+  BUSY = "BUSY",
   INQUEUE = "INQUEUE",
   INGAME = "INGAME",
 }

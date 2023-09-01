@@ -51,12 +51,13 @@ export class GameController {
       console.log('JWT User: ', user);
       console.log('User Id Cible: ', uid_cible);
 
-      // CODE ICI
+	  await this.gameService.userExists(uid_cible);
+	  const history = await this.gameService.getHistory(uid_cible);
 
       return res.status(200).json({
         success: true,
         message: "La recuperation de la liste des partie c'est bien passe",
-        data: null,
+        data: history,
       });
     } catch (err: any) {
       return res.status(400).json({
