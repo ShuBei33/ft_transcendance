@@ -125,9 +125,9 @@ export class ChatGateway
     this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
   }
 
-  channelUserRoleEdited(chanId: number, userUpdate: DTO_UpdateChanUsr) {
-    this.logger.log(`User Channel ${userUpdate.id} was Edited`);
-    this.wss.to(`chan_${chanId}`).emit('channelUserEdited', userUpdate);
+  channelUserRoleEdited(chanId: number, data: ChanUsr) {
+    // this.logger.log(`User Channel ${userUpdate.id} was Edited`);
+    this.wss.to(`chan_${chanId}`).emit('channelUserEdited', data);
   }
 
   channelNewUser(chanId: number, user: UserLite) {

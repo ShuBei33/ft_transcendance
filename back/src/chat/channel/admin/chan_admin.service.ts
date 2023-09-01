@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChannelLite, DTO_UpdateChan, DTO_UpdateChanUsr } from '../dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChanUsrRole } from '@prisma/client';
+import { ChanUsr, ChanUsrRole } from '@prisma/client';
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
 import { Logger } from '@nestjs/common';
@@ -70,17 +70,22 @@ export class ChanAdminService {
 		return userRole.role;
 	}
 
-	async updateUserChannel(userRole: ChanUsrRole, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
+	async updateUserChannel(chanId: number, userToModify: DTO_UpdateChanUsr): Promise<ChanUsr> {
 		const targetUser = await this.prisma.chanUsr.findFirst({
 			where: {
-				id: userToModify.id,
-				chanId,
+				userId: userToModify.id,
+				chanId
 			}
 		});
 		if (!targetUser)
 			error.notFound("User not member of channel.");
 		if (targetUser.role == "OWNER")
 			error.notAuthorized("Cannot modify role of the owner.");
+		const { id, ...data } = userToModify;
+		return await this.prisma.chanUsr.update({
+			where: { id: targetUser.id },
+			data,
+		});
 	}
 
 	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<ChannelLite> {

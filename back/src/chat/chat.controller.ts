@@ -65,13 +65,13 @@ export class ChatController {
 		@Res() res: Response,
 	) {
 		try {
-			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
-			await this.chanAdmin.updateUserChannel(role, chanId, userToModify);
-			this.chatGate.channelUserRoleEdited(chanId, userToModify);
+			await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			const chanUsrUpdated = await this.chanAdmin.updateUserChannel(chanId, userToModify);
+			this.chatGate.channelUserRoleEdited(chanId, chanUsrUpdated);
             return res.status(200).json({success: true, message: 'User Channel Edited.' });
 		} catch (err) {
-			this.logger.error(err);
-            return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			this.logger.error(err.status);
+            return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
 
@@ -116,7 +116,7 @@ export class ChatController {
 			return res.status(200).json({success: true, message: 'User kicked successfully.' });
 		} catch (err) {
 			this.logger.error(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
 
@@ -143,7 +143,7 @@ export class ChatController {
 			}
 		} catch (err) {
 			this.logger.error(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
 
@@ -166,7 +166,7 @@ export class ChatController {
 			}
 		} catch (err) {
 			this.logger.error(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
 
@@ -188,7 +188,7 @@ export class ChatController {
 			return res.status(200).json({success: true, message: 'Vous avez rejoint un channel.' });
 		} catch (err) {
 			this.logger.error(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
 
