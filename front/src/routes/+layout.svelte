@@ -12,6 +12,8 @@
   import type { Socket } from "socket.io-client";
   import type { ChannelMsg, DiscussionMsg } from "$lib/models/prismaSchema";
   import Notifications from "$lib/utils/notifications.svelte";
+  import type { channel } from "$lib/models/dtos";
+  import { addAnnouncement } from "$lib/stores/session";
 
   onMount(() => {
     console.log($user);
@@ -50,6 +52,10 @@
       auth: {
         token: $token,
       },
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     })
       .on("connect", () => {
         $socketIsConnected = true;
@@ -58,6 +64,7 @@
       .on("disconnect", () => {
         $socketIsConnected = false;
       })
+      // A message has been received in a channel
       .on("message", (data: ChannelMsg) => {
         $data.myChannels.forEach((chanUsr, index) => {
           if (chanUsr.channel.id == Number(data.channelId)) {
@@ -71,6 +78,19 @@
           }
         });
       })
+      // A channel visibility / name has been updated
+      .on("updated", (data: channel.ChannelLite) => {
+        $data.myChannels.forEach((chanUsr, index) => {
+          if (chanUsr.channel.id == data.id) {
+            const channel = $data.myChannels[index].channel;
+            const {id, ...rest} = data;
+            $data.myChannels[index].channel = {...channel, ...rest};
+            return;
+          }
+        });
+        console.log("!update ok !!!", data);
+      })
+      // User received a dm
       .on("dm", (data: DiscussionMsg) => {
         console.log("new dm !", data);
       });

@@ -16,7 +16,7 @@ interface ui {
     state: "NONE" | "PLAYING" | "QUEUE";
     id: number;
   };
-  modal: "NONE" | "EDITCHAN" | "BROWSECHAN";
+  modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
 }
 
 export const uiInitialValue: ui = {

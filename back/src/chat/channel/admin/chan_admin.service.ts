@@ -32,6 +32,31 @@ export class ChanAdminService {
 		return userRole.role;
 	}
 
+	async userHasRoleOrThrow(roles: ChanUsrRole[], userId: number, chanId: number) {
+		return await this.prisma.chanUsr.findFirstOrThrow({
+			where: {
+				userId,
+				chanId,
+				role: {
+					in: roles,
+				}
+			}
+		})
+	}
+
+	async userHasRole(roles: ChanUsrRole[], userId: number, chanId: number) {
+		return await this.prisma.chanUsr.findFirst({
+			where: {
+				userId,
+				chanId,
+				role: {
+					in: roles,
+				}
+			}
+		})
+	}
+
+
 	async getRoleUser( userId: number, chanId: number ) : Promise<ChanUsrRole> {
 		const userRole = await this.prisma.chanUsr.findFirst({
 			where: {

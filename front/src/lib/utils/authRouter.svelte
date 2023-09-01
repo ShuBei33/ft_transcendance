@@ -67,6 +67,8 @@
         return "Join a channel";
       case "EDITCHAN":
         return "Edit channel";
+      case "CREATECHAN":
+        return "Create a channel";
       default:
         return "";
     }
@@ -74,7 +76,9 @@
 </script>
 
 <ModalTwo title={getModalTitle()}>
+  {#if $ui.modal == "EDITCHAN"}
   <svelte:component this={Editchan} />
+  {/if}
 </ModalTwo>
 <main>
   <Notifications />

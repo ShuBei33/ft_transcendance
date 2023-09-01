@@ -11,5 +11,13 @@
   edit
 </GenericButton>
 
+<GenericButton
+  on:click={() => {
+    $ui.modal = "CREATECHAN";
+  }}
+>
+  create
+</GenericButton>
+
 <style lang="scss">
 </style>

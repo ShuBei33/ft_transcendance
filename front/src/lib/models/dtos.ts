@@ -19,4 +19,10 @@ export namespace channel {
     visibility: string;
     hash: string;
   }
+
+  export interface ChannelLite {
+    id: Channel['id'];
+    name: Channel['name'];
+    visibility:  Channel['visibility'];
+  }
 }

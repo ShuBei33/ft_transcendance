@@ -35,6 +35,7 @@ import { ChannelService } from './channel/channel.service';
 import { ChatGateway } from './chat.gateway';
 import { UserService } from 'src/user/user.service';
 import { ChanVisibility } from '@prisma/client';
+
 //prettier-ignore
 @UseGuards(JwtGuard) 
 @ApiBearerAuth()
@@ -87,19 +88,13 @@ export class ChatController {
 		@Res() res: Response,
 	) {
 		try {
-			await this.chanAdmin.isAdminChannel( user.id, chanId );
+			await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
 			const channel: ChannelLite = await this.chanAdmin.updateChannelSettings( chanId, channelModified);
-			// if ( channelModified.visibility == ChanVisibility.PRIVATE ) {
-			// 	this.chatGate.channelSettingsEditedPrivate( chanId, channel );
-			// 	// Suppression des channels Public|Protected qui devienne Private
-			// 	this.chatGate.channelRemoved(chanId);
-			// } else {
-			// 	this.chatGate.channelSettingsEdited( chanId, channel );
-			// }
-			return res.status(200).json({success: true, message: 'Settings Channel Edited.' });
+			this.chatGate.wss.to(`chan_${chanId}`).emit("updated", channel);
+			return res.status(200).json({success: true, message: 'Channel updated.', data: channel });
 		} catch (err) {
 			this.logger.error(err);
-			return res.status(400).json({success: false, message: "Vous n'avais pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "Operation forbidden."});
 		}
 	}
 	
