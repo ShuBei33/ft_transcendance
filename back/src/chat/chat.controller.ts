@@ -65,8 +65,8 @@ export class ChatController {
 		@Res() res: Response,
 	) {
 		try {
-			await this.chanAdmin.isAdminChannel( user.id, chanId );
-			await this.chanAdmin.updateUserChannel( chanId, userToModify);
+			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			await this.chanAdmin.updateUserChannel(role, chanId, userToModify);
 			this.chatGate.channelUserRoleEdited(chanId, userToModify);
             return res.status(200).json({success: true, message: 'User Channel Edited.' });
 		} catch (err) {

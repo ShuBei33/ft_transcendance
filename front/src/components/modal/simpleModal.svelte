@@ -1,6 +1,7 @@
 <script>
   import { ui } from "$lib/stores";
   export let title = "";
+  export let isOpen = false;
   //   let showModal = false;
 
   function openModal() {
@@ -15,7 +16,7 @@
 
 <!-- <button on:click={openModal}>Open Modal</button> -->
 
-{#if $ui.modal != "NONE"}
+{#if isOpen}
   <div class="modal">
     <div class="modal-content">
       <div class="modal-header">
