@@ -13,7 +13,6 @@ export class ChanAdminService {
 		private prisma: PrismaService,
 	) {}
 
-
 	async isAdminChannel( userId: number, chanId: number ) : Promise<ChanUsrRole> {
 		const userRole = await this.prisma.chanUsr.findFirst({
 			where: {
@@ -27,11 +26,12 @@ export class ChanAdminService {
 				role: true,
 			}
 		})
-		if (userRole)
-			error.notAuthorized("Fonctionnaliter reserver au priviligier")
+		if (!userRole)
+			error.notAuthorized("You do not have the correct access rights.")
 		return userRole.role;
 	}
 
+	// Suggestion 1
 	async userHasRoleOrThrow(roles: ChanUsrRole[], userId: number, chanId: number) {
 		return await this.prisma.chanUsr.findFirstOrThrow({
 			where: {
@@ -44,6 +44,7 @@ export class ChanAdminService {
 		})
 	}
 
+	// Suggestion 2
 	async userHasRole(roles: ChanUsrRole[], userId: number, chanId: number) {
 		return await this.prisma.chanUsr.findFirst({
 			where: {
@@ -55,7 +56,6 @@ export class ChanAdminService {
 			}
 		})
 	}
-
 
 	async getRoleUser( userId: number, chanId: number ) : Promise<ChanUsrRole> {
 		const userRole = await this.prisma.chanUsr.findFirst({

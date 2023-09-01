@@ -33,7 +33,7 @@ export class ChannelController {
           return success.general(res, 'Available channels list retrieved successfully', channelList);  
     }
     catch (e: any) {
-          return error.unexpected(e);
+          return error.unexpected('Error while retrieving available channels.');
     }
   }
 
@@ -47,7 +47,7 @@ export class ChannelController {
           return success.general(res, 'Subscribed channels list retrieved successfully.', channelList,);
     }
     catch (e: any) {
-          return error.unexpected(e);
+          return error.unexpected('Error while retrieving subsribed channels list.');
     }
   }
 
@@ -70,7 +70,7 @@ export class ChannelController {
           if (e instanceof PrismaClientKnownRequestError)
               error.notAuthorized('You are not allowed to access this channel.');
           else
-              return error.unexpected(e);
+              return error.unexpected('Error while retrieving channel messages.');
     }
   }
 
@@ -91,7 +91,7 @@ export class ChannelController {
           if (e instanceof PrismaClientKnownRequestError)
               error.hasConflict('Channel already exists.');
           else
-              return error.unexpected(e);
+              return error.unexpected('Error while creating a new channel.');
     }
   }
 }
