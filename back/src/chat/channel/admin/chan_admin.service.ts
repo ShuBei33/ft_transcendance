@@ -84,10 +84,11 @@ export class ChanAdminService {
 	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<ChannelLite> {
 		if (["PUBLIC", "PRIVATE"].includes(channelModified.visibility))
 			channelModified.hash = null;
-		if (channelModified.visibility == "PROTECTED" && !channelModified.hash)
-			error.badRequest("You must provide a password.");
-		if (channelModified.hash)
-			channelModified.hash = await bcrypt.hash(channelModified.hash, process.env.HASH_BCRYPT);
+		if (channelModified.visibility == "PROTECTED") {
+			if (!channelModified.hash)
+				error.badRequest("You must provide a password.");
+			channelModified.hash = await bcrypt.hash(channelModified.hash, Number(process.env.HASH_SALT_ROUND));
+		}
 		const channel = await this.prisma.channel.update({
 			where: {
 				id: chanId,

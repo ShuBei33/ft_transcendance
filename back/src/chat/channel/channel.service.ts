@@ -7,11 +7,7 @@ import {
   DTO_CreateMessage,
 } from './dto';
 import { ChannelMsg, ChanUsr } from '@prisma/client';
-import {
-  ChanUsrRole,
-  UserStatusMSGs,
-  StatusInv,
-} from '@prisma/client';
+import { ChanUsrRole, UserStatusMSGs, StatusInv } from '@prisma/client';
 import {
   PrismaClientKnownRequestError,
   PrismaClientValidationError,
@@ -24,9 +20,7 @@ const logger = new Logger();
 
 @Injectable()
 export class ChannelService {
-  constructor(
-	private prisma: PrismaService,
-	) {}
+  constructor(private prisma: PrismaService) {}
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //																							//
@@ -120,10 +114,10 @@ export class ChannelService {
     }
   }
 
-  	// WARNING
-	async removeChannel( chanId: number ) {
-		await this.prisma.channel.delete({ where: { id: chanId, } });
-	}
+  // WARNING
+  async removeChannel(chanId: number) {
+    await this.prisma.channel.delete({ where: { id: chanId } });
+  }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //																							//
@@ -246,9 +240,9 @@ export class ChannelService {
       switch (channel.visibility) {
         case 'PROTECTED':
           // check that user provided correct password
-          const hash = joinChanDto;
-          if (!(await bcrypt.compare(hash, channel.hash)))
-            error.notAuthorized('Password mismatch.');
+          const { hash } = joinChanDto;
+          const HashIsValid = await bcrypt.compare(hash, channel.hash);
+          if (!HashIsValid) error.notAuthorized('Password mismatch.');
           else await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
           break;
         case 'PRIVATE':
@@ -281,118 +275,113 @@ export class ChannelService {
     }
   }
 
-	async inviteToChannel(
-		userId: number,
-		chanId: number,
-		invitedUser: DTO_InviteChan,
-	): Promise<void> {
-		try {
-		// check current user's rights
-		await this.prisma.chanUsr.findFirstOrThrow({
-			where: {
-			userId,
-			chanId,
-			OR: [{ invitedToChan: 'ACCEPTED' }, { invitedToChan: null }],
-			NOT: {
-				status: 'BANNED',
-			},
-			},
-		});
-		// check that invitedUser is not already a member
-		const invited = await this.prisma.chanUsr.findFirst({
-			where: {
-			userId: invitedUser.userId,
-			chanId,
-			OR: [
-				{ invitedToChan: 'PENDING' },
-				{ invitedToChan: 'REJECT' },
-				{ invitedToChan: 'BLOCKED' },
-				{ invitedToChan: 'ACCEPTED' },
-			],
-			},
-		});
-		if (invited) {
-			if (invited.invitedToChan == 'PENDING') {
-				error.hasConflict('This person has already been invited.');
-			} else if (invited.invitedToChan == 'REJECT') {
-				error.hasConflict('This person has already refused your invitation.');
-			} else if (invited.invitedToChan == 'BLOCKED') {
-				error.hasConflict('You cannot send invitations to this person.');
-			}
-			error.hasConflict('This person is already a member of this channel.'); // if (messages.length === 0) // strict equality operator
-			//     error.notFound("There aren't any messages at the moment.")
-		}
-		await this.createChanUsr(
-			invitedUser.userId,
-			chanId,
-			'NORMAL',
-			'NORMAL',
-			'PENDING',
-		);
-		} catch (e) {
-		if (e instanceof PrismaClientKnownRequestError)
-			error.notAuthorized('Not admin or owner.');
-		else if (e instanceof PrismaClientValidationError)
-			error.badRequest('You sent invalid data.');
-		else {
-			error.unexpected(e);
-		}
-		}
-	}
+  async inviteToChannel(
+    userId: number,
+    chanId: number,
+    invitedUser: DTO_InviteChan,
+  ): Promise<void> {
+    try {
+      // check current user's rights
+      await this.prisma.chanUsr.findFirstOrThrow({
+        where: {
+          userId,
+          chanId,
+          OR: [{ invitedToChan: 'ACCEPTED' }, { invitedToChan: null }],
+          NOT: {
+            status: 'BANNED',
+          },
+        },
+      });
+      // check that invitedUser is not already a member
+      const invited = await this.prisma.chanUsr.findFirst({
+        where: {
+          userId: invitedUser.userId,
+          chanId,
+          OR: [
+            { invitedToChan: 'PENDING' },
+            { invitedToChan: 'REJECT' },
+            { invitedToChan: 'BLOCKED' },
+            { invitedToChan: 'ACCEPTED' },
+          ],
+        },
+      });
+      if (invited) {
+        if (invited.invitedToChan == 'PENDING') {
+          error.hasConflict('This person has already been invited.');
+        } else if (invited.invitedToChan == 'REJECT') {
+          error.hasConflict('This person has already refused your invitation.');
+        } else if (invited.invitedToChan == 'BLOCKED') {
+          error.hasConflict('You cannot send invitations to this person.');
+        }
+        error.hasConflict('This person is already a member of this channel.'); // if (messages.length === 0) // strict equality operator
+        //     error.notFound("There aren't any messages at the moment.")
+      }
+      await this.createChanUsr(
+        invitedUser.userId,
+        chanId,
+        'NORMAL',
+        'NORMAL',
+        'PENDING',
+      );
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError)
+        error.notAuthorized('Not admin or owner.');
+      else if (e instanceof PrismaClientValidationError)
+        error.badRequest('You sent invalid data.');
+      else {
+        error.unexpected(e);
+      }
+    }
+  }
 
-	async leaveChannel(userId: number, chanId: number): Promise<void> {
-		try {
-			const chanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
-				where: {
-					userId_chanId: {
-						userId: userId,
-						chanId: chanId,
-					},
-					NOT: { status: 'BANNED', },
-				},
-			});
-			
-		} catch (err) {
-			if (err instanceof PrismaClientKnownRequestError)
-				error.notAuthorized('Not admin or owner.');
-		}
-		await this.prisma.chanUsr.delete({ where: { id: userId } });
-	}
+  async leaveChannel(userId: number, chanId: number): Promise<void> {
+    try {
+      const chanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
+        where: {
+          userId_chanId: {
+            userId: userId,
+            chanId: chanId,
+          },
+          NOT: { status: 'BANNED' },
+        },
+      });
+    } catch (err) {
+      if (err instanceof PrismaClientKnownRequestError)
+        error.notAuthorized('Not admin or owner.');
+    }
+    await this.prisma.chanUsr.delete({ where: { id: userId } });
+  }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //																							//
+  //		Utils Back		                                                                    //
+  //																							//
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	//																							//
-	//		Utils Back		                                                                    //
-	//																							//
-	//////////////////////////////////////////////////////////////////////////////////////////////
+  async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> | null {
+    try {
+      // check that the chanUsr exists
+      const requestedChanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
+        where: {
+          userId_chanId: {
+            userId: userId,
+            chanId: chanId,
+          },
+        },
+      });
+      // return a chanUsr with all the info related to it
+      return requestedChanUsr;
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError)
+        error.notFound('Channel User not found.');
+      else error.unexpected(e);
+    }
+  }
 
-
-	async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> | null {
-		try {
-			// check that the chanUsr exists
-			const requestedChanUsr = await this.prisma.chanUsr.findUniqueOrThrow({
-				where: {
-					userId_chanId: {
-					userId: userId,
-					chanId: chanId,
-					},
-				},
-			});
-			// return a chanUsr with all the info related to it
-			return requestedChanUsr;
-		} catch (e) {
-			if (e instanceof PrismaClientKnownRequestError)
-			error.notFound('Channel User not found.');
-			else error.unexpected(e);
-		}
-	}
-	  
-	async get_channel( chanId: number ) : Promise<ChannelLite>
-	{
-		const channel: ChannelLite = await this.prisma.channel.findFirst({
-			where: { id: chanId },
-		});
-		return channel;
-	}
-	   
+  async get_channel(chanId: number): Promise<ChannelLite> {
+    const channel: ChannelLite = await this.prisma.channel.findFirst({
+      where: { id: chanId },
+    });
+    return channel;
+  }
 }
