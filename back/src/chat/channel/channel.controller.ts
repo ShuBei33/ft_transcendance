@@ -1,36 +1,16 @@
-import {
-  UseGuards,
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Patch,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { UseGuards, Controller, Get, Post, Delete, Patch, Inject, forwardRef } from '@nestjs/common';
 import { Param, Body, ParseIntPipe, Res } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiHeader,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
 import { Response } from 'express';
 import { ChannelService } from './channel.service';
-import {
-  DTO_CreateChan,
-  DTO_JoinChan,
-  DTO_InviteChan,
-  DTO_UpdateChan,
-  DTO_UpdateChanUsr,
-} from './dto';
+import { DTO_CreateChan, DTO_JoinChan, DTO_InviteChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './dto';
 import { success } from 'src/utils/utils_success';
+import { error } from 'src/utils/utils_error';
 import { UserLite } from 'src/user/dto';
 
 // const logger = new Logger();
@@ -70,6 +50,7 @@ export class ChannelController {
   }
 
   @Get('msgs/:chanId')
+
   @ApiOperation({ summary: "Retrieve a channel's messages" })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 400, description: 'Failure' })
@@ -104,14 +85,15 @@ export class ChannelController {
     @Body() channelToCreate: DTO_CreateChan,
     @Res() res: Response,
   ) {
-    const createdChannel = await this.channelService.createChannel(
-      user.id,
-      channelToCreate,
-    );
-    return success.general(
-      res,
-      'Channel created successfully.',
-      createdChannel,
-    );
+    try {
+          const createdChannel = await this.channelService.createChannel(user.id, channelToCreate,);
+          return success.general(res, 'Channel created successfully', createdChannel);
+    }
+    catch (e: any) {
+          if (e instanceof PrismaClientKnownRequestError)
+              error.hasConflict('Channel already exists.');
+          else
+              return error.unexpected(e);
+    }
   }
 }

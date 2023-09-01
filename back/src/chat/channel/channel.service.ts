@@ -1,20 +1,12 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  DTO_CreateChan,
-  DTO_InviteChan,
-  DTO_JoinChan,
-  DTO_CreateMessage,
-} from './dto';
+import { DTO_CreateChan, DTO_InviteChan, DTO_JoinChan, DTO_CreateMessage } from './dto';
+import { ChannelLite } from './dto/channelLite';
 import { ChannelMsg, ChanUsr } from '@prisma/client';
 import { ChanUsrRole, UserStatusMSGs, StatusInv } from '@prisma/client';
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-} from '@prisma/client/runtime/library';
+import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library';
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
-import { ChannelLite } from './dto/channelLite';
 
 const logger = new Logger();
 
@@ -23,18 +15,16 @@ export class ChannelService {
   constructor(private prisma: PrismaService) {}
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Creation		                                                                    //
-  //																							//
+  //																							                                            //
+  //		Creation		                                                                          //
+  //																							                                            //
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  async createChanUsr(
-    userId: number,
-    chanId: number,
-    role: ChanUsrRole,
-    status: UserStatusMSGs,
-    invitedToChan?: StatusInv,
-  ): Promise<ChanUsr> | null {
+  async createMessage(data: DTO_CreateMessage) {
+    return await this.prisma.channelMsg.create({ data });
+  }
+
+  async createChanUsr( userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> | null {
     try {
       const newChanUsr = await this.prisma.chanUsr.create({
         data: {
@@ -53,58 +43,34 @@ export class ChannelService {
     }
   }
 
-  async createMessage(data: DTO_CreateMessage) {
-    return await this.prisma.channelMsg.create({ data });
-  }
-
-  async createChannel(
-    userId: number,
-    newChanDto: DTO_CreateChan,
-  ): Promise<ChannelLite> | null {
-    try {
-      const { name, visibility, hash } = newChanDto;
-
-      const createProtectedChannel = async (hash: string) => {
-        const cryptedHash = await bcrypt.hash(hash, 10);
-        return await this.prisma.channel.create({
+  async createChannel( userId: number, newChanDto: DTO_CreateChan ): Promise<ChannelLite> | null {
+      
+        const { name, visibility, password } = newChanDto;
+        let optionalHash = null;
+        
+        // handle protected case with hash
+        if (visibility == 'PROTECTED') {
+            if (!password)
+                error.badRequest('You must provide a password.');
+            else
+                optionalHash = await bcrypt.hash(password, Number(process.env.HASH_SALT_ROUND));
+        }
+        const newChannel = await this.prisma.channel.create({
           data: {
             name,
             visibility,
-            hash: cryptedHash,
+            hash: optionalHash,
           },
+          include: {
+            // doesn't matter if it's empty at creation, front needs it
+            channelUsers: true,
+            channelMsgs: true,
+          }
         });
-      };
-
-      const createNormalChannel = async () => {
-        return await this.prisma.channel.create({
-          data: {
-            name,
-            visibility,
-          },
-        });
-      };
-
-      if (visibility == 'PROTECTED') {
-        if (!hash) error.badRequest('You must provide a password.');
-        const protectedChannel = await createProtectedChannel(hash);
-        await this.createChanUsr(
-          userId,
-          protectedChannel.id,
-          'OWNER',
-          'NORMAL',
-        );
-        return protectedChannel;
-      } else {
-        const {hash, ...Channel} = await createNormalChannel();
-        await this.createChanUsr(userId, Channel.id, 'OWNER', 'NORMAL');
-        return Channel;
-      }
-    } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError)
-        error.hasConflict('Channel already exists.');
-      else if (e instanceof HttpException) throw e;
-      else error.unexpected(e);
-    }
+        await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
+        // return channel without hash
+        const { hash, ...rest } = newChannel;
+        return rest;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////

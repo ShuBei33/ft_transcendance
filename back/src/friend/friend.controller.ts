@@ -82,6 +82,7 @@ export class FriendController {
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
+
     try {
       await this.friendService.deleteFriend(user.id, uid);
       await this.friendService.deleteFriend(uid, user.id);
