@@ -28,12 +28,13 @@ export class ChannelController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 400, description: 'Failure' })
   async getAll(@Res() res: Response) {
-    const channelList = await this.channelService.getAllChannels();
-    return success.general(
-      res,
-      'Subscribed channel list retrieved successfully.',
-      channelList,
-    );
+    try {
+          const channelList = await this.channelService.getAllChannels();
+          return success.general(res, 'Available channels list retrieved successfully', channelList);  
+    }
+    catch (e: any) {
+          return error.unexpected(e);
+    }
   }
 
   @Get('mine')
@@ -41,12 +42,13 @@ export class ChannelController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 400, description: 'Failure' })
   async getMine(@GetUser() user: UserLite, @Res() res: Response) {
-    const channelList = await this.channelService.getMyChannels(user.id);
-    return success.general(
-      res,
-      'Subscribed channel list retrieved successfully.',
-      channelList,
-    );
+    try {
+          const channelList = await this.channelService.getMyChannels(user.id);
+          return success.general(res, 'Subscribed channels list retrieved successfully.', channelList,);
+    }
+    catch (e: any) {
+          return error.unexpected(e);
+    }
   }
 
   @Get('msgs/:chanId')
@@ -54,26 +56,22 @@ export class ChannelController {
   @ApiOperation({ summary: "Retrieve a channel's messages" })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 400, description: 'Failure' })
-  @ApiParam({
-    name: 'chanId',
-    description: 'Channel ID',
-    type: 'number',
-    example: 1,
-  })
+  @ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1, })
   async getMessage(
     @Param('chanId', ParseIntPipe) chanId: number,
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
-    const channelMsgs = await this.channelService.getChannelMsgs(
-      user.id,
-      chanId,
-    );
-    return success.general(
-      res,
-      'Channel messages retrieved successfully.',
-      channelMsgs,
-    );
+    try {
+          const channelMsgs = await this.channelService.getChannelMsgs(user.id, chanId );
+          return success.general(res, 'Channel messages retrieved successfully.', channelMsgs);
+    }
+    catch (e: any) {
+          if (e instanceof PrismaClientKnownRequestError)
+              error.notAuthorized('You are not allowed to access this channel.');
+          else
+              return error.unexpected(e);
+    }
   }
 
   @Post('create')
