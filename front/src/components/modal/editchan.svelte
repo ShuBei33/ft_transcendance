@@ -72,15 +72,13 @@
       onChange={(value) => (payload["hash"] = value)}
     />
   {/if}
-  <!-- <label for="checkbox">Check me:</label> -->
-  <!-- <input type="checkbox" id="checkbox" name="myCheckbox" value="checked" /> -->
   <GenericButton on:click={() => handleFormSubmit()}>Confirm</GenericButton>
 </div>
 
 <style lang="scss">
   .editchan {
     height: 40vh;
-    width: 60vw;
+    width: 20em;
   }
   .modal-input {
     z-index: 99999;

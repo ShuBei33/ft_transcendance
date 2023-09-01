@@ -70,15 +70,17 @@ export class ChanAdminService {
 		return userRole.role;
 	}
 
-	async updateUserChannel( chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
-		const user = await this.prisma.chanUsr.update({
-			where: { id: userToModify.id },
-			data: {
-				role: userToModify.role,
-				status: userToModify.status,
-				statusDuration: userToModify.statusDuration,
+	async updateUserChannel(userRole: ChanUsrRole, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<void> {
+		const targetUser = await this.prisma.chanUsr.findFirst({
+			where: {
+				id: userToModify.id,
+				chanId,
 			}
-		})
+		});
+		if (!targetUser)
+			error.notFound("User not member of channel.");
+		if (targetUser.role == "OWNER")
+			error.notAuthorized("Cannot modify role of the owner.");
 	}
 
 	async updateChannelSettings( chanId: number, channelModified: DTO_UpdateChan): Promise<ChannelLite> {

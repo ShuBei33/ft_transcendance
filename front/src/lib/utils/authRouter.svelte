@@ -8,10 +8,12 @@
   import SocketEventsHandler from "./socketEventsHandler.svelte";
   import RetrieveUserData from "./retrieveUserData.svelte";
   import Notifications from "./notifications.svelte";
-  import ModalTwo from "../../components/modal/modalTwo.svelte";
+  import SimpleModal from "../../components/modal/simpleModal.svelte";
   import Editchan from "../../components/modal/editchan.svelte";
   import { ui } from "$lib/stores";
   import Createchan from "../../components/modal/createchan.svelte";
+  import TabModal from "../../components/modal/tabModal.svelte";
+  import Members from "../../components/modal/members.svelte";
 
   let allowSlot = false;
 
@@ -76,13 +78,27 @@
   };
 </script>
 
-<ModalTwo title={getModalTitle()}>
-  {#if $ui.modal == "EDITCHAN"}
-  <svelte:component this={Editchan} />
-  {:else if $ui.modal == "CREATECHAN"}
-  <svelte:component this={Createchan} />
-  {/if}
-</ModalTwo>
+{#if $ui.modal == "CREATECHAN"}
+  <SimpleModal title={"Create a channel"} isOpen={true}>
+    <svelte:component this={Createchan} />
+  </SimpleModal>
+{:else if $ui.modal == "EDITCHAN"}
+  <SimpleModal title={""} isOpen={true}>
+    <svelte:component
+      this={TabModal}
+      tabs={[
+        {
+          title: "Edit",
+          component: Editchan,
+        },
+        {
+          title: "Members",
+          component: Members,
+        },
+      ]}
+    />
+  </SimpleModal>
+{/if}
 <main>
   <Notifications />
   <div class="app-container">
