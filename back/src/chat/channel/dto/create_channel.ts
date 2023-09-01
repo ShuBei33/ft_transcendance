@@ -28,5 +28,5 @@ export class DTO_CreateChan {
 		examples: [ null, 'Patate2000', '123456789' ],
 		type: String,
 	})
-	DTOhash?: Channel['hash'];
+	hash?: Channel['hash'];
 }

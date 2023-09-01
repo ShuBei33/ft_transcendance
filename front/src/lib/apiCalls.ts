@@ -64,8 +64,22 @@ export class Channel {
     return await this.instance.delete(`kick/${chanId}/${userId}`);
   }
 
-  async updateChannelSetting(chanId: number, channelModified: Partial<channel.DTOUpdateChan>) {
-    return await this.instance.patch(`admin/${chanId}/settings`, channelModified);
+  async updateChannelSetting(
+    chanId: number,
+    channelModified: Partial<channel.DTOUpdateChan>
+  ) {
+    return await this.instance.patch(
+      `admin/${chanId}/settings`,
+      channelModified
+    );
+  }
+
+  async create(
+    data: Pick<channel.DTOUpdateChan, "name" | "visibility"> & {
+      hash?: string;
+    }
+  ) {
+    return await this.instance.post("create", data);
   }
 }
 

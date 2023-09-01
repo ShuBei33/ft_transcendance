@@ -62,25 +62,43 @@ export class ChannelService {
     newChanDto: DTO_CreateChan,
   ): Promise<ChannelLite> | null {
     try {
-      const { name, visibility, DTOhash } = newChanDto;
+      const { name, visibility, hash } = newChanDto;
 
-      // check that DTO data is correct
-      if (visibility == 'PROTECTED')
-        if (!DTOhash) error.badRequest('You must provide a password.');
-      const newChannel = await this.prisma.channel.create({
-        data: {
-          name,
-          visibility,
-          hash: DTOhash,
-        },
-      });
-      // hash pwd if provided
-      if (DTOhash) newChannel.hash = await bcrypt.hash(DTOhash, 10);
+      const createProtectedChannel = async (hash: string) => {
+        const cryptedHash = await bcrypt.hash(hash, 10);
+        return await this.prisma.channel.create({
+          data: {
+            name,
+            visibility,
+            hash: cryptedHash,
+          },
+        });
+      };
 
-      await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
-      // return channel without hash
-      const { hash, ...rest } = newChannel;
-      return rest;
+      const createNormalChannel = async () => {
+        return await this.prisma.channel.create({
+          data: {
+            name,
+            visibility,
+          },
+        });
+      };
+
+      if (visibility == 'PROTECTED') {
+        if (!hash) error.badRequest('You must provide a password.');
+        const protectedChannel = await createProtectedChannel(hash);
+        await this.createChanUsr(
+          userId,
+          protectedChannel.id,
+          'OWNER',
+          'NORMAL',
+        );
+        return protectedChannel;
+      } else {
+        const {hash, ...Channel} = await createNormalChannel();
+        await this.createChanUsr(userId, Channel.id, 'OWNER', 'NORMAL');
+        return Channel;
+      }
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError)
         error.hasConflict('Channel already exists.');

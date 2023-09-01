@@ -11,6 +11,7 @@
   import ModalTwo from "../../components/modal/modalTwo.svelte";
   import Editchan from "../../components/modal/editchan.svelte";
   import { ui } from "$lib/stores";
+  import Createchan from "../../components/modal/createchan.svelte";
 
   let allowSlot = false;
 
@@ -78,6 +79,8 @@
 <ModalTwo title={getModalTitle()}>
   {#if $ui.modal == "EDITCHAN"}
   <svelte:component this={Editchan} />
+  {:else if $ui.modal == "CREATECHAN"}
+  <svelte:component this={Createchan} />
   {/if}
 </ModalTwo>
 <main>
