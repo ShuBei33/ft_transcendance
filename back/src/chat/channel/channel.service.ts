@@ -81,7 +81,7 @@ export class ChannelService {
         },
       });
       // hash pwd if provided
-      if (DTOhash) newChannel.hash = await bcrypt.hash(DTOhash, 10);
+      if (DTOhash) newChannel.hash = await bcrypt.hash(DTOhash, process.env.HASH_BCRYPT);
 
       await this.createChanUsr(userId, newChannel.id, 'OWNER', 'NORMAL');
       // return channel without hash
