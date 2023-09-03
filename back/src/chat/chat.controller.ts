@@ -1,32 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Logger,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiHeader,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ChanAdminService } from './channel/admin/chan_admin.service';
-import {
-  ChannelLite,
-  DTO_InviteChan,
-  DTO_JoinChan,
-  DTO_UpdateChan,
-  DTO_UpdateChanUsr,
-} from './channel/dto';
+import { ChannelLite, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from 'src/user/dto';
 import { JwtGuard } from 'src/auth/guard';
@@ -66,6 +41,7 @@ export class ChatController {
 	) {
 		try {
 			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			await this.chanAdmin.userHasStatusOrThrow(['NORMAL'], user.id, chanId);
 			const chanUsrUpdated = await this.chanAdmin.updateUserChannel(role, chanId, userToModify);
 			this.chatGate.channelUserRoleEdited(chanId, chanUsrUpdated);
             return res.status(200).json({success: true, message: 'User Channel Edited.' });
@@ -89,6 +65,7 @@ export class ChatController {
 	) {
 		try {
 			await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			await this.chanAdmin.userHasStatusOrThrow(['NORMAL'], user.id, chanId);
 			const channel: ChannelLite = await this.chanAdmin.updateChannelSettings( chanId, channelModified);
 			this.chatGate.wss.to(`chan_${chanId}`).emit("updated", channel);
 			return res.status(200).json({success: true, message: 'Channel updated.', data: channel });
@@ -111,8 +88,8 @@ export class ChatController {
 		@Res() res: Response
 	) {
 		try {
-			// const role = await this.chanAdmin.isAdminChannel( user.id, chanId );
 			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			await this.chanAdmin.userHasStatusOrThrow(['NORMAL'], user.id, chanId);
 			await this.chanAdmin.kickUserChannel( role, chanId, usrToKickId )
 			return res.status(200).json({success: true, message: 'User kicked successfully.' });
 		} catch (err) {
@@ -122,7 +99,7 @@ export class ChatController {
 	}
 
 	@Delete('channel/leave/:chanId')
-	@ApiOperation({ summary: 'Leave a channel, Destoye it if u are the owner' })
+	@ApiOperation({ summary: 'Leave a channel, delete it if you are the owner' })
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
@@ -136,8 +113,9 @@ export class ChatController {
 			if ( role == 'OWNER' ) {
 				this.chatGate.channelRemoved( chanId );
 				this.chanService.removeChannel( chanId );
-				return res.status(200).json({success: true, message: 'Channel Destroye' });
+				return res.status(200).json({success: true, message: 'Channel deleted' });
 			} else {
+				await this.chanAdmin.userHasStatusOrThrow(['NORMAL', 'MUTED'], user.id, chanId);
 				this.chatGate.channelDelUser( chanId, user );
 				this.chanService.leaveChannel(user.id, chanId);
 				return res.status(200).json({success: true, message: 'Leaving Channel' });
@@ -163,7 +141,7 @@ export class ChatController {
 			if ( role == 'OWNER' ) {
 				this.chatGate.channelRemoved( chanId );
 				this.chanService.removeChannel( chanId );
-				return res.status(200).json({success: true, message: 'Channel Destroye' });
+				return res.status(200).json({success: true, message: 'Channel has been successfully deleted.' });
 			}
 		} catch (err) {
 			this.logger.error(err);
@@ -185,8 +163,8 @@ export class ChatController {
 	) {
 		try {
 			await this.chanService.joinChannel(user.id, chanId, channelToJoin);
-			this.chatGate.channelNewUser(chanId, user )
-			return res.status(200).json({success: true, message: 'Vous avez rejoint un channel.' });
+			this.chatGate.channelNewUser(chanId, user)
+			return res.status(200).json({success: true, message: 'You have successfully joined a channel.' });
 		} catch (err) {
 			this.logger.error(err);
 			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
@@ -198,7 +176,7 @@ export class ChatController {
 	@ApiResponse({ status: 200, description: 'Success' })
 	@ApiResponse({ status: 400, description: 'Failure' })
 	@ApiParam({ name: 'chanId', description: 'Channel ID', type: 'number', example: 1 })
-	@ApiBody({ description: "Id de la personne a invite", type: DTO_InviteChan, })
+	@ApiBody({ description: "ID of the user to invite", type: DTO_InviteChan, })
 	async inviteToChannel(
 		@Param('chanId', ParseIntPipe) chanId: number,
 		@Body() userToInvite: DTO_InviteChan,
@@ -206,16 +184,16 @@ export class ChatController {
 		@Res() res: Response
 	) {
 		try {
-			const userCible = await this.userService.get_user( userToInvite.userId );
-			const channelJoined = await this.chanService.inviteToChannel(user.id, chanId, userToInvite);
-			this.chatGate.channelNewUser(chanId, userCible )
-			return res.status(200).json({success: true, message: 'Vous avez invite une personne dans un channel' });
-		} catch ( err ) {
+			await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			await this.chanAdmin.userHasStatusOrThrow(['NORMAL'], user.id, chanId);
+			const targetUser = await this.userService.get_user(userToInvite.userId);
+			await this.chanService.inviteToChannel(user.id, chanId, userToInvite);
+			this.chatGate.channelNewUser(chanId, targetUser)
+			return res.status(200).json({success: true, message: 'You have successfully invited someone to a channel.' });
+		} catch (err) {
 			console.log(err);
-			return res.status(400).json({success: false, message: "Vous n'avez pas les privilege suffisant"});
+			return res.status(400).json({success: false, message: "You do not have the correct access rights."});
 		}
 	}
-
-	
 }
 //prettier-ignore-end

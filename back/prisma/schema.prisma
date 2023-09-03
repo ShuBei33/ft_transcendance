@@ -181,7 +181,6 @@ enum ChanVisibility {
     PRIVATE
 }
 
-
 enum ChanUsrRole {
     NORMAL
     ADMIN

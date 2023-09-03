@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { ChanUsr, ChanUsrRole, ChanVisibility, UserStatusMSGs } from "@prisma/client";
+import { User, ChanUsr, ChanUsrRole, ChanVisibility, UserStatusMSGs } from "@prisma/client";
 import { IsEnum, IsInt, IsOptional, IsString } from "class-validator";
 
 export class DTO_UpdateChanUsr {
@@ -10,7 +10,7 @@ export class DTO_UpdateChanUsr {
 		examples: [ -1, 0, 1, 2, 3, 4, 1000 ],
 		type: Number,
 	})
-	id: ChanUsr['id'];
+	id: User['id'];
 
 	@IsString()
 	@IsOptional()

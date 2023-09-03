@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChannelLite, DTO_UpdateChan, DTO_UpdateChanUsr } from '../dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChanUsr, ChanUsrRole } from '@prisma/client';
+import { ChanUsr, ChanUsrRole, UserStatusMSGs } from '@prisma/client';
 import { error } from 'src/utils/utils_error';
 import * as bcrypt from 'bcrypt';
 import { Logger } from '@nestjs/common';
@@ -52,6 +52,18 @@ export class ChanAdminService {
 				chanId,
 				role: {
 					in: roles,
+				}
+			}
+		})
+	}
+	
+	async userHasStatusOrThrow(statuses: UserStatusMSGs[], userId: number, chanId: number) {
+		return await this.prisma.chanUsr.findFirstOrThrow({
+			where: {
+				userId,
+				chanId,
+				status: {
+					in: statuses,
 				}
 			}
 		})
