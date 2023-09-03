@@ -24,7 +24,7 @@ export class ChannelService {
     return await this.prisma.channelMsg.create({ data });
   }
 
-  async createChanUsr( userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> | null {
+  async createChanUsr(userId: number, chanId: number, role: ChanUsrRole, status: UserStatusMSGs, invitedToChan?: StatusInv): Promise<ChanUsr> | null {
     try {
       const newChanUsr = await this.prisma.chanUsr.create({
         data: {
@@ -45,7 +45,7 @@ export class ChannelService {
     }
   }
 
-  async createChannel( userId: number, newChanDto: DTO_CreateChan ): Promise<ChannelLite> | null {
+  async createChannel(userId: number, newChanDto: DTO_CreateChan): Promise<ChannelLite> | null {
       
         const { name, visibility, password } = newChanDto;
         let optionalHash = null;
@@ -165,16 +165,12 @@ export class ChannelService {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Channel traffic		                                                                //
-  //																							//
+  //																							                                            //
+  //		Channel traffic		                                                                    //
+  //																							                                            //
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  async joinChannel(
-    userId: number,
-    chanId: number,
-    joinChanDto?: DTO_JoinChan,
-  ): Promise<void> {
+  async joinChannel(userId: number, chanId: number, joinChanDto?: DTO_JoinChan): Promise<void> {
     try {
       // check that channel exists
       const channel = await this.prisma.channel.findUniqueOrThrow({
@@ -238,63 +234,24 @@ export class ChannelService {
     }
   }
 
-  async inviteToChannel(
-    userId: number,
-    chanId: number,
-    invitedUser: DTO_InviteChan,
-  ): Promise<void> {
-    try {
-      // check current user's rights
-      await this.prisma.chanUsr.findFirstOrThrow({
-        where: {
-          userId,
-          chanId,
-          OR: [{ invitedToChan: 'ACCEPTED' }, { invitedToChan: null }],
-          NOT: {
-            status: 'BANNED',
-          },
-        },
-      });
+  async inviteToChannel(userId: number, chanId: number, invitedUser: DTO_InviteChan): Promise<void> {
       // check that invitedUser is not already a member
       const invited = await this.prisma.chanUsr.findFirst({
         where: {
           userId: invitedUser.userId,
-          chanId,
-          OR: [
-            { invitedToChan: 'PENDING' },
-            { invitedToChan: 'REJECT' },
-            { invitedToChan: 'BLOCKED' },
-            { invitedToChan: 'ACCEPTED' },
-          ],
+          chanId
         },
       });
       if (invited) {
-        if (invited.invitedToChan == 'PENDING') {
-          error.hasConflict('This person has already been invited.');
-        } else if (invited.invitedToChan == 'REJECT') {
-          error.hasConflict('This person has already refused your invitation.');
-        } else if (invited.invitedToChan == 'BLOCKED') {
-          error.hasConflict('You cannot send invitations to this person.');
-        }
-        error.hasConflict('This person is already a member of this channel.'); // if (messages.length === 0) // strict equality operator
-        //     error.notFound("There aren't any messages at the moment.")
+        if (invited.invitedToChan == 'PENDING')
+            error.hasConflict('This person has already been invited.');
+        else if (invited.invitedToChan == 'REJECT')
+            error.hasConflict('This person has already refused your invitation.');
+        else if (invited.invitedToChan == 'BLOCKED')
+            error.hasConflict('You cannot send invitations to this person.');
+        error.hasConflict('This person is already a member of this channel.');
       }
-      await this.createChanUsr(
-        invitedUser.userId,
-        chanId,
-        'NORMAL',
-        'NORMAL',
-        'PENDING',
-      );
-    } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError)
-        error.notAuthorized('Not admin or owner.');
-      else if (e instanceof PrismaClientValidationError)
-        error.badRequest('You sent invalid data.');
-      else {
-        error.unexpected(e);
-      }
-    }
+      await this.createChanUsr(invitedUser.userId, chanId, 'NORMAL', 'NORMAL', 'PENDING');
   }
 
   async leaveChannel(userId: number, chanId: number): Promise<void> {
@@ -316,9 +273,9 @@ export class ChannelService {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
-  //																							//
-  //		Utils Back		                                                                    //
-  //																							//
+  //																							                                            //
+  //		Utils Back		                                                                        //
+  //																						                                            	//        
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   async getChanUsr(userId: number, chanId: number): Promise<ChanUsr> | null {
