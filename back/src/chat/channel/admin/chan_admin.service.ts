@@ -43,19 +43,6 @@ export class ChanAdminService {
 			}
 		})
 	}
-
-	// Suggestion 2
-	async userHasRole(roles: ChanUsrRole[], userId: number, chanId: number) {
-		return await this.prisma.chanUsr.findFirst({
-			where: {
-				userId,
-				chanId,
-				role: {
-					in: roles,
-				}
-			}
-		})
-	}
 	
 	async userHasStatusOrThrow(statuses: UserStatusMSGs[], userId: number, chanId: number) {
 		return await this.prisma.chanUsr.findFirstOrThrow({
@@ -127,9 +114,7 @@ export class ChanAdminService {
 	}
 
 	async kickUserChannel( myRole: ChanUsrRole, chanId: number, targetUserId: number) {
-		const targetUserChanUsr = await this.userHasRole(["ADMIN", "OWNER", "NORMAL"], targetUserId, chanId);
-		if (!targetUserChanUsr)
-			error.notFound("User not member of channel.");
+		const targetUserChanUsr = await this.userHasRoleOrThrow(["ADMIN", "OWNER", "NORMAL"], targetUserId, chanId);
 		const {role, id} = targetUserChanUsr;
 		if (role == "ADMIN" || role == "OWNER")
 			error.notAuthorized("You cannot kick admin / owner.");
@@ -140,4 +125,5 @@ export class ChanAdminService {
 		})
 	}
 }
+
 //prettier-ignore-end
