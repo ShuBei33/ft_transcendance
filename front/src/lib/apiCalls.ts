@@ -81,6 +81,10 @@ export class Channel {
   ) {
     return await this.instance.post("create", data);
   }
+
+  async updateChannelUser(chanId: number, data: channel.DTOUpdateChanUsr) {
+    return await this.instance.patch(`admin/${chanId}/user`, data);
+  }
 }
 
 export class Friend {
