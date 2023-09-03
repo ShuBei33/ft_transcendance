@@ -27,11 +27,10 @@
     _chanUsr: ChanUserExtended,
     action: "BAN" | "KICK" | "PROMOTE" | "DEMOTE"
   ) => {
-    if (!channel)
-      return ;
+    if (!channel) return;
     const _Channel = new Channel(`${get(axiosConfig)?.baseURL}/chat/channel`);
     let payload: dto.DTOUpdateChanUsr = {
-      id: _chanUsr.id,
+      id: _chanUsr.user.id,
     };
     if (action != "KICK") {
       switch (action) {
@@ -47,11 +46,14 @@
         default:
           break;
       }
-      _Channel.updateChannelUser(channel?.id, payload).then(res => {
-        console.log("update user ok", res);
-      }).catch(e => {
-        console.log("error happened", e);
-      });
+      _Channel
+        .updateChannelUser(channel?.id, payload)
+        .then((res) => {
+          console.log("update user ok", res);
+        })
+        .catch((e) => {
+          console.log("error happened", e);
+        });
     }
     console.log(action, chanUsr);
   };
