@@ -70,7 +70,7 @@ export class ChanAdminService {
 		return userRole.role;
 	}
 
-	async updateUserChannel(chanId: number, userToModify: DTO_UpdateChanUsr): Promise<ChanUsr> {
+	async updateUserChannel(myRole: ChanUsrRole, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<ChanUsr> {
 		const targetUser = await this.prisma.chanUsr.findFirst({
 			where: {
 				userId: userToModify.id,
@@ -81,6 +81,8 @@ export class ChanAdminService {
 			error.notFound("User not member of channel.");
 		if (targetUser.role == "OWNER")
 			error.notAuthorized("Cannot modify role of the owner.");
+		if (myRole == "ADMIN" && targetUser.role == "ADMIN")
+			error.notAuthorized("An admin cannot modify another admin's role/status.");
 		const { id, ...data } = userToModify;
 		return await this.prisma.chanUsr.update({
 			where: { id: targetUser.id },
@@ -112,11 +114,17 @@ export class ChanAdminService {
 		return channel;
 	}
 
-	async kickUserChannel( role: ChanUsrRole, chanId: number, cibleId: number,) {
-		if ( role != 'OWNER' && await this.isAdminChannel( chanId, cibleId ) )
-			return error.notAuthorized("You cannot kick other admin.");
+	async kickUserChannel( myRole: ChanUsrRole, chanId: number, targetUserId: number) {
+		const targetUserChanUsr = await this.userHasRole(["ADMIN", "OWNER", "NORMAL"], targetUserId, chanId);
+		if (!targetUserChanUsr)
+			error.notFound("User not member of channel.");
+		const {role, id} = targetUserChanUsr;
+		if (role == "ADMIN" || role == "OWNER")
+			error.notAuthorized("You cannot kick admin / owner.");
 		await this.prisma.chanUsr.delete({
-			where: { id: cibleId },
+			where: {
+				id,
+			 },
 		})
 	}
 }

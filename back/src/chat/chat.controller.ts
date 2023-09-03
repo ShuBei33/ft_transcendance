@@ -65,8 +65,8 @@ export class ChatController {
 		@Res() res: Response,
 	) {
 		try {
-			await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
-			const chanUsrUpdated = await this.chanAdmin.updateUserChannel(chanId, userToModify);
+			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
+			const chanUsrUpdated = await this.chanAdmin.updateUserChannel(role, chanId, userToModify);
 			this.chatGate.channelUserRoleEdited(chanId, chanUsrUpdated);
             return res.status(200).json({success: true, message: 'User Channel Edited.' });
 		} catch (err) {
@@ -111,7 +111,8 @@ export class ChatController {
 		@Res() res: Response
 	) {
 		try {
-			const role = await this.chanAdmin.isAdminChannel( user.id, chanId );
+			// const role = await this.chanAdmin.isAdminChannel( user.id, chanId );
+			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
 			await this.chanAdmin.kickUserChannel( role, chanId, usrToKickId )
 			return res.status(200).json({success: true, message: 'User kicked successfully.' });
 		} catch (err) {
