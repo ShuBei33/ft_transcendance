@@ -35,7 +35,6 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       SWAGGER: ${SWAGGER}
       HASH_SALT_ROUND: ${HASH_SALT_ROUND}
-      NEST_DEBUG: true # TODO Remove this
     volumes:
       - "./back:/app"
     working_dir: /app
