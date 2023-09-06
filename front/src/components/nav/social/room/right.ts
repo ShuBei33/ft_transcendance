@@ -11,6 +11,7 @@ import type { ComponentProps } from "svelte";
 import { get } from "svelte/store";
 import type ActionButton from "../../../actionButton.svelte";
 import type { Action } from "svelte/action";
+import { axiosConfig } from "$lib/stores";
 import { Channel } from "$lib/apiCalls";
 
 export const exists = (data: any) =>
@@ -50,7 +51,7 @@ export const getChannelDropDownActions = (
 ): channelActions => {
   const writer = getChannelMessageWriter(message);
   if (!writer) return;
-  const _Channel = new Channel();
+  const _Channel = new Channel(`${get(axiosConfig)?.baseURL}/chat/channel`);
 
   return [
     {

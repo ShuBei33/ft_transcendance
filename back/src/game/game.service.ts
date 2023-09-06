@@ -4,17 +4,14 @@ import { error } from 'src/utils/utils_error';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Game } from '@prisma/client';
 import { GameGateway } from 'src/sockets/game.gateway';
+import { ChatGateway } from 'src/chat/chat.gateway';
 // import { GameGateway } from '../game.gateway';
 const logger = new Logger();
 let queue: number[] = [];
 
 @Injectable()
 export class GameService {
-  constructor(
-    private prisma: PrismaService,
-    private gameGate: GameGateway,
-  ) // private event: GameGateway
-  {}
+  constructor(private prisma: PrismaService, private chatGate: ChatGateway) {}
 
   async saveGame(_data: {
     winnerId: number;
@@ -71,12 +68,12 @@ export class GameService {
   async createGame(userIds: number[]) {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
     logger.log('create game ok!!!!!!!!!!!--=-=-=', gameId);
-    // for (let i = 0; i < userIds.length; i++) {
-    //   this.event.serv.emit(String(userIds[i]), {
-    //     expect: 'GAME_ID',
-    //     data: gameId,
-    //   });
-    // }
+    for (let i = 0; i < userIds.length; i++) {
+      this.chatGate.wss.emit(String(userIds[i]), {
+        expect: 'GAME_ID',
+        data: gameId,
+      });
+    }
     logger.log('Users in game' + JSON.stringify(userIds));
   }
 

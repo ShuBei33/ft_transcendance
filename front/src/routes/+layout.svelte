@@ -93,6 +93,15 @@
       // User received a dm
       .on("dm", (data: DiscussionMsg) => {
         console.log("new dm !", data);
+      })
+      .on(String($user?.id!), (data: { expect: string; data: any }) => {
+        switch (data.expect) {
+          case "GAME_ID":
+            $ui.game.id = Number(data.data);
+            break;
+          default:
+            break;
+        }
       });
   }
 </script>

@@ -10,6 +10,7 @@
   import { Channel } from "$lib/apiCalls";
   import type { channel as dto } from "$lib/models/dtos";
   import { get } from "svelte/store";
+  import Button from "../Button.svelte";
 
   const levels = ["ADMIN", "NORMAL", "ALL"];
   let selectedLevel = "ALL";

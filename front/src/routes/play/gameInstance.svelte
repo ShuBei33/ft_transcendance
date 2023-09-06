@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { Socket, io } from "socket.io-client";
+  import { ui, user } from "$lib/stores";
   import type { DefaultSettings } from "$lib/models/game";
   import draw from "./draw";
+  import { goto } from "$app/navigation";
 
   export let gameId: number = -1;
   export let userId: number = -1;
@@ -13,20 +15,10 @@
   function onKeyPressed(e: { key: string; down: boolean }) {
     if (!socket || (e.key != "a" && e.key != "d")) return;
     socket.emit("keyStroke", e);
-    // switch (e.key) {
-    //   case "a":
-    //     socket.emit("moveLeft");
-    //     break;
-    //   case "d":
-    //     socket.emit("moveRight");
-    //     break;
-    //   default:
-    //     break;
-    // }
   }
 
   onMount(() => {
-    socket = io("http://localhost:5500")
+    socket = io("http://localhost:5500/game")
       .emit("identification", { userId, gameId })
       .on(`game: ${String(gameId)}`, (data) => {
         switch (data.expect) {
@@ -39,7 +31,7 @@
         }
       })
       .on("disconnect", () => {
-        gameData = undefined;
+        $ui.game.id = 0;
       });
     if (gameId != -1 && userId != -1)
       socket.emit("joinGame", { userId, gameId });
