@@ -2,6 +2,7 @@
   import { ui } from "$lib/stores";
   export let title = "";
   export let isOpen = false;
+  export let raw = false;
   //   let showModal = false;
 
   function openModal() {
@@ -17,15 +18,23 @@
 <!-- <button on:click={openModal}>Open Modal</button> -->
 
 {#if isOpen}
-  <div class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{title}</h2>
-        <button on:click={closeModal}>Close</button>
+  {#if raw}
+    <div class="modal">
+      <div class="modal-raw">
+        <slot />
       </div>
-      <slot />
     </div>
-  </div>
+  {:else}
+    <div class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>{title}</h2>
+          <button on:click={closeModal}>Close</button>
+        </div>
+        <slot />
+      </div>
+    </div>
+  {/if}
 {/if}
 
 <style>
@@ -40,6 +49,11 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+  }
+
+  .modal-raw {
+    position: relative;
+    z-index: 1001;
   }
 
   .modal-content {

@@ -42,8 +42,8 @@
                 $ui.chat.toggle = false;
               }}>{getChannelMessageWriter(message)?.user.pseudo}</button
             >
-            <ActionButton
-              actions={getChannelDropDownActions(message)}>...</ActionButton
+            <ActionButton actions={getChannelDropDownActions(message)}
+              >...</ActionButton
             >
           </div>
         </Message>
@@ -56,8 +56,9 @@
 </div>
 
 <style lang="scss">
+  @use "../../../../lib/style/colors.scss";
   .messages-container {
-    background-color: whitesmoke;
+    background-color: colors.$orchidOrange;
     height: 100%;
     display: grid;
     grid-template-rows: 6fr 1fr;
@@ -69,7 +70,7 @@
     padding: 1em;
   }
   .input-section {
-    background-color: lightgrey;
+    background-color: colors.$orchidOrange;
     padding-top: 1em;
     // padding: 1em;
   }
@@ -87,10 +88,6 @@
       color: grey;
     }
     cursor: pointer;
-  }
-  input {
-    height: 100%;
-    width: 100%;
   }
   /* your styles go here */
 </style>

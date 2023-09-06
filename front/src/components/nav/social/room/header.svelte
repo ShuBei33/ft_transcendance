@@ -1,24 +1,25 @@
 <script lang="ts">
-  import GenericButton from "../../../genericButton.svelte";
   import { ui } from "$lib/stores";
   import { data } from "$lib/stores";
+  import Button from "../../../Button.svelte";
 </script>
 
-<!-- <GenericButton
+<!-- 
+<Button
   on:click={() => {
     $ui.modal = "EDITCHAN";
   }}
 >
   edit
-</GenericButton>
+</Button>
 
-<GenericButton
+<Button
   on:click={() => {
     $ui.modal = "CREATECHAN";
   }}
 >
   create
-</GenericButton> -->
+</Button> -->
 
 <style lang="scss">
 </style>

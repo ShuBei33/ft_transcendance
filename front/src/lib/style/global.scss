@@ -9,4 +9,19 @@
 // channelLabel
 .channelLabel {
   @include mix.button-style($fierFuchsia);
+  &-active {
+    @include mix.button-style-basic(darken($fierFuchsia, 8%));
+  }
+}
+// Tab
+.tab-window-toggle {
+  width: 100%;
+  @include mix.button-style($fierFuchsia);
+  border-radius: 0;
+  &-active {
+    @include mix.button-style-basic(lighten($fierFuchsia, 15%));
+    width: 100%;
+    border-radius: 0;
+    cursor: default;
+  }
 }

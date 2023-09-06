@@ -1,7 +1,6 @@
 <script lang="ts">
   export let actions: { label: string; callback: () => void }[] = [];
   export let showMenu = false;
-  // your script goes here
 </script>
 
 <div class="action-button-wrapper">

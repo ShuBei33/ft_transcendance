@@ -75,6 +75,7 @@
     padding: 1em;
     display: flex;
     flex-direction: column;
+    height: calc(100% - 2em);
     gap: 0.5em;
   }
 

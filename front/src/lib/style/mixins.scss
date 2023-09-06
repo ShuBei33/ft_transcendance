@@ -1,5 +1,16 @@
 @import "./variables.scss";
 
+@mixin button-style-basic($background-color) {
+  position: relative;
+  padding: 0.5em;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 0;
+  background-color: $background-color;
+}
+
 @mixin button-style($background-color) {
   position: relative;
   padding: 0.5em;

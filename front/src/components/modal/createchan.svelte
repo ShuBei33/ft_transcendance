@@ -8,6 +8,11 @@
   import { get } from "svelte/store";
   import type { channel as dto } from "$lib/models/dtos";
   import { ChanVisibility } from "$lib/models/prismaSchema";
+  import Input from "../Input.svelte";
+  import Typography from "../Typography.svelte";
+  import Button from "../Button.svelte";
+  import { addAnnouncement } from "$lib/stores/session";
+
   const levels = ["PRIVATE", "PUBLIC", "PROTECTED"];
 
   let payload: Pick<dto.DTOUpdateChan, "name" | "visibility"> & {
@@ -24,35 +29,20 @@
     _Channel
       .create(finalPayload)
       .then((data) => {
+        addAnnouncement({
+          message: `Channel ${payload.name} created`,
+          level: "success",
+        });
+        $ui.modal = "NONE";
         console.log("created channel data: ", data);
       })
       .catch((e) => {
         console.log("error happened create channel", e);
       });
-    // _Channel
-    //   .updateChannelSetting(channel.id, payload)
-    //   .then((res) => {
-    //     console.log("update res", res);
-    //   })
-    //   .catch((e) => {
-    //     console.log("error happened");
-    //   });
-    // payload.name = "test";
   };
-  // $: console.log(channel);
 </script>
 
 <div class="editchan">
-  <h1>{payload["name"]}</h1>
-  <TestInput
-    attributes={{
-      id: "name",
-      type: "text",
-      placeholder: "name",
-      name: "name",
-    }}
-    onChange={(value) => (payload["name"] = value)}
-  />
   <Slider
     {levels}
     initialValue={payload.visibility}
@@ -61,24 +51,49 @@
       console.log("slider change", value);
     }}
   />
-  {#if (payload.visibility && payload.visibility == "PROTECTED") || payload["visibility"] == "PROTECTED"}
-    <TestInput
+  <div class="editchan-inputSection">
+    <Input
       attributes={{
-        id: "password",
-        type: "password",
-        placeholder: "password",
-        name: "password",
+        id: "name",
+        type: "text",
+        placeholder: "name",
+        name: "name",
       }}
-      onChange={(value) => (payload["hash"] = value)}
+      onChange={(value) => (payload["name"] = value)}
     />
-  {/if}
-  <GenericButton on:click={() => handleFormSubmit()}>Confirm</GenericButton>
+    {#if (payload.visibility && payload.visibility == "PROTECTED") || payload["visibility"] == "PROTECTED"}
+      <Input
+        attributes={{
+          id: "password",
+          type: "password",
+          placeholder: "password",
+          name: "password",
+        }}
+        onChange={(value) => (payload["hash"] = value)}
+      />
+    {/if}
+  </div>
+
+  <Button variant="success" on:click={() => handleFormSubmit()}
+    ><Typography>Confirm</Typography></Button
+  >
+  <Button variant="error" on:click={() => ($ui.modal = "NONE")}
+    ><Typography>Cancel</Typography></Button
+  >
 </div>
 
 <style lang="scss">
   .editchan {
-    height: 40vh;
-    width: 60vw;
+    height: 70vh;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    &-inputSection {
+      display: flex;
+      flex-direction: column;
+      row-gap: 0.5em;
+    }
   }
   .modal-input {
     z-index: 99999;

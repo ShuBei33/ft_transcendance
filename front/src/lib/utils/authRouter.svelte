@@ -83,7 +83,7 @@
     <svelte:component this={Createchan} />
   </SimpleModal>
 {:else if $ui.modal == "EDITCHAN"}
-  <SimpleModal title={""} isOpen={true}>
+  <SimpleModal raw title={""} isOpen={true}>
     <svelte:component
       this={TabModal}
       tabs={[
@@ -93,6 +93,22 @@
         },
         {
           title: "Members",
+          component: Members,
+        },
+      ]}
+    />
+  </SimpleModal>
+{:else if $ui.modal == "BROWSECHAN"}
+  <SimpleModal raw title={""} isOpen={true}>
+    <svelte:component
+      this={TabModal}
+      tabs={[
+        {
+          title: "Create",
+          component: Createchan,
+        },
+        {
+          title: "Join",
           component: Members,
         },
       ]}

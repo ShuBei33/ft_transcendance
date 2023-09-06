@@ -10,7 +10,9 @@
   $: labelClassNameObject = (id: number): ClassNamesObject => {
     return {
       channelLabel: true,
-      // active: $ui.chat.room.labelFocusId == id,
+      active: {
+        subClass: $ui.chat.room.labelFocusId == id,
+      },
     };
   };
 
@@ -22,18 +24,39 @@
   $: channels = $data.myChannels.map((chanUsr) => chanUsr.channel);
 </script>
 
-{#each channels as channel}
-  <Button
-    class={classNames(labelClassNameObject(channel.id))}
-    on:click={() => ($ui.chat.room.labelFocusId = channel.id)}
-  >
-    <Typography big>
-      {channel.name}
-    </Typography>
-  </Button>
-{/each}
+<div class="room-left">
+  <div class="top">
+    {#each channels as channel}
+      <Button
+        class={classNames(labelClassNameObject(channel.id))}
+        on:click={() => ($ui.chat.room.labelFocusId = channel.id)}
+      >
+        <Typography big>
+          {channel.name}
+        </Typography>
+      </Button>
+    {/each}
+  </div>
+  <div class="bottom">
+    <Button on:click={() => ($ui.modal = "BROWSECHAN")}>
+      <Typography>+</Typography>
+    </Button>
+  </div>
+</div>
 
 <style lang="scss">
+  .top {
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
+  }
+  .room-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: inherit;
+  }
+
   // @use "../../../../lib/style/mixins";
   // @use "../../../../lib/style/variables.scss";
 </style>
