@@ -3,44 +3,37 @@
   import { onMount } from "svelte";
   import { get } from "svelte/store";
   import { ui } from "$lib/stores/ui";
+  import Button from "../../../Button.svelte";
   import { classNames, type ClassNamesObject } from "$lib/utils/classNames/";
+  import Typography from "../../../Typography.svelte";
 
   $: labelClassNameObject = (id: number): ClassNamesObject => {
     return {
-      "channel-label": true,
-      active: $ui.chat.room.labelFocusId == id,
+      channelLabel: true,
+      // active: $ui.chat.room.labelFocusId == id,
     };
   };
-
-  $: channels = $data.myChannels.map((chanUsr) => chanUsr.channel);
 
   onMount(() => {
     if ($ui.chat.room.labelFocusId == -1 && $data.myChannels.length)
       $ui.chat.room.labelFocusId = $data.myChannels[0].channel.id;
   });
+
+  $: channels = $data.myChannels.map((chanUsr) => chanUsr.channel);
 </script>
 
 {#each channels as channel}
-  <button
+  <Button
     class={classNames(labelClassNameObject(channel.id))}
     on:click={() => ($ui.chat.room.labelFocusId = channel.id)}
   >
-    <p>
+    <Typography big>
       {channel.name}
-    </p>
-  </button>
+    </Typography>
+  </Button>
 {/each}
 
 <style lang="scss">
-  .channel-label {
-    cursor: pointer;
-    padding: 0.5em;
-    &:hover {
-      background-color: grey;
-    }
-  }
-
-  .active {
-    background-color: grey;
-  }
+  // @use "../../../../lib/style/mixins";
+  // @use "../../../../lib/style/variables.scss";
 </style>

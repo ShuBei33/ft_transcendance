@@ -118,7 +118,6 @@
 
 <style lang="scss">
   .app-container {
-    height: calc(100vh - 2em);
     padding: 1em;
   }
   /* your styles go here */

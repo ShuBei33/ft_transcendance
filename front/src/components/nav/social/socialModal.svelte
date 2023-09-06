@@ -43,11 +43,13 @@
 </main>
 
 <style lang="scss">
+  @import "../../../lib/style/colors.scss";
   .social-modal {
     height: 80vh;
     width: 875px;
-    background-color: lightgrey;
+    background-color: $georgiaPeach;
     position: absolute;
+    border-radius: 0.5em;
     bottom: 3em;
     right: 1em;
 

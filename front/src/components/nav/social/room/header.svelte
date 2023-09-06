@@ -1,9 +1,10 @@
 <script lang="ts">
   import GenericButton from "../../../genericButton.svelte";
   import { ui } from "$lib/stores";
+  import { data } from "$lib/stores";
 </script>
 
-<GenericButton
+<!-- <GenericButton
   on:click={() => {
     $ui.modal = "EDITCHAN";
   }}
@@ -17,7 +18,7 @@
   }}
 >
   create
-</GenericButton>
+</GenericButton> -->
 
 <style lang="scss">
 </style>

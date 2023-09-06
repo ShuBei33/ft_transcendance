@@ -83,8 +83,8 @@
         $data.myChannels.forEach((chanUsr, index) => {
           if (chanUsr.channel.id == data.id) {
             const channel = $data.myChannels[index].channel;
-            const {id, ...rest} = data;
-            $data.myChannels[index].channel = {...channel, ...rest};
+            const { id, ...rest } = data;
+            $data.myChannels[index].channel = { ...channel, ...rest };
             return;
           }
         });
@@ -112,7 +112,6 @@
       on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
       >chat {(!$ui.chat.toggle && "+") || "-"}</button
     >
-    <div />
   </div></AuthRouter
 >
 
