@@ -33,10 +33,4 @@
 </span>
 
 <style lang="scss">
-  .FtLogo {
-    svg {
-      height: 20px;
-      width: 20px;
-    }
-  }
 </style>

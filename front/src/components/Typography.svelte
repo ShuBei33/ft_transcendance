@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   export let big = false;
   export let weight:
     | "Black"
@@ -10,9 +11,14 @@
     | "Regular"
     | "SemiBold"
     | "Thin" = "Regular";
+
+  let className: string | undefined = undefined;
+  export { className as class };
 </script>
 
-{#if big}
+{#if className}
+  <span class={className}><slot /></span>
+{:else if big}
   <span class="bigTypo"><slot /></span>
 {:else}
   <span class={`typo-${weight}`}><slot /></span>

@@ -7,6 +7,8 @@
   import Input from "../../components/Input.svelte";
   import { browser } from "$app/environment";
   import FtLogo from "../../components/svg/FTLogo.svelte";
+  import GoogleLogo from "../../components/svg/GoogleLogo.svelte";
+  import Divider from "../../components/divider.svelte";
 
   const email = field("email", "", [required()]);
   const password = field("password", "", [required()]);
@@ -37,25 +39,38 @@
           window.location.href = "http://localhost:5500/auth/signin42";
       }}><Typography>{"Sign in"}</Typography></Button
     >
+    <Divider>
+      <Typography slot="title">{"Continue with"}</Typography>
+    </Divider>
     <Button
+      class="zero-auth-ft"
       on:click={() => {
         if (browser)
           window.location.href = "http://localhost:5500/auth/signin42";
       }}
     >
-      <div class="zero-auth-sign-in">
-        <Typography>{"Sign in with 42"}</Typography>
+      <div class="zero-auth-flex">
+        <Typography class="typo-Regular color-black">{"Forty two"}</Typography>
         <FtLogo class="FtLogo" />
+      </div></Button
+    >
+    <Button
+      class="zero-auth-google"
+      on:click={() => {
+        if (browser)
+          window.location.href = "http://localhost:5500/auth/signin42";
+      }}
+    >
+      <div class="zero-auth-flex">
+        <Typography class="typo-Regular color-black">{"Google"}</Typography>
+        <GoogleLogo class="GoogleLogo" />
       </div></Button
     >
   </section>
 </div>
 
-<!-- <a href="http://localhost:5500/auth/signin42">
-  <h1>test42</h1>
-</a> -->
-
 <style lang="scss">
+  @use "../../lib/style/mixins.scss" as mix;
   @import "../../lib/style/colors.scss";
   :global(body) {
     background-color: $shipsOfficer;
@@ -73,9 +88,33 @@
     padding: 0.5em;
     width: 15em;
   }
-  .zero-auth-sign-in {
+  .zero-auth-flex {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+  }
+
+  :global(.FtLogo .GoogleLogo) {
+    display: flex;
+    align-items: center;
+  }
+  :global(.FtLogo svg) {
+    height: auto;
+    width: 18px;
+  }
+  :global(.GoogleLogo svg) {
+    height: 18px;
+    width: 18px;
+  }
+  :global(.zero-auth-ft) {
+    @include mix.button-style(white);
+  }
+  :global(.zero-auth-google) {
+    @include mix.button-style(white);
+  }
+  :global(.typo-Regular.color-black) {
+    color: black;
+    display: flex;
+    align-items: center;
   }
 </style>
