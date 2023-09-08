@@ -10,7 +10,12 @@
   import { socketIsConnected } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
-  import type { ChannelMsg, DiscussionMsg } from "$lib/models/prismaSchema";
+  import type {
+    ChanUserExtended,
+    ChanUsr,
+    ChannelMsg,
+    DiscussionMsg,
+  } from "$lib/models/prismaSchema";
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
@@ -88,7 +93,30 @@
             return;
           }
         });
-        console.log("!update ok !!!", data);
+      })
+      // Channel user status change
+      .on("channelUserEdited", (data: ChanUsr) => {
+        $data.myChannels.forEach((myChanUsr, index) => {
+          if (myChanUsr.channel.id == data.chanId) {
+            const prevChanUsr = $data.myChannels[
+              index
+            ].channel.channelUsers.find((chanUsr) => chanUsr.id == data.id);
+
+            if (!prevChanUsr) return;
+            const newChanUsr: ChanUserExtended = {
+              user: prevChanUsr?.user,
+              channel: prevChanUsr.channel,
+              ...data,
+            };
+
+            $data.myChannels[index].channel.channelUsers = $data.myChannels[
+              index
+            ].channel.channelUsers.filter((chanUsr) => chanUsr.id != data.id);
+
+            $data.myChannels[index].channel.channelUsers.push(newChanUsr);
+            return;
+          }
+        });
       })
       // User received a dm
       .on("dm", (data: DiscussionMsg) => {

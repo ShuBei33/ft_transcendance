@@ -17,12 +17,6 @@
   const handleLevelChange = (value: string) => {
     selectedLevel = value;
   };
-  const getChannelContext = () => {
-    const chanUsr = $data.myChannels.find(
-      (chanUsr) => chanUsr.channel.id == $ui.chat.room.labelFocusId
-    );
-    return chanUsr;
-  };
 
   const handleAdminAction = (
     _chanUsr: ChanUserExtended,
@@ -58,7 +52,10 @@
     }
     console.log(action, chanUsr);
   };
-  $: chanUsr = getChannelContext();
+  $: chanUsr = $data.myChannels.find(
+    (chanUsr) => chanUsr.channel.id == $ui.chat.room.labelFocusId
+  );
+
   $: channel = chanUsr?.channel;
 </script>
 
