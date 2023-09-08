@@ -49,6 +49,8 @@
         .catch((e) => {
           console.log("error happened", e);
         });
+    } else {
+      _Channel.kick(_chanUsr.chanId, _chanUsr.user.id);
     }
     console.log(action, chanUsr);
   };

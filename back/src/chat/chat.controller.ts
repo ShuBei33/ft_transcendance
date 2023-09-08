@@ -1,7 +1,32 @@
-import { Body, Controller, Delete, Logger, Param, ParseIntPipe, Patch, Post, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiHeader,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ChanAdminService } from './channel/admin/chan_admin.service';
-import { ChannelLite, DTO_InviteChan, DTO_JoinChan, DTO_UpdateChan, DTO_UpdateChanUsr } from './channel/dto';
+import {
+  ChannelLite,
+  DTO_InviteChan,
+  DTO_JoinChan,
+  DTO_UpdateChan,
+  DTO_UpdateChanUsr,
+} from './channel/dto';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from 'src/user/dto';
 import { JwtGuard } from 'src/auth/guard';
@@ -90,7 +115,8 @@ export class ChatController {
 		try {
 			const { role } = await this.chanAdmin.userHasRoleOrThrow(['ADMIN', 'OWNER'], user.id, chanId);
 			await this.chanAdmin.userHasStatusOrThrow(['NORMAL'], user.id, chanId);
-			await this.chanAdmin.kickUserChannel( role, chanId, usrToKickId )
+			const kickedChanUsr = await this.chanAdmin.kickUserChannel( role, chanId, usrToKickId );
+			this.logger.log("+++++++++++++++++kicked", kickedChanUsr);
 			return res.status(200).json({success: true, message: 'User kicked successfully.' });
 		} catch (err) {
 			this.logger.error(err);

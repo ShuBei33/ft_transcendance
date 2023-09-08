@@ -111,32 +111,26 @@ export class ChatGateway
   //////////////////////////////////
 
   channelNew(channel: ChannelLite) {
-    this.logger.log(`Channel [${channel.id}]:[${channel.name}] was Created`);
     this.wss.emit('channelNew', channel);
   }
 
   channelSettingsEditedPrivate(chanId: number, channel: ChannelLite) {
-    this.logger.log(`Channel [${chanId}]:[${channel.name}] was Edited`);
     this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
   }
 
   channelSettingsEdited(chanId: number, channel: ChannelLite) {
-    this.logger.log('Channel Public | Protected was Edited');
     this.wss.to(`chan_${chanId}`).emit('channelPrivateEdited', channel);
   }
 
   channelUserRoleEdited(chanId: number, data: ChanUsr) {
-    // this.logger.log(`User Channel ${userUpdate.id} was Edited`);
     this.wss.to(`chan_${chanId}`).emit('channelUserEdited', data);
   }
 
   channelNewUser(chanId: number, user: UserLite) {
-    this.logger.log(`User [${user.login}] Join Channel [${chanId}]`);
     this.wss.to(`chan_${chanId}`).emit('userJoinChannel', { user, chanId });
   }
 
   channelDelUser(chanId: number, user: UserLite) {
-    this.logger.log(`User [${user.login}] Leave Channel [${chanId}]`);
     this.wss.to(`chan_${chanId}`).emit('userLeaveChannel', { user, chanId });
   }
 

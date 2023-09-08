@@ -118,7 +118,7 @@ export class ChanAdminService {
 		const {role, id} = targetUserChanUsr;
 		if (role == "ADMIN" || role == "OWNER")
 			error.notAuthorized("You cannot kick admin / owner.");
-		await this.prisma.chanUsr.delete({
+		return await this.prisma.chanUsr.delete({
 			where: {
 				id,
 			 },
