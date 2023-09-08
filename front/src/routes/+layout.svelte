@@ -142,15 +142,15 @@
   <slot />
   {#if chatSocket}
     <SocialModal {chatSocket} />
+    <div class="bottom-acion-section">
+      <button
+        class="chat-toggle"
+        on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
+        >chat {(!$ui.chat.toggle && "+") || "-"}</button
+      >
+    </div>
   {/if}
-  <div class="bottom-acion-section">
-    <button
-      class="chat-toggle"
-      on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
-      >chat {(!$ui.chat.toggle && "+") || "-"}</button
-    >
-  </div></AuthRouter
->
+</AuthRouter>
 
 <style lang="scss">
   .chat-toggle {

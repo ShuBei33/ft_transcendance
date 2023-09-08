@@ -25,3 +25,15 @@
     cursor: default;
   }
 }
+
+.chat-input {
+  @include mix.input-style();
+  width: 100%;
+}
+
+  .FtLogo {
+    svg {
+      height: 20px;
+      width: 20px;
+    }
+  }

@@ -6,17 +6,15 @@
   import Button from "../../components/Button.svelte";
   import Input from "../../components/Input.svelte";
   import { browser } from "$app/environment";
+  import FtLogo from "../../components/svg/FTLogo.svelte";
 
   const email = field("email", "", [required()]);
   const password = field("password", "", [required()]);
   const loginForm = form(email, password);
 </script>
 
-<div class="login-grid-layout">
-  <div class="lhs">
-    <Typography big>{"Transcendance"}</Typography>
-  </div>
-  <div class="rhs">
+<div class="landing">
+  <section class="sign-in">
     <Input
       attributes={{
         id: "email",
@@ -39,7 +37,18 @@
           window.location.href = "http://localhost:5500/auth/signin42";
       }}><Typography>{"Sign in"}</Typography></Button
     >
-  </div>
+    <Button
+      on:click={() => {
+        if (browser)
+          window.location.href = "http://localhost:5500/auth/signin42";
+      }}
+    >
+      <div class="zero-auth-sign-in">
+        <Typography>{"Sign in with 42"}</Typography>
+        <FtLogo class="FtLogo" />
+      </div></Button
+    >
+  </section>
 </div>
 
 <!-- <a href="http://localhost:5500/auth/signin42">
@@ -49,19 +58,24 @@
 <style lang="scss">
   @import "../../lib/style/colors.scss";
   :global(body) {
-    background-color: $georgiaPeach;
+    background-color: $shipsOfficer;
   }
-  .login-grid-layout {
-    display: grid;
-    grid-template-columns: 5fr 1fr;
+  .landing {
+    display: flex;
     height: calc(100vh - 2em);
+    justify-content: center;
   }
-  .rhs {
+  .sign-in {
     display: flex;
     flex-direction: column;
     row-gap: 0.5em;
-    justify-content: center;
+    align-self: center;
+    padding: 0.5em;
+    width: 15em;
   }
-  .lhs {
+  .zero-auth-sign-in {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 </style>

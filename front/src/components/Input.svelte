@@ -2,7 +2,16 @@
   import { onMount } from "svelte";
   import type { HTMLInputAttributes } from "svelte/elements";
 
+  let className: string | undefined = undefined;
+  export { className as class };
+
+  onMount(() => {
+    if (className == undefined) className = "basic-input";
+  });
+
+  type onSubmitType = (value?: string) => string;
   export let onChange: (value: string) => void = () => {};
+  export let onSubmit: onSubmitType | undefined = undefined;
   export let attributes: Omit<HTMLInputAttributes, "value"> = {};
   export let value = "";
 
@@ -11,30 +20,34 @@
     value = target.value;
     onChange(value);
   }
+
+  function handleKeyPress(key: string) {
+    if (key != "Enter") return;
+    value = onSubmit!(value);
+  }
 </script>
 
-<main>
+{#if onSubmit}
   <input
-    class="basic-input"
+    class={className}
+    {...attributes}
+    bind:value
+    on:input={handleInputChange}
+    on:keypress={(k) => handleKeyPress(k.key)}
+  />
+{:else}
+  <input
+    class={className}
     {...attributes}
     bind:value
     on:input={handleInputChange}
   />
-</main>
+{/if}
 
 <style lang="scss">
+  @use "../lib/style/mixins.scss" as mix;
   .basic-input {
-    border: 0;
-    border-radius: 0.5em;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 0.5em;
-    color: white;
-    &::placeholder {
-      color: white;
-    }
-    &:focus {
-      background-color: rgba(0, 0, 0, 0.5);
-    }
+    @include mix.input-style();
   }
   /* your styles go here */
 </style>

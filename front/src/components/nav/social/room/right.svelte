@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
   import { getChannelDropDownActions, getChannelMessageWriter } from "./right";
   import ActionButton from "../../../actionButton.svelte";
+  import Input from "../../../Input.svelte";
 
   export let chatSocket: Socket;
   let value = "";
@@ -16,17 +17,14 @@
   );
   $: messages = chanUsr?.channel.channelMsgs;
   $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
-  console.log($data.myChannels);
-  const handleInput = (key: string) => {
-    if (key == "Enter") {
-      console.log(chatSocket.connected);
-      chatSocket.emit("messageToRoom", {
-        id: String($ui.chat.room.labelFocusId),
-        message: value,
-      });
-      value = "";
-    }
-  };
+
+  function handleSubmit() {
+    chatSocket.emit("messageToRoom", {
+      id: String($ui.chat.room.labelFocusId),
+      message: value,
+    });
+    return "";
+  }
 </script>
 
 <div class="messages-container">
@@ -51,12 +49,24 @@
     {/if}
   </div>
   <div class="input-section">
-    <input bind:value on:keypress={(k) => handleInput(k.key)} />
+    <Input
+      attributes={{
+        id: "chatInput",
+        type: "text",
+        placeholder: "",
+        name: "chatInput",
+      }}
+      class="chat-input"
+      onChange={(_value) => (value = _value)}
+      onSubmit={handleSubmit}
+    />
+    <!-- <input bind:value on:keypress={(k) => handleInput(k.key)} /> -->
   </div>
 </div>
 
 <style lang="scss">
   @use "../../../../lib/style/colors.scss";
+  @use "../../../../lib/style/mixins.scss" as mix;
   .messages-container {
     background-color: colors.$orchidOrange;
     height: 100%;
@@ -71,8 +81,9 @@
   }
   .input-section {
     background-color: colors.$orchidOrange;
-    padding-top: 1em;
-    // padding: 1em;
+    display: flex;
+    justify-content: center;
+    padding: 0.5em;
   }
   .channel-message-header {
     display: flex;
@@ -89,5 +100,4 @@
     }
     cursor: pointer;
   }
-  /* your styles go here */
 </style>
