@@ -5,6 +5,8 @@
   import { data as dataStore } from "$lib/stores";
   import { addAnnouncement } from "$lib/stores/session";
   import GenericButton from "../../../components/genericButton.svelte";
+  import Typography from "../../../components/Typography.svelte";
+  import MatchHistory from "./matchHistory.svelte";
 
   export let data;
   const _Friend = new Friend();
@@ -32,7 +34,13 @@
 </script>
 
 <main>
-  {#if user && $myUser}
+  {#if id}
+    <section class="match-history">
+      <Typography big class="... title"><h1>{"Match history"}</h1></Typography>
+      <MatchHistory {history} profileOfUserId={id} />
+    </section>
+  {/if}
+  <!-- {#if user && $myUser}
     {#if Number(id) == $myUser?.id}
       <AvatarFrame userId={id} />
     {:else}
@@ -45,8 +53,20 @@
     {/if}
   {:else}
     <h1>{`User not found`}</h1>
-  {/if}
+  {/if} -->
 </main>
 
 <style lang="text/scss">
+  .match-history {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    display: flex;
+    justify-content: center;
+  }
+  :global(.title) {
+    align-self: center;
+  }
 </style>

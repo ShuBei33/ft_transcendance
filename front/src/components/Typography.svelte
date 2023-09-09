@@ -14,10 +14,21 @@
 
   let className: string | undefined = undefined;
   export { className as class };
+
+  const parseClass = (className: string): string => {
+    let result = "";
+    if (className && className.length > 3) {
+      if (className.substring(0, 3) == "...") {
+        const appendClass = big ? "bigTypo" : `typo-${weight}`;
+        result = `${appendClass} ${className.substring(3).trim()}`;
+      }
+    }
+    return result;
+  };
 </script>
 
 {#if className}
-  <span class={className}><slot /></span>
+  <span class={parseClass(className)}><slot /></span>
 {:else if big}
   <span class="bigTypo"><slot /></span>
 {:else}
