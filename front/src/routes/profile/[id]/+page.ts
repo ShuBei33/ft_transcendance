@@ -10,10 +10,13 @@ import axios from "axios";
 import type { User } from "$lib/models/prismaSchema.js";
 import { goto } from "$app/navigation";
 import { browser } from "$app/environment";
+import { Game } from "$lib/apiCalls";
+import type { Game as GameType } from "$lib/models/prismaSchema.js";
 
 export async function load({ params }) {
   const config = get(axiosConfig);
   const api = get(axiosInstance);
+  const _Game = new Game();
   if (!config) return {};
 
   const user: User = await api
@@ -22,8 +25,15 @@ export async function load({ params }) {
     .catch(() => {
       browser && goto("/404");
     });
+  const history: GameType[] = await _Game
+    .getHistory(params.id)
+    .then(({ data }) => data.data)
+    .catch((e) => {
+      return [];
+    });
   return {
     id: params.id,
     user,
+    history,
   };
 }

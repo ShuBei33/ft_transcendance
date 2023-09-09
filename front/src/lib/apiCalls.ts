@@ -8,6 +8,7 @@ import type {
   UserExtended,
   Friendship,
   StatusInv,
+  Game as GameType,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
@@ -22,13 +23,26 @@ export class ApiTemplate {
   }
 }
 
-export class Game extends ApiTemplate {
+export class Game {
+  constructor(
+    baseUrl?: string,
+    private instance: AxiosInstance = axios.create({
+      ...get(axiosConfig),
+      baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/game`,
+    })
+  ) {}
   async join() {
-    return await this.instance.get<string>("/game/joinQueue");
+    return await this.instance.get<string>("joinQueue");
   }
 
   async leave() {
-    return await this.instance.get<string>("/game/leaveQueue");
+    return await this.instance.get<string>("leaveQueue");
+  }
+
+  async getHistory(userId: number) {
+    return await this.instance.get<{ data: GameType[] }>(
+      `/getHistory/${userId}`
+    );
   }
 }
 

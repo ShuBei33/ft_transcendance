@@ -30,3 +30,7 @@
   @include mix.input-style();
   width: 100%;
 }
+
+:global(body) {
+  background-color: $shipsOfficer;
+}

@@ -19,6 +19,7 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
+  import UserWidget from "../components/userWidget/userWidget.svelte";
 
   onMount(() => {
     console.log($user);
@@ -31,8 +32,8 @@
       href: "/profile/" + $user?.id,
     },
     {
-      name: "play",
-      href: "/play",
+      name: "lobby",
+      href: "/lobby",
     },
     {
       name: "store",
@@ -41,10 +42,6 @@
     {
       name: "leaderboard",
       href: "/leaderboard",
-    },
-    {
-      name: "inventory",
-      href: "/inventory",
     },
     {
       name: "game",
@@ -135,8 +132,9 @@
 </script>
 
 <AuthRouter>
+  <UserWidget />
   <span slot="nav">
-    <button on:click={() => token.clear()}>logout</button>
+    <!-- <button on:click={() => token.clear()}>logout</button> -->
     <Nav {navItems} />
   </span>
   <slot />

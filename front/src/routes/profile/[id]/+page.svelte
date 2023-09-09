@@ -27,7 +27,8 @@
         });
       });
   };
-  const { id, user } = data;
+  const { id, user, history } = data;
+  console.log("history", history);
 </script>
 
 <main>
@@ -40,15 +41,6 @@
         class="generic-button"
         on:click={() => handleAddFriend(Number(id))}>add friend</button
       >
-      <GenericButton
-        on:click={() =>
-          addAnnouncement({
-            message: "test",
-            level: "success",
-          })}
-      >
-        test notify
-      </GenericButton>
       {user.id}
     {/if}
   {:else}

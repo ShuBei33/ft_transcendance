@@ -16,6 +16,13 @@
     width: "2em",
   };
 
+  let className: string | undefined = undefined;
+  export { className as class };
+
+  onMount(() => {
+    if (!className) className = "avatar-frame";
+  });
+
   let url = `http://localhost:5170/avatar/download/${userId}`;
   let imageIsValid = false;
   onMount(async () => {
@@ -29,18 +36,14 @@
 </script>
 
 {#if imageIsValid}
-  <div class="avatar-frame">
+  <div class={className}>
     {#if false}
       <div
         style={`width: ${status.width}; height: ${status.height}`}
         class="user-status-indicator"
       />
     {/if}
-    <img
-      style={`width: ${width}; height: ${height}`}
-      src={url}
-      alt="user avatar"
-    />
+    <img src={url} alt="user avatar" />
   </div>
 {/if}
 
@@ -49,6 +52,12 @@
     background-color: green;
   }
   .avatar-frame {
-    width: auto;
+    width: 4em;
+    height: 4em;
+  }
+  img {
+    border-radius: 0.5em;
+    height: inherit;
+    width: inherit;
   }
 </style>

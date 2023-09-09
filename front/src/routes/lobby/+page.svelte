@@ -21,7 +21,7 @@
           console.log("leave queue error happened", e);
         });
   };
-  const _Game = new Game(get(axiosInstance));
+  const _Game = new Game();
 </script>
 
 <main>
