@@ -8,7 +8,7 @@ export function classNames(classes: ClassNamesObject): string {
     if (classes[className] instanceof Object) {
       const { subClass } = classes[className] as { subClass: boolean };
       if (subClass) result = `${result}-${className}`;
-    } else {
+    } else if (classes[className] != false) {
       result = `${result} ${className}`;
     }
   });

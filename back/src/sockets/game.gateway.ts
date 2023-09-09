@@ -9,17 +9,16 @@ import {
 
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import Pong from '../game/pongEngine';
+import Pong from 'src/game/pongEngine';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameService } from '../game/game.service';
+import { GameService } from 'src/game/game.service';
 
 interface PongInstance {
   playersUserIds: number[];
   spectatorIds?: number[];
   engine: Pong | undefined;
 }
-const maxPoints = 3;
-const logger = new Logger('Pong');
+
 const games = new Map<number, PongInstance>();
 const connectedClients = new Map<string, Socket>();
 // Utils functions
@@ -42,13 +41,12 @@ const userIdToPlayer = (
 export class GameGateway
   implements OnGatewayInit, OnGatewayDisconnect, OnGatewayConnection
 {
-  constructor(
-    private gameService: GameService,
-    private prismaService: PrismaService, // private logger: Logger = new Logger('Pong Gateway'),
-  ) {}
+  constructor(private gameService: GameService) {}
   @WebSocketServer() serv: Server;
+  private logger: Logger = new Logger('Pong Gateway');
+  private prismaService: PrismaService;
   afterInit(serv: any) {
-    logger.log('Init');
+    this.logger.log('Init');
   }
 
   @SubscribeMessage('keyStroke')
@@ -75,7 +73,7 @@ export class GameGateway
     // saving 'this' for Pong callback context
     const _this = this;
 
-    logger.log(`User ${payload.userId} join game ${payload.gameId}`);
+    this.logger.log(`User ${payload.userId} join game ${payload.gameId}`);
     if (games.has(payload.gameId)) {
       let pongInstance = games.get(payload.gameId);
       if (!isGamePlayersLocked(pongInstance)) {
@@ -85,10 +83,7 @@ export class GameGateway
             {
               onUpdate(data) {
                 // There is a winner
-                if (
-                  data.playerOnePoints == maxPoints ||
-                  data.playerTwoPoints == maxPoints
-                ) {
+                if (data.playerOnePoints == 3 || data.playerTwoPoints == 3) {
                   //  Disconnecting looser socket (first user to disconnect is looser by default)
                   const looserIdIndex =
                     data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
@@ -99,6 +94,7 @@ export class GameGateway
                     }: { userId: number; gameId: number } =
                       JSON.parse(identification);
                     if (userId == pongInstance.playersUserIds[looserIdIndex]) {
+                      _this.logger.log('Loser disconnected', userId);
                       socket.disconnect();
                       return;
                     }
@@ -125,7 +121,7 @@ export class GameGateway
             { width: 800, height: 600 },
           );
           pongInstance.engine.startGame();
-          logger.log('Game can start', pongInstance);
+          this.logger.log('Game can start', pongInstance);
         }
       }
       games.set(payload.gameId, pongInstance);
@@ -136,42 +132,63 @@ export class GameGateway
       });
     }
   }
+
+  // pongInstance.engine.stopGame(async (gameData) => {
+  //   const winnerId = pongInstance.playersUserIds.filter(
+  //     (id) => id != userId,
+  //   )[0];
+  //   this.logger.log(`game status: ${pongInstance.engine.gameIsRunning}`);
+  //   const lhsPlayerId = pongInstance.playersUserIds[0];
+  //   const rhsPlayerId = pongInstance.playersUserIds[1];
+  //   await this.gameService.saveGame({
+  //     winnerId,
+  //     lhsPlayerId,
+  //     rhsPlayerId,
+  //     lhsScore:
+  //       gameData[`${userIdToPlayer(lhsPlayerId, pongInstance)}Points`],
+  //     rhsScore:
+  //       gameData[`${userIdToPlayer(rhsPlayerId, pongInstance)}Points`],
+  //   });
+  // });
+
   handleDisconnect(client: Socket) {
     connectedClients.forEach((socket, identification) => {
       if (socket == client) {
         const { userId, gameId }: { userId: number; gameId: number } =
           JSON.parse(identification);
         const pongInstance = games.get(gameId);
-        if (pongInstance && pongInstance.engine) {
-          pongInstance.engine.stopGame((gameData) => {
-            const winnerId = pongInstance.playersUserIds.filter(
-              (id) => id != userId,
-            )[0];
-            // Save game into database
+
+        if (pongInstance) {
+          if (pongInstance.engine && pongInstance.engine.gameIsRunning) {
             (async () => {
-              logger.log('saved', gameData);
-              const lhsPlayerId = pongInstance.playersUserIds[0];
-              const rhsPlayerId = pongInstance.playersUserIds[1];
-              await this.gameService.saveGame({
-                winnerId,
-                lhsPlayerId,
-                rhsPlayerId,
-                lhsScore:
-                  gameData[
-                    `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
-                  ],
-                rhsScore:
-                  gameData[
-                    `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
-                  ],
+              await pongInstance.engine.stopGame().then(async (gameData) => {
+                const winnerId = pongInstance.playersUserIds.filter(
+                  (id) => id != userId,
+                )[0];
+                const lhsPlayerId = pongInstance.playersUserIds[0];
+                const rhsPlayerId = pongInstance.playersUserIds[1];
+                // save game in db
+                await this.gameService.saveGame({
+                  winnerId,
+                  lhsPlayerId,
+                  rhsPlayerId,
+                  lhsScore:
+                    gameData[
+                      `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
+                    ],
+                  rhsScore:
+                    gameData[
+                      `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
+                    ],
+                });
               });
             })();
-          });
+          }
         }
         return;
       }
     });
-    logger.log('Client with id: ' + client.id + 'is now disconnected');
+    this.logger.log('Client with id: ' + client.id + 'is now disconnected');
   }
   handleConnection(client: Socket, ...args: any[]) {
     client.join(client.id);
@@ -182,9 +199,9 @@ export class GameGateway
         const socketExist = connectedClients.get(payloadStringify);
         if (socketExist) socketExist.disconnect();
         connectedClients.set(payloadStringify, client);
-        logger.log(`User ${payload.userId} is authorized`);
+        this.logger.log(`User ${payload.userId} is authorized`);
       },
     );
-    logger.log('Client with id: ' + client.id + 'just connected');
+    this.logger.log('Client with id: ' + client.id + 'just connected');
   }
 }

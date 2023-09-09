@@ -1,23 +1,66 @@
 <script lang="ts">
   import type { Game as GameType } from "$lib/models/prismaSchema";
   import AvatarFrame from "../../../components/nav/social/avatarFrame.svelte";
+  import { classNames as cn } from "$lib/utils/classNames";
+  import type { ClassNamesObject } from "$lib/utils/classNames";
+  import Typography from "../../../components/Typography.svelte";
   export let history: GameType[] = [];
   export let profileOfUserId: string;
   $: console.log("!hsitory", history);
+
+  const matchCn = (match: GameType): ClassNamesObject => {
+    const isLoser = match.winnerId != Number(profileOfUserId);
+    return {
+      oneMatch: true,
+      loss: isLoser,
+      win: !isLoser,
+    };
+  };
+
+  const getScoreString = (match: GameType): string => {
+    const isLhsForfeit =
+      match.lhsScore > match.rhsScore && match.winnerId != match.lhsPlayerId;
+    const isRhsForfeit =
+      match.rhsScore > match.lhsScore && match.winnerId != match.rhsPlayerId;
+    if (isLhsForfeit) return `(forfeit) ${match.lhsScore} VS ${match.rhsScore}`;
+    if (isRhsForfeit) return `${match.lhsScore} VS ${match.rhsScore} (forfeit)`;
+    return `${match.lhsScore} VS ${match.rhsScore}`;
+  };
 </script>
 
 <div class="match-history-wrapper">
   {#each history as match}
-    <div class="one-match">
+    <div class={cn(matchCn(match))}>
       <AvatarFrame userId={String(match.lhsPlayerId)} />
+      <Typography big class="... vs">{getScoreString(match)}</Typography>
       <AvatarFrame userId={String(match.rhsPlayerId)} />
     </div>
   {/each}
 </div>
 
 <style lang="scss">
-  .one-match {
+  @import "../../../lib/style/colors.scss";
+  .oneMatch {
     display: flex;
-    background-color: red;
+    justify-content: space-between;
+    padding: 0.5em;
+    border-radius: 3px;
+    flex-direction: row;
+    &.win {
+      background-color: $keppel;
+    }
+    &.loss {
+      background-color: $fierFuchsia;
+    }
+  }
+  .match-history-wrapper {
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+    row-gap: 1em;
+  }
+  :global(.vs) {
+    display: flex;
+    align-items: center;
   }
 </style>

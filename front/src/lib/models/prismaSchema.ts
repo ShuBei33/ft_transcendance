@@ -73,6 +73,7 @@ export interface Game {
   lhsScore: number;
   rhsPlayer: User;
   rhsPlayerId: number;
+  winnerId: number;
   rhsScore: number;
   texture1: string;
   texture2: string;

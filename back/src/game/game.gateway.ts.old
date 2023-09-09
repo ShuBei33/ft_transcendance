@@ -137,30 +137,24 @@ export class GameGateway
         const { userId, gameId }: { userId: number; gameId: number } =
           JSON.parse(identification);
         const pongInstance = games.get(gameId);
+
         if (pongInstance) {
-          pongInstance.engine.stopGame((gameData) => {
+          pongInstance.engine.stopGame(async (gameData) => {
             const winnerId = pongInstance.playersUserIds.filter(
               (id) => id != userId,
             )[0];
-            // Save game into database
-            (async () => {
-              this.logger.log('saved', gameData);
-              const lhsPlayerId = pongInstance.playersUserIds[0];
-              const rhsPlayerId = pongInstance.playersUserIds[1];
-              await this.gameService.saveGame({
-                winnerId,
-                lhsPlayerId,
-                rhsPlayerId,
-                lhsScore:
-                  gameData[
-                    `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
-                  ],
-                rhsScore:
-                  gameData[
-                    `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
-                  ],
-              });
-            })();
+            this.logger.log(`game status: ${pongInstance.engine.gameIsRunning}`);
+            const lhsPlayerId = pongInstance.playersUserIds[0];
+            const rhsPlayerId = pongInstance.playersUserIds[1];
+            await this.gameService.saveGame({
+              winnerId,
+              lhsPlayerId,
+              rhsPlayerId,
+              lhsScore:
+                gameData[`${userIdToPlayer(lhsPlayerId, pongInstance)}Points`],
+              rhsScore:
+                gameData[`${userIdToPlayer(rhsPlayerId, pongInstance)}Points`],
+            });
           });
         }
         return;

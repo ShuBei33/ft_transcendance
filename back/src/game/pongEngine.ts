@@ -75,7 +75,7 @@ export const getDefaultSettings = (
 };
 
 export default class Pong {
-  public gameHasStarted = false;
+  public gameIsRunning = false;
   public static targetFPS = 60;
   public static intervalTime = 1000 / this.targetFPS;
   public static defaultSettings = { ...getDefaultSettings(800, 600) };
@@ -236,14 +236,15 @@ export default class Pong {
         }, Pong.intervalTime / 2),
       ),
     ];
-    this.gameHasStarted = true;
+    this.gameIsRunning = true;
   }
 
-  stopGame(summary?: PongCallback['onGameEnd']) {
+  async stopGame(): Promise<DefaultSettings> {
+    if (!this.gameIsRunning) return undefined;
+    this.gameIsRunning = false;
     this.intervalIds.forEach((intervalId) => clearInterval(intervalId));
-    // if (this.intervalId) clearInterval(this.intervalId);
-    summary && summary(this.settings);
     this.callBacks.onGameEnd(this.settings);
+    return this.settings;
   }
 
   constructor(

@@ -56,7 +56,4 @@
     justify-content: space-between;
     height: inherit;
   }
-
-  // @use "../../../../lib/style/mixins";
-  // @use "../../../../lib/style/variables.scss";
 </style>
