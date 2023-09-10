@@ -43,10 +43,6 @@
       name: "leaderboard",
       href: "/leaderboard",
     },
-    {
-      name: "game",
-      href: "/game",
-    },
   ];
   let chatSocket: Socket | undefined = undefined;
   $: if (!$socketIsConnected && $token && !chatSocket) {
@@ -132,7 +128,7 @@
 </script>
 
 <AuthRouter>
-  <UserWidget />
+  <!-- <UserWidget /> -->
   <span slot="nav">
     <!-- <button on:click={() => token.clear()}>logout</button> -->
     <Nav {navItems} />

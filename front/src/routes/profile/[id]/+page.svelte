@@ -35,36 +35,36 @@
 
 <main>
   {#if id}
+    <section class="profile">
+      <Typography big class="... title"><h1>{`${user.pseudo}`}</h1></Typography>
+      <AvatarFrame userId={id} />
+    </section>
     <section class="match-history">
       <Typography big class="... title"><h1>{"Match history"}</h1></Typography>
       <MatchHistory {history} profileOfUserId={id} />
     </section>
   {/if}
-  <!-- {#if user && $myUser}
-    {#if Number(id) == $myUser?.id}
-      <AvatarFrame userId={id} />
-    {:else}
-      <AvatarFrame userId={id} />
-      <button
-        class="generic-button"
-        on:click={() => handleAddFriend(Number(id))}>add friend</button
-      >
-      {user.id}
-    {/if}
-  {:else}
-    <h1>{`User not found`}</h1>
-  {/if} -->
 </main>
 
 <style lang="text/scss">
   .match-history {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .profile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   main {
     display: flex;
     justify-content: center;
+    flex-direction: column;
   }
   :global(.title) {
     align-self: center;

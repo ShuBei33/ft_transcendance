@@ -31,9 +31,19 @@
 <div class="match-history-wrapper">
   {#each history as match}
     <div class={cn(matchCn(match))}>
-      <AvatarFrame userId={String(match.lhsPlayerId)} />
+      <div class="avatar-frame-wrapper">
+        <AvatarFrame userId={String(match.lhsPlayerId)} />
+        <Typography class="... user-pseudo-link"
+          >{match.lhsPlayer.pseudo}</Typography
+        >
+      </div>
       <Typography big class="... vs">{getScoreString(match)}</Typography>
-      <AvatarFrame userId={String(match.rhsPlayerId)} />
+      <div class="avatar-frame-wrapper">
+        <Typography class="... user-pseudo-link"
+          >{match.rhsPlayer.pseudo}</Typography
+        >
+        <AvatarFrame userId={String(match.rhsPlayerId)} />
+      </div>
     </div>
   {/each}
 </div>
@@ -62,5 +72,10 @@
   :global(.vs) {
     display: flex;
     align-items: center;
+  }
+  .avatar-frame-wrapper {
+    display: flex;
+    flex-direction: row;
+    column-gap: 0.5em;
   }
 </style>

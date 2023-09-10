@@ -61,6 +61,10 @@ export class GameService {
           },
         ],
       },
+      include: {
+        lhsPlayer: true,
+        rhsPlayer: true,
+      },
     });
     return history;
   }

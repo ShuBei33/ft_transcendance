@@ -30,6 +30,32 @@
   @include mix.input-style();
   width: 100%;
 }
+//https://www.30secondsofcode.org/css/s/hover-underline-animation/
+.user-pseudo-link {
+  display: inline-block;
+  height: 1.5em;
+  position: relative;
+  color: white;
+  cursor: pointer;
+}
+
+.user-pseudo-link::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: white;
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+.user-pseudo-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
 
 :global(body) {
   background-color: $shipsOfficer;
