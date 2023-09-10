@@ -31,7 +31,7 @@
   <div class="messages-section">
     {#if messages}
       {#each messages as message}
-        <Message {message}>
+        <!-- <Message {message}>
           <div class="channel-message-header">
             <button
               class="message-user-pseudo"
@@ -44,7 +44,7 @@
               >...</ActionButton
             >
           </div>
-        </Message>
+        </Message> -->
       {/each}
     {/if}
   </div>
@@ -68,10 +68,10 @@
   @use "../../../../lib/style/colors.scss";
   @use "../../../../lib/style/mixins.scss" as mix;
   .messages-container {
-    background-color: colors.$orchidOrange;
+    background-color: #394854;
     height: 100%;
     display: grid;
-    grid-template-rows: 6fr 1fr;
+    grid-template-rows: 6fr auto;
     overflow: hidden;
   }
   .messages-section {
@@ -80,10 +80,11 @@
     padding: 1em;
   }
   .input-section {
-    background-color: colors.$orchidOrange;
+    background-color: #394854;
     display: flex;
     justify-content: center;
     padding: 0.5em;
+    max-height: 3em;
   }
   .channel-message-header {
     display: flex;

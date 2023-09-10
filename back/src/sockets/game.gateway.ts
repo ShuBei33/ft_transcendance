@@ -19,6 +19,7 @@ interface PongInstance {
   engine: Pong | undefined;
 }
 
+const gameMaxPoints = 3;
 const games = new Map<number, PongInstance>();
 const connectedClients = new Map<string, Socket>();
 // Utils functions
@@ -27,14 +28,12 @@ const isGamePlayersLocked = (instance: PongInstance) =>
 // First user in array of playersUserIds is playerOne
 const userIdToPlayer = (
   userId: number,
-  pongInstance: PongInstance,
+  instance: PongInstance,
 ): 'playerOne' | 'playerTwo' => {
-  return pongInstance.playersUserIds.indexOf(userId) == 0
+  return instance.playersUserIds.indexOf(userId) == 0
     ? 'playerOne'
     : 'playerTwo';
 };
-
-// const playerTo
 
 //TODO Cors
 @WebSocketGateway({ namespace: '/game', cors: { origin: '*' } })
@@ -55,13 +54,13 @@ export class GameGateway
       if (socket == client) {
         const { userId, gameId }: { userId: number; gameId: number } =
           JSON.parse(identification);
-        const pongInstance = games.get(gameId);
-        if (pongInstance) {
-          if (userIdToPlayer(userId, pongInstance) == 'playerOne') {
+        const instance = games.get(gameId);
+        if (instance) {
+          if (userIdToPlayer(userId, instance) == 'playerOne') {
             e.key = e.key == 'a' ? 'ArrowLeft' : e.key;
             e.key = e.key == 'd' ? 'ArrowRight' : e.key;
           }
-          pongInstance.engine.registerKeyStroke(e);
+          instance.engine.registerKeyStroke(e);
         }
         return;
       }
@@ -75,16 +74,19 @@ export class GameGateway
 
     this.logger.log(`User ${payload.userId} join game ${payload.gameId}`);
     if (games.has(payload.gameId)) {
-      let pongInstance = games.get(payload.gameId);
-      if (!isGamePlayersLocked(pongInstance)) {
-        pongInstance.playersUserIds.push(payload.userId);
-        if (isGamePlayersLocked(pongInstance)) {
-          pongInstance.engine = new Pong(
+      let instance = games.get(payload.gameId);
+      if (!isGamePlayersLocked(instance)) {
+        instance.playersUserIds.push(payload.userId);
+        if (isGamePlayersLocked(instance)) {
+          instance.engine = new Pong(
             {
               onUpdate(data) {
                 // There is a winner
-                if (data.playerOnePoints == 3 || data.playerTwoPoints == 3) {
-                  //  Disconnecting looser socket (first user to disconnect is looser by default)
+                if (
+                  data.playerOnePoints == gameMaxPoints ||
+                  data.playerTwoPoints == gameMaxPoints
+                ) {
+                  //  Disconnecting loser socket (first user to disconnect is looser by default)
                   const looserIdIndex =
                     data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
                   connectedClients.forEach((socket, identification) => {
@@ -93,8 +95,11 @@ export class GameGateway
                       gameId,
                     }: { userId: number; gameId: number } =
                       JSON.parse(identification);
-                    if (userId == pongInstance.playersUserIds[looserIdIndex]) {
-                      _this.logger.log('Loser disconnected', userId);
+                    if (userId == instance.playersUserIds[looserIdIndex]) {
+                      _this.logger.log(
+                        '+++++++++++++++++ Loser disconnected',
+                        userId,
+                      );
                       socket.disconnect();
                       return;
                     }
@@ -111,20 +116,20 @@ export class GameGateway
                 connectedClients.forEach((socket, identification) => {
                   const { userId, gameId }: { userId: number; gameId: number } =
                     JSON.parse(identification);
-                  if (pongInstance.playersUserIds.indexOf(userId) != -1)
+                  if (instance.playersUserIds.indexOf(userId) != -1)
                     socket.connected && socket.disconnect();
                 });
                 games.delete(payload.gameId);
               },
             },
-            [],
+            [], // Starts with empty keystrokes
             { width: 800, height: 600 },
           );
-          pongInstance.engine.startGame();
-          this.logger.log('Game can start', pongInstance);
+          instance.engine.startGame();
+          this.logger.log('Game can start', instance);
         }
       }
-      games.set(payload.gameId, pongInstance);
+      games.set(payload.gameId, instance);
     } else {
       games.set(payload.gameId, {
         playersUserIds: [payload.userId],
@@ -133,53 +138,33 @@ export class GameGateway
     }
   }
 
-  // pongInstance.engine.stopGame(async (gameData) => {
-  //   const winnerId = pongInstance.playersUserIds.filter(
-  //     (id) => id != userId,
-  //   )[0];
-  //   this.logger.log(`game status: ${pongInstance.engine.gameIsRunning}`);
-  //   const lhsPlayerId = pongInstance.playersUserIds[0];
-  //   const rhsPlayerId = pongInstance.playersUserIds[1];
-  //   await this.gameService.saveGame({
-  //     winnerId,
-  //     lhsPlayerId,
-  //     rhsPlayerId,
-  //     lhsScore:
-  //       gameData[`${userIdToPlayer(lhsPlayerId, pongInstance)}Points`],
-  //     rhsScore:
-  //       gameData[`${userIdToPlayer(rhsPlayerId, pongInstance)}Points`],
-  //   });
-  // });
-
   handleDisconnect(client: Socket) {
     connectedClients.forEach((socket, identification) => {
       if (socket == client) {
         const { userId, gameId }: { userId: number; gameId: number } =
           JSON.parse(identification);
-        const pongInstance = games.get(gameId);
+        const instance = games.get(gameId);
 
-        if (pongInstance) {
-          if (pongInstance.engine && pongInstance.engine.gameIsRunning) {
+        if (instance) {
+          if (instance.engine && instance.engine.gameIsRunning) {
             (async () => {
-              await pongInstance.engine.stopGame().then(async (gameData) => {
-                const winnerId = pongInstance.playersUserIds.filter(
+              await instance.engine.stopGame().then(async (gameData) => {
+                const winnerId = instance.playersUserIds.filter(
                   (id) => id != userId,
                 )[0];
-                const lhsPlayerId = pongInstance.playersUserIds[0];
-                const rhsPlayerId = pongInstance.playersUserIds[1];
+                const lhsPlayerId = instance.playersUserIds[0];
+                const rhsPlayerId = instance.playersUserIds[1];
+                console.log(
+                  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!gameData',
+                  gameData,
+                );
                 // save game in db
                 await this.gameService.saveGame({
                   winnerId,
                   lhsPlayerId,
                   rhsPlayerId,
-                  lhsScore:
-                    gameData[
-                      `${userIdToPlayer(lhsPlayerId, pongInstance)}Points`
-                    ],
-                  rhsScore:
-                    gameData[
-                      `${userIdToPlayer(rhsPlayerId, pongInstance)}Points`
-                    ],
+                  lhsScore: gameData.playerTwoPoints,
+                  rhsScore: gameData.playerOnePoints,
                 });
               });
             })();

@@ -47,7 +47,8 @@
   .social-modal {
     height: 80vh;
     width: 875px;
-    background-color: $georgiaPeach;
+    background-color: $shipsOfficer;
+    border: 2px solid black;
     position: absolute;
     border-radius: 0.5em;
     bottom: 3em;
