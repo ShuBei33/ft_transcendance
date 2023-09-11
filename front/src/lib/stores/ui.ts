@@ -42,12 +42,12 @@ export const uiInitialValue: ui = {
 export const ui = writableHook<ui>({
   initialValue: uiInitialValue,
   onUpdate(prev, value) {
-    console.log("update", prev, " ", value);
+    // console.log("update", prev, " ", value);
   },
   onSet(value) {
     if (value.game.id) value.game.state = "PLAYING";
     else if (!value.game.id && value.game.state == "PLAYING")
       value.game.state = "NONE";
-    console.log("!set", value);
+    // console.log("!set", value);
   },
 });

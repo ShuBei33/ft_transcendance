@@ -22,7 +22,7 @@
   import UserWidget from "../components/userWidget/userWidget.svelte";
 
   onMount(() => {
-    console.log($user);
+    // console.log($user);
   });
 
   let navItems: ComponentProps<NavButton>[];
@@ -57,7 +57,7 @@
     })
       .on("connect", () => {
         $socketIsConnected = true;
-        console.log("connect ok");
+        // console.log("connect ok");
       })
       .on("disconnect", () => {
         $socketIsConnected = false;
@@ -113,7 +113,7 @@
       })
       // User received a dm
       .on("dm", (data: DiscussionMsg) => {
-        console.log("new dm !", data);
+        // console.log("new dm !", data);
       })
       .on(String($user?.id!), (data: { expect: string; data: any }) => {
         switch (data.expect) {

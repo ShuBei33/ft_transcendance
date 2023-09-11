@@ -42,13 +42,13 @@
     _Friend
       .getFriends(StatusInv.ACCEPTED)
 			.then(({ data }) => {
-				console.log("friend data received", data);
+				// console.log("friend data received", data);
 				$dataStore.friends = (data.data as UserExtended[]);
 	  })
 		_Friend
       .getFriends(StatusInv.PENDING, false)
 			.then(({ data }) => {
-				console.log("friend pending result", data);
+				// console.log("friend pending result", data);
 				$dataStore.friendShips= (data.data as Friendship[]);
       })
 	  } catch (e) {

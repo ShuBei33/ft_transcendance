@@ -10,7 +10,7 @@
 
   export let data;
   const _Friend = new Friend();
-  console.log("profile");
+  // console.log("profile");
 
   const handleAddFriend = async (receiverId: number) => {
     await _Friend
@@ -30,7 +30,7 @@
       });
   };
   const { id, user, history } = data;
-  console.log("history", history);
+  // console.log("history", history);
 </script>
 
 <main>

@@ -9,13 +9,13 @@
   import { getChannelDropDownActions, getChannelMessageWriter } from "./right";
   import ActionButton from "../../../actionButton.svelte";
   import Input from "../../../Input.svelte";
+  import MessageFeed from "./messageFeed.svelte";
 
   export let chatSocket: Socket;
   let value = "";
-  $: chanUsr = $data.myChannels.find(
-    (chan) => chan.channel.id == $ui.chat.room.labelFocusId
-  );
+  $: chanUsr = $data.myChannels.find((chan) => chan.channel.id == $ui.chat.room.labelFocusId);
   $: messages = chanUsr?.channel.channelMsgs;
+  $: console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx message change", messages);
   $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
 
   function handleSubmit() {
@@ -29,24 +29,7 @@
 
 <div class="messages-container">
   <div class="messages-section">
-    {#if messages}
-      {#each messages as message}
-        <!-- <Message {message}>
-          <div class="channel-message-header">
-            <button
-              class="message-user-pseudo"
-              on:click={() => {
-                goto(`/profile/${getChannelMessageWriter(message)?.user.id}`);
-                $ui.chat.toggle = false;
-              }}>{getChannelMessageWriter(message)?.user.pseudo}</button
-            >
-            <ActionButton actions={getChannelDropDownActions(message)}
-              >...</ActionButton
-            >
-          </div>
-        </Message> -->
-      {/each}
-    {/if}
+    <MessageFeed {messages} />
   </div>
   <div class="input-section">
     <Input
@@ -68,7 +51,7 @@
   @use "../../../../lib/style/colors.scss";
   @use "../../../../lib/style/mixins.scss" as mix;
   .messages-container {
-    background-color: #394854;
+    background-color: colors.$slateMarine;
     height: 100%;
     display: grid;
     grid-template-rows: 6fr auto;
@@ -77,10 +60,9 @@
   .messages-section {
     overflow-y: scroll;
     height: 100%;
-    padding: 1em;
   }
   .input-section {
-    background-color: #394854;
+    background-color: colors.$slateMarine;
     display: flex;
     justify-content: center;
     padding: 0.5em;

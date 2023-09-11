@@ -11,14 +11,14 @@
         .join()
         .then(() => ($ui.game.state = "QUEUE"))
         .catch((e) => {
-          console.log("queue error happened", e);
+          // console.log("queue error happened", e);
         });
     else
       await _Game
         .leave()
         .then(() => ($ui.game.state = "NONE"))
         .catch((e) => {
-          console.log("leave queue error happened", e);
+          // console.log("leave queue error happened", e);
         });
   };
   const _Game = new Game();

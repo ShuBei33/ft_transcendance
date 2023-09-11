@@ -22,7 +22,7 @@ services:
       - "${BACK_PORT:-5500}:${BACK_PORT:-5500}"
       - "5555:5555"
     restart: always
-    command: /bin/sh -c "apk add bash; npm install; npx prisma generate && npx prisma migrate reset; npx prisma migrate dev --name build; npx prisma db seed; npm run start:dev"
+    command: /bin/sh -c "apk add bash; apk add --no-cache tzdata; export TZ_DATA='Europe/Paris';npm install; cp /usr/share/zoneinfo/Europe/Paris /etc/localtime; npx prisma generate && npx prisma migrate reset; npx prisma migrate dev --name build; npx prisma db seed; npm run start:dev"
     environment:
       BACK_PORT: ${BACK_PORT:-5500}
       CORS: ${CORS}
@@ -35,6 +35,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       SWAGGER: ${SWAGGER}
       HASH_SALT_ROUND: ${HASH_SALT_ROUND}
+      TZ_DATA: 'Europe/Paris'
     volumes:
       - "./back:/app"
     working_dir: /app
