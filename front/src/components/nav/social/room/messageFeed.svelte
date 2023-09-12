@@ -21,9 +21,14 @@
     const writer = users?.find((_chanUsr) => _chanUsr.user.id == message.userId);
     return writer;
   };
+  const getMessageTimeStamp = (message: ChannelMsg): DateTime => {
+    const now = DateTime.now();
+    return DateTime.fromISO(String(message.createdAt)).setZone(now.zone);
+  };
 
   const getFollowupTimeStampString = (message: ChannelMsg) => {
-    const now = Date.now();
+    const timeStamp = getMessageTimeStamp(message);
+    return `${timeStamp.hour}:${timeStamp.minute}`;
   };
 
   const sortMessages = (messages: ChannelMsg[]): feed[] => {
