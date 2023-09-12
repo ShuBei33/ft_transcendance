@@ -15,7 +15,6 @@
   let value = "";
   $: chanUsr = $data.myChannels.find((chan) => chan.channel.id == $ui.chat.room.labelFocusId);
   $: messages = chanUsr?.channel.channelMsgs;
-  $: console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx message change", messages);
   $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
 
   function handleSubmit() {

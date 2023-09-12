@@ -6,9 +6,6 @@
   import { Friend } from "$lib/apiCalls";
 
   const _Friend = new Friend();
-  onMount(() => {
-    console.log("friend data !", $data);
-  });
 </script>
 
 <div class="social-modal-friend-content">
