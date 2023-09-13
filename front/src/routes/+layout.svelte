@@ -19,7 +19,7 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
-        // console.log("new dm !", data);
+  // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
 
   onMount(() => {
@@ -46,7 +46,7 @@
     },
   ];
   let chatSocket: Socket | undefined = undefined;
-  $: if (!$socketIsConnected && $token && !chatSocket) {
+  $: if (!$socketIsConnected && $token && !chatSocket && $user) {
     chatSocket = io("http://localhost:5500/chat", {
       auth: {
         token: $token,
