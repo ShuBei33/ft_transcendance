@@ -10,7 +10,6 @@
       className = "generic-button";
       useVariant = true;
     } else {
-      console.log("className here !", className);
     }
   });
   // Function to set the className based on the variant prop
@@ -19,9 +18,11 @@
   }
 
   export let variant: "error" | "warning" | "success" | "default" = "default";
+  export let disabled: boolean = false;
 </script>
 
-<button on:click|preventDefault class={className}>
+<!-- prettier-ignore -->
+<button on:click|preventDefault class={className} disabled={disabled}>
   <slot />
 </button>
 
@@ -29,6 +30,12 @@
   @use "../lib/style/mixins";
   @use "../lib/style/variables.scss" as var;
 
+  button {
+    &:disabled {
+      pointer-events: none;
+      opacity: 0.4;
+    }
+  }
   .generic-button.error {
     @include mixins.button-style(var.$errorColor);
   }

@@ -25,13 +25,20 @@
     };
     axiosConfig.set(config);
     axiosInstance.subscribe((_axios) => {
-      // console.log("!toke for callback", retrivedToken);
       _axios
         .get("/auth/checkJWT")
-        .then((res) => {
-          user.set(res.data.user);
+        .then(async (res) => {
           token.set(retrivedToken!);
-          goto((redirect && redirect) || `/profile/${res.data.user.id}`);
+          // Retrieve user profile
+          await _axios
+            .get(`/user/${res.data.user.id}`)
+            .then(({ data }) => {
+              user.set({id: res.data.user.id, ...data.data});
+              goto((redirect && redirect) || `/profile/${res.data.user.id}`);
+            })
+            .catch(() => {
+              goto("/login");
+            });
         })
         .catch(() => {
           goto("/login");

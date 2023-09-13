@@ -19,6 +19,7 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
+        // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
 
   onMount(() => {
@@ -57,7 +58,6 @@
     })
       .on("connect", () => {
         $socketIsConnected = true;
-        // console.log("connect ok");
       })
       .on("disconnect", () => {
         $socketIsConnected = false;
@@ -91,9 +91,9 @@
       .on("channelUserEdited", (data: ChanUsr) => {
         $data.myChannels.forEach((myChanUsr, index) => {
           if (myChanUsr.channel.id == data.chanId) {
-            const prevChanUsr = $data.myChannels[
-              index
-            ].channel.channelUsers.find((chanUsr) => chanUsr.id == data.id);
+            const prevChanUsr = $data.myChannels[index].channel.channelUsers.find(
+              (chanUsr) => chanUsr.id == data.id
+            );
 
             if (!prevChanUsr) return;
             const newChanUsr: ChanUserExtended = {
@@ -112,9 +112,7 @@
         });
       })
       // User received a dm
-      .on("dm", (data: DiscussionMsg) => {
-        // console.log("new dm !", data);
-      })
+      .on("dm", (data: DiscussionMsg) => {})
       .on(String($user?.id!), (data: { expect: string; data: any }) => {
         switch (data.expect) {
           case "GAME_ID":
@@ -137,9 +135,7 @@
   {#if chatSocket}
     <SocialModal {chatSocket} />
     <div class="bottom-acion-section">
-      <button
-        class="chat-toggle"
-        on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
+      <button class="chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
         >chat {(!$ui.chat.toggle && "+") || "-"}</button
       >
     </div>

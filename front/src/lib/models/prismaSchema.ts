@@ -79,6 +79,15 @@ export interface Game {
   texture2: string;
 }
 
+export interface Chroma {
+  id: string;
+  fill: string;
+  isGradient: boolean;
+  price: number;
+}
+
+export type ChromaExtended = Chroma & { ownedBy: User[] };
+
 export interface Achievement {
   id: number;
   title: string;

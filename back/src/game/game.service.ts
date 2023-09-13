@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Game } from '@prisma/client';
+import { Chroma, Game } from '@prisma/client';
 import { GameGateway } from 'src/sockets/game.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 // import { GameGateway } from '../game.gateway';
@@ -47,6 +47,12 @@ export class GameService {
       },
     });
     if (!user) error.notFound('User not found');
+  }
+
+    // await this.gameService.enQueueUser(user.id);
+    // return success.general(res, 'You are in queue.');
+  async listChroma(): Promise<Chroma[]> {
+    return await this.prisma.chroma.findMany();
   }
 
   async getHistory(uid: number): Promise<Game[]> {

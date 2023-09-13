@@ -9,6 +9,7 @@ import type {
   Friendship,
   StatusInv,
   Game as GameType,
+  Chroma,
 } from "./models/prismaSchema";
 import type { AxiosDefaults, AxiosInstance, CreateAxiosDefaults } from "axios";
 import { axiosConfig, axiosInstance } from "./stores";
@@ -40,9 +41,12 @@ export class Game {
   }
 
   async getHistory(userId: number) {
-    return await this.instance.get<{ data: GameType[] }>(
-      `/getHistory/${userId}`
-    );
+    return await this.instance.get<{ data: GameType[] }>(`/getHistory/${userId}`);
+  }
+
+  async listChroma() {
+    console.log("!uri", this.instance.getUri());
+    return await this.instance.get<{ data: Chroma[] }>("/shop/list/chroma");
   }
 }
 
@@ -78,14 +82,8 @@ export class Channel {
     return await this.instance.delete(`kick/${chanId}/${userId}`);
   }
 
-  async updateChannelSetting(
-    chanId: number,
-    channelModified: Partial<channel.DTOUpdateChan>
-  ) {
-    return await this.instance.patch(
-      `admin/${chanId}/settings`,
-      channelModified
-    );
+  async updateChannelSetting(chanId: number, channelModified: Partial<channel.DTOUpdateChan>) {
+    return await this.instance.patch(`admin/${chanId}/settings`, channelModified);
   }
 
   async create(

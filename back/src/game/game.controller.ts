@@ -22,7 +22,7 @@ import { Response } from 'express';
 import { success } from 'src/utils/utils_success';
 
 @UseGuards(JwtGuard)
-@ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
+@ApiHeader({ name: 'Authorization', description: "Token d'authentification" })
 @ApiTags('Game')
 @ApiBearerAuth()
 @Controller('game')
@@ -51,8 +51,8 @@ export class GameController {
       console.log('JWT User: ', user);
       console.log('User Id Cible: ', uid_cible);
 
-	  await this.gameService.userExists(uid_cible);
-	  const history = await this.gameService.getHistory(uid_cible);
+      await this.gameService.userExists(uid_cible);
+      const history = await this.gameService.getHistory(uid_cible);
 
       return res.status(200).json({
         success: true,
@@ -65,6 +65,17 @@ export class GameController {
         message: err.message,
       });
     }
+  }
+
+  @Get('shop/list/chroma')
+  @ApiOperation({
+    summary: 'Returns list of available chromas',
+  })
+  @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+  @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+  async listChroma(@GetUser() user: User, @Res() res: Response) {
+    const list = await this.gameService.listChroma();
+    return success.general(res, 'list of chroma', list);
   }
 
   @Get('joinQueue')

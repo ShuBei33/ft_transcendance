@@ -9,7 +9,7 @@ import {
 
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import Pong from 'src/game/pongEngine';
+import Pong, { getDefaultSettings } from 'src/game/pongEngine';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameService } from 'src/game/game.service';
 
@@ -33,6 +33,11 @@ const userIdToPlayer = (
   return instance.playersUserIds.indexOf(userId) == 0
     ? 'playerOne'
     : 'playerTwo';
+};
+const retrievePlayersChromaByGameId = (
+  instance: PongInstance,
+): [string, string] => {
+  return ['red', 'red'];
 };
 
 //TODO Cors
@@ -78,6 +83,7 @@ export class GameGateway
       if (!isGamePlayersLocked(instance)) {
         instance.playersUserIds.push(payload.userId);
         if (isGamePlayersLocked(instance)) {
+          const chromas = retrievePlayersChromaByGameId(instance);
           instance.engine = new Pong(
             {
               onUpdate(data) {
@@ -124,6 +130,11 @@ export class GameGateway
             },
             [], // Starts with empty keystrokes
             { width: 800, height: 600 },
+            {
+              ...getDefaultSettings(800, 600),
+              playerOnePaddleFill: chromas[0],
+              playerTwoPaddleFill: chromas[1],
+            },
           );
           instance.engine.startGame();
           this.logger.log('Game can start', instance);
@@ -179,7 +190,7 @@ export class GameGateway
     client.join(client.id);
     client.on(
       'identification',
-      (payload: { userId: number; gameId: string }) => {
+      (payload: { userId: number; gameId: string; chromaId?: string }) => {
         const payloadStringify = JSON.stringify(payload);
         const socketExist = connectedClients.get(payloadStringify);
         if (socketExist) socketExist.disconnect();
