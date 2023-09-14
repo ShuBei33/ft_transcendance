@@ -55,6 +55,7 @@ export type UserExtended = User & {
   achievements?: Achievement[];
   leftPlayer?: Game[];
   rightPlayer?: Game[];
+  chromas: Chroma[];
 };
 
 export interface Friendship {

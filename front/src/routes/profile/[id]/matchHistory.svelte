@@ -6,7 +6,6 @@
   import Typography from "../../../components/Typography.svelte";
   export let history: GameType[] = [];
   export let profileOfUserId: string;
-  // $: console.log("!hsitory", history);
 
   const matchCn = (match: GameType): ClassNamesObject => {
     const isLoser = match.winnerId != Number(profileOfUserId);
