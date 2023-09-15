@@ -16,6 +16,10 @@ interface ui {
     state: "NONE" | "PLAYING" | "QUEUE";
     id: number;
     selectedChroma: string;
+    controls: {
+      up: string;
+      down: string;
+    };
   };
   modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
 }
@@ -36,7 +40,11 @@ export const uiInitialValue: ui = {
   game: {
     state: "NONE",
     id: 0,
-    selectedChroma: ''
+    selectedChroma: "",
+    controls: {
+      up: "w",
+      down: "s",
+    },
   },
   modal: "NONE",
 };

@@ -13,8 +13,12 @@
   let socket: Socket;
   $: context = _canvas != undefined && _canvas.getContext("2d");
   function onKeyPressed(e: { key: string; down: boolean }) {
-    if (!socket || (e.key != "a" && e.key != "d")) return;
-    socket.emit("keyStroke", e);
+    if (!socket) return;
+    if (!(e.key == $ui.game.controls.up || e.key == $ui.game.controls.down)) return;
+    const key = e.key == $ui.game.controls.up ? "a" : "d";
+    // console.log("!!!!!!!!!!!!key", key);
+    // console.log(e.key);
+    socket.emit("keyStroke", { ...e, key });
   }
 
   onMount(() => {
@@ -24,7 +28,6 @@
         switch (data.expect) {
           case "update":
             gameData = data.data;
-            console.log(gameData);
             draw(_canvas, context, gameData);
             break;
           default:
@@ -65,6 +68,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    transform: rotate(90deg);
   }
   .canvas-loading-pulse {
     position: relative;
