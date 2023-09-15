@@ -9,17 +9,19 @@ import {
 
 import { Logger } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-import Pong from 'src/game/pongEngine';
+import Pong, { getDefaultSettings } from 'src/game/pongEngine';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameService } from 'src/game/game.service';
+import { Chroma } from '@prisma/client';
 
 interface PongInstance {
   playersUserIds: number[];
+  chromas: string[];
   spectatorIds?: number[];
   engine: Pong | undefined;
 }
 
-const gameMaxPoints = 3;
+const gameMaxPoints = 99999999;
 const games = new Map<number, PongInstance>();
 const connectedClients = new Map<string, Socket>();
 // Utils functions
@@ -68,7 +70,10 @@ export class GameGateway
   }
 
   @SubscribeMessage('joinGame')
-  joinGame(client: Socket, payload: { userId: number; gameId: number }): void {
+  joinGame(
+    client: Socket,
+    payload: { userId: number; gameId: number; chroma: string },
+  ): void {
     // saving 'this' for Pong callback context
     const _this = this;
 
@@ -77,62 +82,80 @@ export class GameGateway
       let instance = games.get(payload.gameId);
       if (!isGamePlayersLocked(instance)) {
         instance.playersUserIds.push(payload.userId);
+        instance.chromas.push(payload.chroma);
         if (isGamePlayersLocked(instance)) {
-          instance.engine = new Pong(
-            {
-              onUpdate(data) {
-                // There is a winner
-                if (
-                  data.playerOnePoints == gameMaxPoints ||
-                  data.playerTwoPoints == gameMaxPoints
-                ) {
-                  //  Disconnecting loser socket (first user to disconnect is looser by default)
-                  const looserIdIndex =
-                    data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
-                  connectedClients.forEach((socket, identification) => {
-                    const {
-                      userId,
-                      gameId,
-                    }: { userId: number; gameId: number } =
-                      JSON.parse(identification);
-                    if (userId == instance.playersUserIds[looserIdIndex]) {
-                      _this.logger.log(
-                        '+++++++++++++++++ Loser disconnected',
-                        userId,
+          // Loading user chroma from db
+          let gameSettings = getDefaultSettings(800, 600);
+          (async () => {
+            await Promise.all([
+              this.gameService.chromaById(instance.chromas[0]),
+              this.gameService.chromaById(instance.chromas[1]),
+            ]).then((chroma) => {
+              gameSettings.playerOnePaddleFill = chroma[0].fill;
+              gameSettings.playerTwoPaddleFill = chroma[1].fill;
+              instance.engine = new Pong(
+                {
+                  onUpdate(data) {
+                    // There is a winner
+                    if (
+                      data.playerOnePoints == gameMaxPoints ||
+                      data.playerTwoPoints == gameMaxPoints
+                    ) {
+                      //  Disconnecting loser socket (first user to disconnect is loser by default)
+                      const looserIdIndex =
+                        data.playerOnePoints > data.playerTwoPoints ? 0 : 1;
+                      connectedClients.forEach((socket, identification) => {
+                        const {
+                          userId,
+                          gameId,
+                        }: { userId: number; gameId: number } =
+                          JSON.parse(identification);
+                        if (userId == instance.playersUserIds[looserIdIndex]) {
+                          socket.disconnect();
+                          return;
+                        }
+                      });
+                    } // No winner yet, game data is sent to players
+                    else
+                      _this.serv.volatile.emit(
+                        `game: ${String(payload.gameId)}`,
+                        {
+                          expect: 'update',
+                          data,
+                        },
                       );
-                      socket.disconnect();
-                      return;
-                    }
-                  });
-                } // No winner yet, game data is sent to players
-                else
-                  _this.serv.volatile.emit(`game: ${String(payload.gameId)}`, {
-                    expect: 'update',
-                    data,
-                  });
-              },
-              onGameEnd() {
-                // Disconnect all players if connected and remove game locally
-                connectedClients.forEach((socket, identification) => {
-                  const { userId, gameId }: { userId: number; gameId: number } =
-                    JSON.parse(identification);
-                  if (instance.playersUserIds.indexOf(userId) != -1)
-                    socket.connected && socket.disconnect();
-                });
-                games.delete(payload.gameId);
-              },
-            },
-            [], // Starts with empty keystrokes
-            { width: 800, height: 600 },
-          );
-          instance.engine.startGame();
-          this.logger.log('Game can start', instance);
+                  },
+                  onGameEnd() {
+                    // Disconnect all players if connected and remove game locally
+                    connectedClients.forEach((socket, identification) => {
+                      const {
+                        userId,
+                        gameId,
+                      }: { userId: number; gameId: number } =
+                        JSON.parse(identification);
+                      if (instance.playersUserIds.indexOf(userId) != -1)
+                        socket.connected && socket.disconnect();
+                    });
+                    games.delete(payload.gameId);
+                  },
+                },
+                [], // Starts with empty keystrokes
+                { width: 800, height: 600 },
+                gameSettings,
+              );
+              games.set(payload.gameId, instance);
+              console.log('!-!-!-!-! settings', gameSettings);
+              // Initializing pong engine
+              instance.engine.startGame();
+              this.logger.log('Game can start', instance);
+            });
+          })();
         }
       }
-      games.set(payload.gameId, instance);
     } else {
       games.set(payload.gameId, {
         playersUserIds: [payload.userId],
+        chromas: [payload.chroma],
         engine: undefined,
       });
     }
@@ -154,10 +177,6 @@ export class GameGateway
                 )[0];
                 const lhsPlayerId = instance.playersUserIds[0];
                 const rhsPlayerId = instance.playersUserIds[1];
-                console.log(
-                  '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!gameData',
-                  gameData,
-                );
                 // save game in db
                 await this.gameService.saveGame({
                   winnerId,

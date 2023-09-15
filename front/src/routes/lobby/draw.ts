@@ -1,4 +1,12 @@
 import type { DefaultSettings } from "$lib/models/game";
+import type { chromaGradient } from "$lib/models/chroma";
+
+const paddleGradient = (context: CanvasRenderingContext2D, fill: string): CanvasGradient => {
+  const stops: chromaGradient["stops"] = JSON.parse(fill);
+  const gradient = context.createLinearGradient(0, 0, 400, 0);
+  stops.forEach((stop) => gradient.addColorStop(stop.offset, stop.color));
+  return gradient;
+};
 
 export default function draw(
   canvas: HTMLCanvasElement,
@@ -38,14 +46,14 @@ export default function draw(
     data.paddleWidth,
     data.paddleHeight
   );
-  context.fillStyle = data.playerOnePaddleFill;
+  context.fillStyle = paddleGradient(context, String(data.playerOnePaddleFill));
   context.fill();
   context.closePath();
 
   // Draw right paddle
   context.beginPath();
   context.rect(data.rightPaddleX, 0, data.paddleWidth, data.paddleHeight);
-  context.fillStyle = data.playerTwoPaddleFill;
+  context.fillStyle = paddleGradient(context, String(data.playerTwoPaddleFill));
   context.fill();
   context.closePath();
 }

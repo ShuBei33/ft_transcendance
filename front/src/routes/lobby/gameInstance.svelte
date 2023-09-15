@@ -24,6 +24,7 @@
         switch (data.expect) {
           case "update":
             gameData = data.data;
+            console.log(gameData);
             draw(_canvas, context, gameData);
             break;
           default:
@@ -34,7 +35,7 @@
         $ui.game.id = 0;
       });
     if (gameId != -1 && userId != -1)
-      socket.emit("joinGame", { userId, gameId });
+      socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
   });
 </script>
 
@@ -44,12 +45,14 @@
 />
 {#if gameData}
   <h1>{gameData.playerOnePoints}</h1>
-  <canvas
-    bind:this={_canvas}
-    id="game_canvas"
-    width={`${gameData.width}px`}
-    height={`${gameData.height}px`}
-  />
+  <div class="pong-table">
+    <canvas
+      bind:this={_canvas}
+      id="game_canvas"
+      width={`${gameData.width}px`}
+      height={`${gameData.height}px`}
+    />
+  </div>
   <h1>{gameData.playerTwoPoints}</h1>
 {:else}
   <div class="canvas-loading-pulse">
@@ -58,6 +61,11 @@
 {/if}
 
 <style lang="scss">
+  .pong-table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   .canvas-loading-pulse {
     position: relative;
     background-color: lightgray;

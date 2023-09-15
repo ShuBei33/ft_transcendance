@@ -49,10 +49,13 @@ export class GameService {
     if (!user) error.notFound('User not found');
   }
 
-    // await this.gameService.enQueueUser(user.id);
-    // return success.general(res, 'You are in queue.');
+  // Chroma
   async listChroma(): Promise<Chroma[]> {
     return await this.prisma.chroma.findMany();
+  }
+
+  async chromaById(id: string): Promise<Chroma> {
+    return await this.prisma.chroma.findUnique({ where: { id } });
   }
 
   async getHistory(uid: number): Promise<Game[]> {
