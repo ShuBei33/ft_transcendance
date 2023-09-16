@@ -16,6 +16,7 @@ import { axiosConfig, axiosInstance } from "./stores";
 import { get } from "svelte/store";
 import type { channel } from "./models/dtos";
 import { user } from "./stores";
+import type { DiscussionLite } from "./models/discussion";
 
 export class ApiTemplate {
   instance: AxiosInstance = axios.create();
@@ -48,6 +49,21 @@ export class Game {
     console.log("!uri", this.instance.getUri());
     return await this.instance.get<{ data: Chroma[] }>("/shop/list/chroma");
   }
+}
+
+export class Discussion {
+  constructor(
+    baseUrl?: string,
+    private instance: AxiosInstance = axios.create({
+      ...get(axiosConfig),
+      baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/discussion`,
+    })
+  ) {}
+
+    async all() {
+      return await this.instance.get<{data: DiscussionLite[]}>('all');
+    }
+
 }
 
 export class Channel {

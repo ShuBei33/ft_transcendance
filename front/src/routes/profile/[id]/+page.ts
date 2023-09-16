@@ -26,7 +26,7 @@ export async function load({ params }) {
       browser && goto("/404");
     });
   const history: GameType[] = await _Game
-    .getHistory(params.id)
+    .getHistory(Number(params.id))
     .then(({ data }) => data.data)
     .catch((e) => {
       return [];

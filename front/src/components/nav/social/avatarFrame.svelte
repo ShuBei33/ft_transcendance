@@ -8,9 +8,8 @@
   export let userId: string = "";
   export let width = "10em";
   export let height = "10em";
-  export let status:
-    | { state: UserStatus; width: string; height: string }
-    | undefined = {
+  export let inherit = false;
+  export let status: { state: UserStatus; width: string; height: string } | undefined = {
     state: UserStatus.OFFLINE,
     height: "2em",
     width: "2em",
@@ -36,15 +35,19 @@
 </script>
 
 {#if imageIsValid}
-  <div class={className}>
-    {#if false}
-      <div
-        style={`width: ${status.width}; height: ${status.height}`}
-        class="user-status-indicator"
-      />
-    {/if}
+  {#if inherit}
     <img src={url} alt="user avatar" />
-  </div>
+  {:else}
+    <div class={className}>
+      {#if false}
+        <div
+          style={`width: ${status.width}; height: ${status.height}`}
+          class="user-status-indicator"
+        />
+      {/if}
+      <img src={url} alt="user avatar" />
+    </div>
+  {/if}
 {/if}
 
 <style lang="scss">

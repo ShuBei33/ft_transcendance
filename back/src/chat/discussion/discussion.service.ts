@@ -96,7 +96,7 @@ export class DiscussionService {
   //																							//
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  async get_discussions(userId: number): Promise<DiscussionLite[]> {
+  async getDiscussions(userId: number): Promise<DiscussionLite[]> {
     const discussions = await this.prisma.discussion.findMany({
       where: {
         OR: [

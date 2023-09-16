@@ -2,6 +2,7 @@
   import { ui, data } from "$lib/stores";
   import LeftRoom from "./room/left.svelte";
   import RightRoom from "./room/right.svelte";
+  import LeftDm from "./dm/left.svelte";
   import FriendContent from "./friend/content.svelte";
   import Tabs from "./tabs.svelte";
   import type { Socket } from "socket.io-client";
@@ -28,7 +29,9 @@
           </div>
           {#if $ui.chat.selected == "ROOM"}
             <svelte:component this={LeftRoom} />
-          {:else}{/if}
+          {:else}
+            <svelte:component this={LeftDm} />
+          {/if}
         </div>
         <div class="right">
           {#if $ui.chat.selected == "ROOM"}

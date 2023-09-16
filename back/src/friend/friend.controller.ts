@@ -29,6 +29,7 @@ import { UserLite } from 'src/user/dto';
 import { success } from 'src/utils/utils_success';
 import { error } from 'src/utils/utils_error';
 import { Logger } from '@nestjs/common';
+import { LobbyGateway } from './lobby.gateway';
 
 const logger = new Logger();
 
@@ -38,32 +39,35 @@ const logger = new Logger();
 @ApiTags('Friend')
 @Controller('friend')
 export class FriendController {
-  constructor(private friendService: FriendService) {}
+  constructor(
+    private friendService: FriendService,
+    private lobbyGate: LobbyGateway,
+  ) {}
 
-	@Get('get/:status/:filterUser')
-	@ApiOperation({
-		summary: "Recuperation de la liste d'amis de l'utilisateur en court",
-	})
-	@ApiResponse({ status: 200, description: 'Succes de la Requete' })
-	@ApiResponse({ status: 400, description: 'Echec de la Requete' })
-	async get(
-		@GetUser() user: UserLite,
-		@Res() res: Response,
-		@Param('status') status: StatusInv,
-		@Param('filterUser', ParseBoolPipe) filterUser: boolean,
-	) {
-		try {
-		// console.log('xXXXXXXxXxx-x_-x_', filterUser === true);
-		const data = await this.friendService.getFriendsList(
-			user.id,
-			status,
-			filterUser,
-		);
-		return success.general(res, 'Friends retrieved successfully', data);
-		} catch (err: any) {
-		error.unexpected(err);
-		}
-	}
+  @Get('get/:status/:filterUser')
+  @ApiOperation({
+    summary: "Recuperation de la liste d'amis de l'utilisateur en court",
+  })
+  @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+  @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+  async get(
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+    @Param('status') status: StatusInv,
+    @Param('filterUser', ParseBoolPipe) filterUser: boolean,
+  ) {
+    try {
+      // console.log('xXXXXXXxXxx-x_-x_', filterUser === true);
+      const data = await this.friendService.getFriendsList(
+        user.id,
+        status,
+        filterUser,
+      );
+      return success.general(res, 'Friends retrieved successfully', data);
+    } catch (err: any) {
+      error.unexpected(err);
+    }
+  }
 
   @Delete('remove/:uid') //! => THIS IS THE EXAMPLE FUNCTION
   @ApiOperation({
@@ -82,7 +86,6 @@ export class FriendController {
     @GetUser() user: UserLite,
     @Res() res: Response,
   ) {
-
     try {
       await this.friendService.deleteFriend(user.id, uid);
       await this.friendService.deleteFriend(uid, user.id);
@@ -166,7 +169,7 @@ export class FriendController {
           user.id,
           payload.friendShipId,
         ));
-
+      this.lobbyGate.friendShipChange(response);
       return res.status(200).json({ success: true, data: response });
     } catch (err: any) {
       return res.status(400).json({ success: false, message: err.message });

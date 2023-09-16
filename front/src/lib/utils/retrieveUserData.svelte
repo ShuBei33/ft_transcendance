@@ -1,63 +1,70 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Channel, Friend } from "$lib/apiCalls";
+  import { Channel, Discussion, Friend } from "$lib/apiCalls";
   import { data as dataStore } from "$lib/stores/data";
   import { ui } from "$lib/stores";
-  import { StatusInv, type ChannelMsg, type Friendship, type UserExtended } from "$lib/models/prismaSchema";
+  import {
+    StatusInv,
+    type ChannelMsg,
+    type Friendship,
+    type UserExtended,
+  } from "$lib/models/prismaSchema";
   import type { AxiosResponse } from "axios";
   import { addAnnouncement } from "$lib/stores/session";
   import Page from "../../routes/+page.svelte";
 
-  onMount(() => {
+  onMount(async () => {
     const _Channel = new Channel();
     const _Friend = new Friend();
+    const _Discussion = new Discussion();
 
-    _Channel
+    // Channel
+    await _Channel
       .all()
       .then(({ data }) => ($dataStore.channels = data.data))
       .catch((e) => {});
-    _Channel
+    await _Channel
       .mine()
       .then(async ({ data }) => {
         const myChannels = data.data;
-        const myChannelsIds: number[] = myChannels.map(
-          (chanusr) => chanusr.channel.id
-        );
-        const myChannelsMessages = myChannelsIds.map((chanId) =>
-          _Channel.msgs(chanId)
-        );
+        const myChannelsIds: number[] = myChannels.map((chanusr) => chanusr.channel.id);
+        const myChannelsMessages = myChannelsIds.map((chanId) => _Channel.msgs(chanId));
 
-        // Retrieve every channel messages and append it inside the channels object
+        // Retrieve every channel messages and append then to the channels object
         await Promise.all(myChannelsMessages).then((ChannelMessages) => {
           ChannelMessages.forEach((message, index) => {
             const { data } = message;
-            if (data.data.length)
-              myChannels[index].channel.channelMsgs = data.data;
+            if (data.data.length) myChannels[index].channel.channelMsgs = data.data;
           });
         });
         $dataStore.myChannels = myChannels;
       })
       .catch((e) => {});
-	  try {
-    _Friend
-      .getFriends(StatusInv.ACCEPTED)
-			.then(({ data }) => {
-				// console.log("friend data received", data);
-				$dataStore.friends = (data.data as UserExtended[]);
-	  })
-		_Friend
-      .getFriends(StatusInv.PENDING, false)
-			.then(({ data }) => {
-				// console.log("friend pending result", data);
-				$dataStore.friendShips= (data.data as Friendship[]);
-      })
-	  } catch (e) {
-        addAnnouncement({
-          message: "An error occured while retrieving your friendlist.",
-          level: "error",
-		});
-		$dataStore.friends = [];
-		$dataStore.friendShips = [];
-	  }
+    // Friend
+    try {
+      await _Friend.getFriends(StatusInv.ACCEPTED).then(({ data }) => {
+        $dataStore.friends = data.data as UserExtended[];
+      });
+      await _Friend.getFriends(StatusInv.PENDING, false).then(({ data }) => {
+        // console.log("friend pending result", data);
+        $dataStore.friendShips = data.data as Friendship[];
+      });
+    } catch (e) {
+      addAnnouncement({
+        message: "An error occured while retrieving your friendlist.",
+        level: "error",
+      });
+      // $dataStore.friends = [];
+      // $dataStore.friendShips = [];
+    }
+    // Discussion
+    await _Discussion.all().then(({ data }) => {
+      $dataStore.discussions = data.data;
+      console.log("!disc", data.data);
+    });
+    // .then(({ data }) => {
+    //   console.log("user disc !", data);
+    // })
+    // .catch((e) => {});
   });
 </script>

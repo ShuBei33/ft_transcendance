@@ -1,7 +1,9 @@
+import type { DiscussionLite } from "$lib/models/discussion";
 import type {
   ChannelExtended,
   ChannelMsg,
   ChanUserExtended,
+  Discussion,
   Friendship,
   UserExtended,
 } from "$lib/models/prismaSchema";
@@ -14,6 +16,7 @@ interface channelFeedInfo {
 interface dataType {
   channels: ChannelExtended[];
   myChannels: ChanUserExtended[];
+  discussions: DiscussionLite[];
   // lhs = channelId, rhs = feedIndex
   feedIndexMap: Map<number, number>;
   channelFeedMap: Map<number, channelFeedInfo>;
@@ -27,8 +30,9 @@ export const data = writableHook<dataType>({
     myChannels: [],
     friends: [],
     friendShips: [],
+    discussions: [],
     feedIndexMap: new Map(),
-    channelFeedMap: new Map()
+    channelFeedMap: new Map(),
   },
   onSet(value) {
     console.log("++++++++++++++ data change", value);

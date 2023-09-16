@@ -18,7 +18,7 @@ export const token = writableHook<string>({
   },
 });
 
-interface announcement {
+export interface announcement {
   id: number;
   message: string;
   level: "error" | "success";
@@ -42,4 +42,9 @@ export const addAnnouncement = (data: Omit<announcement, "id">) => {
   });
 };
 
-export const socketIsConnected = writable(false);
+export const initialSocketState = new Map<string, boolean>([
+  ['chat', false],
+  ['lobby', false]
+]);
+
+export const socketState = writable<Map<string, boolean>>(initialSocketState);

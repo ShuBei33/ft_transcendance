@@ -21,6 +21,7 @@ import { distinctUntilChanged } from 'rxjs';
 
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
+// lhs: sid, rhs: socket
 const socketMap = new Map<string, Socket>();
 
 @Global()
@@ -57,7 +58,7 @@ export class ChatGateway
     const user: UserLite = this.verifyTokenAndGetUser(token);
 
     if (!user) {
-      this.logger.error('Failed to retrive user, socket disconnected.');
+      this.logger.error('Failed to retrieve user, socket disconnected.');
       client.disconnect();
       return;
     }
@@ -65,7 +66,6 @@ export class ChatGateway
     connectedClients.set(client.id, user);
     socketMap.set(client.id, client);
     this.logger.log(`Users connected ${JSON.stringify(connectedClients)}`);
-    // this.socketService.addClient(user, ENS.CHAT, client);
     this.joinAllMyDiscs(user.id, client);
     this.joinAllMyChans(user.id, client);
   }
@@ -88,7 +88,7 @@ export class ChatGateway
   }
 
   async joinAllMyDiscs(userId: number, client: Socket) {
-    const discussions: DiscussionLite[] = await this.dm.get_discussions(userId);
+    const discussions: DiscussionLite[] = await this.dm.getDiscussions(userId);
     for (const discussion of discussions) {
       const roomName: string = 'disc_' + discussion.id;
       client.join(roomName);
