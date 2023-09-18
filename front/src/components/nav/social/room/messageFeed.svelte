@@ -1,11 +1,16 @@
 <script lang="ts">
-  import type { ChannelMsg, User } from "$lib/models/prismaSchema";
+  import type {
+    ChannelMsg,
+    DiscussionMsg,
+    User,
+  } from "$lib/models/prismaSchema";
   import { data, ui, user } from "$lib/stores";
   import { DateTime } from "luxon";
   import AvatarFrame from "../avatarFrame.svelte";
   import Typography from "../../../Typography.svelte";
   import { get } from "svelte/store";
   import { onMount } from "svelte";
+  import { getFollowupTimeStampString } from "$lib/utils/time/messages";
   interface feed {
     userId: number;
     messages: ChannelMsg[];
@@ -18,17 +23,10 @@
       (chanUsr) => chanUsr.channel.id == $ui.chat.room.labelFocusId
     );
     const users = chanUsr?.channel.channelUsers;
-    const writer = users?.find((_chanUsr) => _chanUsr.user.id == message.userId);
+    const writer = users?.find(
+      (_chanUsr) => _chanUsr.user.id == message.userId
+    );
     return writer;
-  };
-  const getMessageTimeStamp = (message: ChannelMsg): DateTime => {
-    const now = DateTime.now();
-    return DateTime.fromISO(String(message.createdAt)).setZone(now.zone);
-  };
-
-  const getFollowupTimeStampString = (message: ChannelMsg) => {
-    const timeStamp = getMessageTimeStamp(message);
-    return `${timeStamp.hour}:${timeStamp.minute}`;
   };
 
   const sortMessages = (messages: ChannelMsg[]): feed[] => {
@@ -53,7 +51,6 @@
     return result;
   };
   $: sortedMessages = sortMessages(messages);
-  $: console.log("sorted", sortedMessages);
 </script>
 
 {#if sortMessages?.length}
@@ -63,7 +60,10 @@
         {#if index == 0}
           <div class="feed-initial message">
             <div class="lhs">
-              <AvatarFrame class="chat-avatar-frame" userId={String(message.userId)} />
+              <AvatarFrame
+                class="chat-avatar-frame"
+                userId={String(message.userId)}
+              />
             </div>
             <div class="rhs">
               <Typography>{getWriter(message)?.user.pseudo}</Typography>
@@ -73,7 +73,9 @@
         {:else}
           <div class="feed-followup message">
             <div class="lhs">
-              <Typography class="... timestamp">{getFollowupTimeStampString(message)}</Typography>
+              <Typography class="... timestamp"
+                >{getFollowupTimeStampString(message)}</Typography
+              >
             </div>
             <Typography class="... content">{message.content}</Typography>
           </div>

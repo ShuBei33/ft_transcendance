@@ -4,6 +4,8 @@
   import { classNames as cn } from "$lib/utils/classNames";
   import type { ClassNamesObject } from "$lib/utils/classNames";
   import Typography from "../../../components/Typography.svelte";
+  import { Friend } from "$lib/apiCalls";
+  import { removeAnnouncement } from "$lib/stores/session";
   export let history: GameType[] = [];
   export let profileOfUserId: string;
 
