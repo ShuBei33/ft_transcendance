@@ -10,6 +10,7 @@
   import ActionButton from "../../../actionButton.svelte";
   import Input from "../../../Input.svelte";
   import MessageFeed from "./messageFeed.svelte";
+  import RightTemplate from "../rightTemplate.svelte";
 
   export let chatSocket: Socket;
   let value = "";
@@ -29,60 +30,17 @@
   }
 </script>
 
-<div class="messages-container">
-  <div class="messages-section">
-    <MessageFeed {messages} />
-  </div>
-  <div class="input-section">
-    <Input
-      attributes={{
-        id: "chatInput",
-        type: "text",
-        placeholder: "",
-        name: "chatInput",
-      }}
-      class="chat-input"
-      onChange={(_value) => (value = _value)}
-      onSubmit={handleSubmit}
-    />
-    <!-- <input bind:value on:keypress={(k) => handleInput(k.key)} /> -->
-  </div>
-</div>
+<RightTemplate
+  onSubmit={() => handleSubmit()}
+  onChange={(_value) => (value = _value)}
+>
+  <MessageFeed slot="feed" {messages} />
+</RightTemplate>
 
 <style lang="scss">
-  @use "../../../../lib/style/colors.scss";
-  @use "../../../../lib/style/mixins.scss" as mix;
-  .messages-container {
-    background-color: colors.$slateMarine;
-    height: 100%;
-    display: grid;
-    grid-template-rows: 6fr auto;
-    overflow: hidden;
-  }
-  .messages-section {
-    overflow-y: scroll;
-    height: 100%;
-  }
-  .input-section {
-    background-color: colors.$slateMarine;
-    display: flex;
-    justify-content: center;
-    padding: 0.5em;
-    max-height: 3em;
-  }
   .channel-message-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-  }
-  .message-user-pseudo {
-    all: unset;
-    &:focus {
-      outline: revert;
-    }
-    &:hover {
-      color: grey;
-    }
-    cursor: pointer;
   }
 </style>

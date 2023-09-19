@@ -1,9 +1,14 @@
 <script lang="ts">
   import { ui, data } from "$lib/stores";
+  // Room
   import LeftRoom from "./room/left.svelte";
   import RightRoom from "./room/right.svelte";
+  // Dm
   import LeftDm from "./dm/left.svelte";
+  import RightDm from "./dm/right.svelte";
+  // Friend
   import FriendContent from "./friend/content.svelte";
+
   import Tabs from "./tabs.svelte";
   import type { Socket } from "socket.io-client";
   import Test from "./dm/test.svelte";
@@ -37,7 +42,7 @@
           {#if $ui.chat.selected == "ROOM"}
             <svelte:component this={RightRoom} {chatSocket} />
           {:else}
-            <svelte:component this={Test} {chatSocket} />
+            <svelte:component this={RightDm} {chatSocket} />
           {/if}
         </div>
       </div>
