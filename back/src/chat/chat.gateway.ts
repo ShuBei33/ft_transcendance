@@ -150,6 +150,7 @@ export class ChatGateway
     payload: { senderId: string; receiverId: string; message: string },
   ): Promise<void> {
     try {
+      this.logger.log('++++++++++++++++ message received', payload);
       const friendList = await this.friendService.getFriendsList(
         Number(payload.senderId),
         StatusInv.ACCEPTED,

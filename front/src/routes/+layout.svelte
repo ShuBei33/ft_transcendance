@@ -99,9 +99,9 @@
         .on("channelUserEdited", (data: ChanUsr) => {
           $data.myChannels.forEach((myChanUsr, index) => {
             if (myChanUsr.channel.id == data.chanId) {
-              const prevChanUsr = $data.myChannels[index].channel.channelUsers.find(
-                (chanUsr) => chanUsr.id == data.id
-              );
+              const prevChanUsr = $data.myChannels[
+                index
+              ].channel.channelUsers.find((chanUsr) => chanUsr.id == data.id);
 
               if (!prevChanUsr) return;
               const newChanUsr: ChanUserExtended = {
@@ -120,7 +120,17 @@
           });
         })
         // User received a dm
-        .on("dm", (data: DiscussionMsg) => {})
+        .on("dm", (data: DiscussionMsg) => {
+          $data.discussions.forEach((disc, index) => {
+            if (disc.id == data.discussionId) {
+              $data.discussions[index].discussionsMsgs = [
+                ...$data.discussions[index].discussionsMsgs,
+                data,
+              ];
+              return;
+            }
+          });
+        })
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
@@ -164,7 +174,9 @@
   {#if chatSocket}
     <SocialModal {chatSocket} />
     <div class="bottom-acion-section">
-      <button class="chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
+      <button
+        class="chat-toggle"
+        on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
         >chat {(!$ui.chat.toggle && "+") || "-"}</button
       >
     </div>

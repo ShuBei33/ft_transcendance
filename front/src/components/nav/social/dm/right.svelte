@@ -2,27 +2,53 @@
   import type { Socket } from "socket.io-client";
   import MessageFeed from "./messageFeed.svelte";
   import RightTemplate from "../rightTemplate.svelte";
-  import { data, ui } from "$lib/stores";
+  import { data, ui, user } from "$lib/stores";
   import { onMount } from "svelte";
-  let chatSocket: Socket;
+  import type { DiscussionLite } from "$lib/models/discussion";
+  export let chatSocket: Socket;
   let value = "";
 
-  function handleSubmit() {
-    return "";
-  }
+  type emitMessageType = {
+    senderId: string;
+    receiverId: string;
+    message: string;
+  };
+
+  // $: (() => {
+  //   if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length)
+  //     $ui.chat.dm.labelFocusId = $data.discussions[0].id;
+  // })();
+
+  $: handleSubmit = () => {
+    const receiverId = String(
+      discussion?.userId1 == $user?.id
+        ? discussion?.userId2
+        : discussion?.userId1
+    );
+    const payload: emitMessageType = {
+      senderId: String($user?.id),
+      receiverId,
+      message: value,
+    };
+    chatSocket?.emit("message", payload);
+    value = "";
+    return value;
+  };
 
   $: discussion = (() => {
-    if ($ui.chat.dm.labelFocusId == -1) return $data.discussions[0];
+    if ($ui.chat.dm.labelFocusId == -1)
+      $ui.chat.dm.labelFocusId = $data.discussions[0].id;
     return $data.discussions.find(
       (disc) => disc.id == $ui.chat.dm.labelFocusId
     );
   })();
-  $: console.log("T+T++T+T+T+T", discussion);
+  $: messages = discussion?.discussionsMsgs;
+  $: console.log("+!+! messages", messages);
 </script>
 
 <RightTemplate
   onSubmit={() => handleSubmit()}
   onChange={(_value) => (value = _value)}
 >
-  <MessageFeed slot="feed" />
+  <MessageFeed slot="feed" {messages} />
 </RightTemplate>

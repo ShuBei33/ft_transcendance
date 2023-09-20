@@ -49,14 +49,19 @@
   .discussion-label {
     display: flex;
     background-color: transparent;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
     cursor: pointer;
     border: 0;
     flex-direction: row;
     width: 100%;
+    padding: 0.5em;
   }
   .lhs {
     display: flex;
     flex-direction: row;
+    column-gap: 0.5em;
   }
   .avatar-frame-wrapper {
     height: 3.2em;
