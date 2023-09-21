@@ -11,14 +11,14 @@
   const handleQueueClick = async () => {
     if ($ui.game.state == "NONE")
       await _Game
-        .join()
+        .joinQueue()
         .then(() => ($ui.game.state = "QUEUE"))
         .catch((e) => {
           // console.log("queue error happened", e);
         });
     else
       await _Game
-        .leave()
+        .leaveQueue()
         .then(() => ($ui.game.state = "NONE"))
         .catch((e) => {
           // console.log("leave queue error happened", e);

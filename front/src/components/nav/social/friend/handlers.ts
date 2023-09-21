@@ -3,7 +3,7 @@ import type { Friendship } from "$lib/models/prismaSchema";
 
 export class handle {
   constructor(private Friend = new FriendApi()) {}
-  FriendshipAccept = async (friendShip: Friendship) => {
+  async FriendshipAccept(friendShip: Friendship) {
     await this.Friend.resolveInvitation({
       accept: true,
       friendShipId: friendShip.id,
@@ -16,7 +16,7 @@ export class handle {
       });
   };
 
-  FriendshipDecline = async (friendShip: Friendship) => {
+  async FriendshipDecline(friendShip: Friendship) {
     await this.Friend.resolveInvitation({
       accept: false,
       friendShipId: friendShip.id,

@@ -1,197 +1,166 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// USER
 model User {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    login  String     @unique
-    pseudo String     @unique
-    avatar String?
-    twoFA  Boolean    @default(false)
-    status UserStatus @default(OFFLINE)
-    rank   Int
-
-    sentInvites     Friendship[] @relation("sentInvites")
-    receivedInvites Friendship[] @relation("receivedInvites")
-
-    asUser1         Discussion[]    @relation("userOne")
-    asUser2         Discussion[]    @relation("userTwo")
-    discussionsMsgs DiscussionMsg[]
-
-    channelsMsgs  ChannelMsg[]
-    channelMember ChanUsr[]
-
-    achievements Achievement[]
-    chromas      Chroma[]
-    leftPlayer   Game[]        @relation("left")
-    rightPlayer  Game[]        @relation("right")
+  id              Int             @id @default(autoincrement())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  login           String          @unique
+  pseudo          String          @unique
+  avatar          String?
+  twoFA           Boolean         @default(false)
+  status          UserStatus      @default(OFFLINE)
+  rank            Int
+  money           Int             @default(0)
+  channelMember   ChanUsr[]
+  channelsMsgs    ChannelMsg[]
+  asUser1         Discussion[]    @relation("userOne")
+  asUser2         Discussion[]    @relation("userTwo")
+  discussionsMsgs DiscussionMsg[]
+  receivedInvites Friendship[]    @relation("receivedInvites")
+  sentInvites     Friendship[]    @relation("sentInvites")
+  leftPlayer      Game[]          @relation("left")
+  rightPlayer     Game[]          @relation("right")
+  achievements    Achievement[]   @relation("AchievementToUser")
+  chromas         Chroma[]        @relation("ChromaToUser")
 }
 
-// INVITE AND FRIENDS
 model Friendship {
-    id           Int       @id @default(autoincrement())
-    inviteStatus StatusInv @default(PENDING)
-
-    sender     User @relation("sentInvites", fields: [senderId], references: [id])
-    senderId   Int
-    receiver   User @relation("receivedInvites", fields: [receiverId], references: [id])
-    receiverId Int
-
-    countResendSndr   Int     @default(0)
-    countResendRcvr   Int     @default(0)
-    senderIsBlocked   Boolean @default(false)
-    receiverIsBlocked Boolean @default(false)
+  id                Int       @id @default(autoincrement())
+  inviteStatus      StatusInv @default(PENDING)
+  senderId          Int
+  receiverId        Int
+  countResendSndr   Int       @default(0)
+  countResendRcvr   Int       @default(0)
+  senderIsBlocked   Boolean   @default(false)
+  receiverIsBlocked Boolean   @default(false)
+  receiver          User      @relation("receivedInvites", fields: [receiverId], references: [id])
+  sender            User      @relation("sentInvites", fields: [senderId], references: [id])
 }
 
-// GAME 
 model Game {
-    id Int @id @default(autoincrement())
-
-    lhsPlayer   User @relation("left", fields: [lhsPlayerId], references: [id])
-    lhsPlayerId Int
-    lhsScore    Int
-
-    rhsPlayer   User @relation("right", fields: [rhsPlayerId], references: [id])
-    rhsPlayerId Int
-    rhsScore    Int
-
-    winnerId Int
+  id          Int  @id @default(autoincrement())
+  lhsPlayerId Int
+  lhsScore    Int
+  rhsPlayerId Int
+  rhsScore    Int
+  winnerId    Int
+  lhsPlayer   User @relation("left", fields: [lhsPlayerId], references: [id])
+  rhsPlayer   User @relation("right", fields: [rhsPlayerId], references: [id])
 }
 
 model Chroma {
-    id         String   @id @default("")
-    fill       String
-    isGradient Boolean  @default(false)
-    price      Int      @default(42)
-    ownedBy    User[]
+  id         String  @id @default("")
+  fill       String
+  isGradient Boolean @default(false)
+  price      Int     @default(42)
+  ownedBy    User[]  @relation("ChromaToUser")
 }
 
 model Achievement {
-    id    Int    @id @default(autoincrement())
-    title String @unique
-    desc  String @unique
-    icon  String @unique
-    users User[]
+  id    Int    @id @default(autoincrement())
+  title String @unique
+  desc  String @unique
+  icon  String @unique
+  users User[] @relation("AchievementToUser")
 }
 
-// CHAT - DISCUSSIONS
 model Discussion {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-
-    user1   User @relation("userOne", fields: [userId1], references: [id])
-    userId1 Int
-    user2   User @relation("userTwo", fields: [userId2], references: [id])
-    userId2 Int
-
-    discussionsMsgs DiscussionMsg[]
-
-    user1Status UserStatusMSGs @default(NORMAL)
-    user2Status UserStatusMSGs @default(NORMAL)
+  id              Int             @id @default(autoincrement())
+  createdAt       DateTime        @default(now())
+  userId1         Int
+  userId2         Int
+  user1Status     UserStatusMSGs  @default(NORMAL)
+  user2Status     UserStatusMSGs  @default(NORMAL)
+  user1           User            @relation("userOne", fields: [userId1], references: [id])
+  user2           User            @relation("userTwo", fields: [userId2], references: [id])
+  discussionsMsgs DiscussionMsg[]
 }
 
 model DiscussionMsg {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    content String
-
-    user         User       @relation(fields: [userId], references: [id])
-    userId       Int
-    discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-    discussionId Int
+  id           Int        @id @default(autoincrement())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  content      String
+  userId       Int
+  discussionId Int
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id])
 }
 
-// CHAT - CHANNELS
 model Channel {
-    id        Int      @id @default(autoincrement())
-    name      String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    visibility ChanVisibility
-
-    channelUsers ChanUsr[]
-    channelMsgs  ChannelMsg[]
-
-    hash String?
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  visibility   ChanVisibility
+  hash         String?
+  channelUsers ChanUsr[]
+  channelMsgs  ChannelMsg[]
 }
 
 model ChannelMsg {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-
-    content String
-
-    user      User    @relation(fields: [userId], references: [id])
-    userId    Int
-    channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-    channelId Int
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  content   String
+  userId    Int
+  channelId Int
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// CHAT - USER
 model ChanUsr {
-    id        Int      @id @default(autoincrement())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id             Int            @id @default(autoincrement())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  userId         Int
+  chanId         Int
+  role           ChanUsrRole
+  status         UserStatusMSGs
+  statusDuration DateTime?
+  invitedToChan  StatusInv?
+  channel        Channel        @relation(fields: [chanId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id])
 
-    user    User    @relation(fields: [userId], references: [id])
-    userId  Int
-    channel Channel @relation(fields: [chanId], references: [id], onDelete: Cascade)
-    chanId  Int
-
-    role           ChanUsrRole
-    status         UserStatusMSGs
-    statusDuration DateTime?
-
-    invitedToChan StatusInv?
-
-    @@unique([userId, chanId])
+  @@unique([userId, chanId])
 }
 
 enum StatusInv {
-    PENDING
-    ACCEPTED
-    REJECT
-    BLOCKED
+  PENDING
+  ACCEPTED
+  REJECT
+  BLOCKED
 }
 
 enum UserStatus {
-    OFFLINE
-    ONLINE
-    BUSY
-    INQUEUE
-    INGAME
+  OFFLINE
+  ONLINE
+  BUSY
+  INQUEUE
+  INGAME
 }
 
 enum UserStatusMSGs {
-    NORMAL
-    MUTED
-    BLOCKED
-    BANNED
+  NORMAL
+  MUTED
+  BLOCKED
+  BANNED
 }
 
 enum ChanVisibility {
-    PUBLIC
-    PROTECTED
-    PRIVATE
+  PUBLIC
+  PROTECTED
+  PRIVATE
 }
 
 enum ChanUsrRole {
-    NORMAL
-    ADMIN
-    OWNER
+  NORMAL
+  ADMIN
+  OWNER
 }

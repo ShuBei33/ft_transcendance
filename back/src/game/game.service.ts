@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Chroma, Game } from '@prisma/client';
+import { Chroma, Game, User } from '@prisma/client';
 import { GameGateway } from 'src/sockets/game.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 // import { GameGateway } from '../game.gateway';
@@ -11,7 +11,7 @@ let queue: number[] = [];
 
 @Injectable()
 export class GameService {
-  constructor(private prisma: PrismaService, private chatGate: ChatGateway) {}
+  constructor(private prisma: PrismaService, private chatGate: ChatGateway) { }
 
   async saveGame(_data: {
     winnerId: number;
@@ -21,29 +21,52 @@ export class GameService {
     rhsScore: number;
   }) {
     const { winnerId, lhsPlayerId, rhsPlayerId, lhsScore, rhsScore } = _data;
-    return await this.prisma.game.create({
-      data: {
-        lhsScore,
-        rhsScore,
-        winnerId,
-        lhsPlayer: {
-          connect: {
-            id: lhsPlayerId,
+    const [savedGame, updatedLoserMoney, updatedWinnerMoney] = await this.prisma.$transaction([
+      this.prisma.game.create({
+        data: {
+          lhsScore,
+          rhsScore,
+          winnerId,
+          lhsPlayer: {
+            connect: {
+              id: lhsPlayerId,
+            },
+          },
+          rhsPlayer: {
+            connect: {
+              id: rhsPlayerId,
+            },
           },
         },
-        rhsPlayer: {
-          connect: {
-            id: rhsPlayerId,
-          },
+      }),
+      this.prisma.user.update({
+        where: {
+          id: lhsPlayerId == winnerId ? rhsPlayerId : lhsPlayerId,
         },
-      },
-    });
+        data: {
+          money: ((): number => {
+            return 50;
+          })(),
+        }
+      }),
+      this.prisma.user.update({
+        where: {
+          id: winnerId,
+        },
+        data: {
+          money: ((): number => {
+            return 70;
+          })(),
+        }
+      })
+    ])
+    return savedGame;
   }
 
-  async userExists(uid: number) {
+  async userExists(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: uid,
+        id: userId,
       },
     });
     if (!user) error.notFound('User not found');
@@ -54,19 +77,52 @@ export class GameService {
     return await this.prisma.chroma.findMany();
   }
 
+  async buyChroma(user: User, id: string): Promise<Chroma> {
+    const chromaToBuy = await this.prisma.chroma.findUnique({
+      where: {
+        id,
+      }
+    });
+    const userMoney = await this.prisma.user.findUnique({
+      where: {
+        id: user.id,
+      },
+      select: {
+        money: true,
+      }
+    }).then(data => data.money);
+  
+    if (!chromaToBuy)
+      error.notFound("Chroma does not exist");
+    if (userMoney < chromaToBuy.price)
+      error.notAuthorized("You are too poor");
+    await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        money: user.money - chromaToBuy.price,
+        chromas: {
+          connect: { id },
+        }
+      }
+    })
+    return chromaToBuy;
+  }
+
   async chromaById(id: string): Promise<Chroma> {
     return await this.prisma.chroma.findUnique({ where: { id } });
   }
 
-  async getHistory(uid: number): Promise<Game[]> {
+  async getHistory(userId: number): Promise<Game[]> {
     const history = await this.prisma.game.findMany({
       where: {
         OR: [
           {
-            lhsPlayerId: uid,
+            lhsPlayerId: userId,
           },
           {
-            rhsPlayerId: uid,
+            rhsPlayerId: userId,
           },
         ],
       },

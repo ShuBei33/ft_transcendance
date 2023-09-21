@@ -9,8 +9,11 @@ import {
 import {
   Controller,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
+  ParseUUIDPipe,
+  Post,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -27,7 +30,7 @@ import { success } from 'src/utils/utils_success';
 @ApiBearerAuth()
 @Controller('game')
 export class GameController {
-  constructor(private gameService: GameService) {}
+  constructor(private gameService: GameService) { }
 
   @Get('getHistory/:uid')
   @ApiOperation({
@@ -76,6 +79,19 @@ export class GameController {
   async listChroma(@GetUser() user: User, @Res() res: Response) {
     const list = await this.gameService.listChroma();
     return success.general(res, 'list of chroma', list);
+  }
+
+  @Post('shop/buy/chroma/:id')
+  @ApiOperation({
+    summary: 'User buy a chroma',
+  })
+  @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+  @ApiResponse({ status: 400, description: 'Echec de la Requete' })
+  async buyChroma(@GetUser() user: User, @Res() res: Response, @Param('id') id: string,
+  ) {
+    new Logger().log("okkkk");
+    const chroma = await this.gameService.buyChroma(user, id);
+    return success.general(res, 'chroma bought', chroma);
   }
 
   @Get('joinQueue')

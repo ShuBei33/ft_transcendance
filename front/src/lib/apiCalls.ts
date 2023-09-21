@@ -18,12 +18,12 @@ import type { channel } from "./models/dtos";
 import { user } from "./stores";
 import type { DiscussionLite } from "./models/discussion";
 
-export class ApiTemplate {
-  instance: AxiosInstance = axios.create();
-  constructor(instance?: AxiosInstance) {
-    if (instance) this.instance = instance;
-  }
-}
+// export class ApiTemplate {
+//   instance: AxiosInstance = axios.create();
+//   constructor(instance?: AxiosInstance) {
+//     if (instance) this.instance = instance;
+//   }
+// }
 
 export class Game {
   constructor(
@@ -33,11 +33,11 @@ export class Game {
       baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/game`,
     })
   ) {}
-  async join() {
+  async joinQueue() {
     return await this.instance.get<string>("joinQueue");
   }
 
-  async leave() {
+  async leaveQueue() {
     return await this.instance.get<string>("leaveQueue");
   }
 
@@ -48,6 +48,10 @@ export class Game {
   async listChroma() {
     console.log("!uri", this.instance.getUri());
     return await this.instance.get<{ data: Chroma[] }>("/shop/list/chroma");
+  }
+
+  async buyChroma(id: string) {
+    return await this.instance.post<{ data: Chroma }>(`/shop/buy/chroma/${id}`);
   }
 }
 

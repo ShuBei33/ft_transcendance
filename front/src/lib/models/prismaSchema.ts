@@ -45,6 +45,7 @@ export type UserExtended = User & {
   twoFA: boolean;
   createdAt: Date;
   updatedAt: Date;
+  money: number;
   sentInvites?: Friendship[];
   receivedInvites?: Friendship[];
   asUser1?: Discussion[];

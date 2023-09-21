@@ -3,7 +3,9 @@
   import Input from "../../components/Input.svelte";
   import ChromaRender from "../../components/chromaRender.svelte";
   import Button from "../../components/Button.svelte";
+  import { handle } from "./handlers";
 
+  const handler = new handle();
   let searchValue = "";
   export let data;
   const handleSearch = () => {
@@ -39,7 +41,7 @@
           onSubmit={handleSearch}
         />
       </div>
-      {#if data && data.chromas}
+      {#if data && data.chromas.length}
         <div class="render-chromas">
           {#each data.chromas as chroma}
             <div class="card">
@@ -47,7 +49,7 @@
                 <ChromaRender stops={JSON.parse(chroma.fill)} />
               </div>
               <Typography class="... name">{chroma.id}</Typography>
-              <Button><Typography>{`Purchase ${chroma.price} 🟡`}</Typography></Button>
+              <Button on:click={() => handler.ChromaBuy(chroma.id)}><Typography>{`Purchase ${chroma.price} 🟡`}</Typography></Button>
             </div>
           {/each}
         </div>

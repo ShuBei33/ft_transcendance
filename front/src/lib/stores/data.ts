@@ -14,11 +14,11 @@ interface channelFeedInfo {
 }
 
 interface dataType {
+  // lhs = channelId, rhs = feedIndex
+  feedIndexMap: Map<number, number>;
   channels: ChannelExtended[];
   myChannels: ChanUserExtended[];
   discussions: DiscussionLite[];
-  // lhs = channelId, rhs = feedIndex
-  feedIndexMap: Map<number, number>;
   channelFeedMap: Map<number, channelFeedInfo>;
   friends: UserExtended[];
   friendShips: Friendship[];

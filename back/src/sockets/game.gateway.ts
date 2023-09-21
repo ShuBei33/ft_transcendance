@@ -21,7 +21,7 @@ interface PongInstance {
   engine: Pong | undefined;
 }
 
-const gameMaxPoints = 99999999;
+const gameMaxPoints = 3;
 const games = new Map<number, PongInstance>();
 const connectedClients = new Map<string, Socket>();
 // Utils functions

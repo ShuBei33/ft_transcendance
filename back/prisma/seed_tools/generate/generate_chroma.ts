@@ -59,7 +59,10 @@ export const generate_chroma = async () => {
       id: gradient.name,
       fill: JSON.stringify(gradient.stops),
       isGradient: true,
-      price: 42,
+      price: ((): number => {
+        const price = 50 * gradient.stops.length;
+        return Math.min(500, Math.max(50, price));
+      })(),
     };
   });
   return await prisma.chroma.createMany({
