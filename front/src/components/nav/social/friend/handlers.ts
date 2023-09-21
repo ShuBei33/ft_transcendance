@@ -40,19 +40,6 @@ export class handle {
 
   // Accpepted
   async FriendshipRemove(friendId: number) {
-    // (() => {
-    //   dataStore.update(prev => {
-    //     const newFriendships = prev.friendShips.filter(friendship => friendship.id != 11);
-    //     console.log("!!!!!!!!!!!prev", prev);
-    //     console.log(
-    //       "should be",
-    //       newFriendships
-    //     );
-    //     prev.friendShips = newFriendships;
-    //     alert("newwww" + JSON.stringify(prev.friendShips))
-    //     return prev;
-    //   })
-    // })();
     await this.Friend.deleteFriend(friendId).then(({data}) => {
       const friendshipRemove = data.data;
       const userIdToRemove = friendshipRemove.senderId == get(user)?.id ? friendshipRemove.receiverId : friendshipRemove.senderId;
@@ -61,7 +48,6 @@ export class handle {
         return prev;
       });
     }).catch(e => {
-      alert("error happened delete friend");
     })
   }
 }

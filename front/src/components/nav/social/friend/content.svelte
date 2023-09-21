@@ -22,9 +22,7 @@
         },
         {
           label: "block",
-          callback: () => {
-            console.log("block user");
-          },
+          callback: async () => await handler.FriendshipRemove(_friend.id),
         },
       ];
     }

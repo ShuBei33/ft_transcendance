@@ -5,12 +5,13 @@ import { Prisma } from '@prisma/client';
 import { Logger } from '@nestjs/common';
 import { User, UserStatus } from '@prisma/client';
 import { UserLite } from './dto';
+import { FriendService } from 'src/friend/friend.service';
 
 const logger = new Logger();
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getUserById(
     id: number,
@@ -31,20 +32,20 @@ export class UserService {
   }
 
   // WARNING
-  async get_user( userId: number ) : Promise<UserLite> {
-	const user : UserLite = await this.prisma.user.findFirstOrThrow({
-		where: { id: userId },
-		select: {
-			id: true,
-			login: true,
-			pseudo: true,
-			status: true,
-		}
-	});
-	return user;
+  async get_user(userId: number): Promise<UserLite> {
+    const user: UserLite = await this.prisma.user.findFirstOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        login: true,
+        pseudo: true,
+        status: true,
+      }
+    });
+    return user;
   }
 
-  async updateUserStatus(userId: number, newStatus: UserStatus): Promise<User> {
+  async updateUserStatus(userId: number, newStatus: UserStatus): Promise<number[]> {
     try {
       const existingUser = await this.prisma.user.findUnique({
         where: {
@@ -56,7 +57,7 @@ export class UserService {
         throw new Error('User not found');
       }
 
-      const updatedUser = await this.prisma.user.update({
+      await this.prisma.user.update({
         where: {
           id: userId,
         },
@@ -64,7 +65,46 @@ export class UserService {
           status: newStatus,
         },
       });
-	  	return updatedUser;
+      const friendShip = await this.prisma.friendship.findMany({
+        where: {
+          OR: [
+            {
+              senderId: {
+                equals: userId,
+              },
+            },
+            {
+              receiverId: {
+                equals: userId,
+              },
+            },
+          ],
+          inviteStatus: {
+            equals: "ACCEPTED",
+          }
+        },
+        include: {
+          receiver: {
+            select: {
+              id: true,
+              status: true,
+            }
+          },
+          sender: {
+            select: {
+              id: true,
+              status: true,
+            }
+          },
+        },
+      });
+      const friendShipFiltered = friendShip.filter(value => {
+        const otherUserId = value.receiverId == userId ? value.senderId : value.receiverId;
+        const otherUser = otherUserId == value.receiverId && value.receiver || value.sender;
+
+        return otherUser.status == UserStatus.ONLINE;
+      })
+      return friendShipFiltered.map(value => value.receiverId == userId ? value.senderId : value.receiverId);
     } catch (err: any) {
       throw new Error(err.message);
     }

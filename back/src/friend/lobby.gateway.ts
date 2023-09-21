@@ -22,9 +22,8 @@ const socketMap = new Map<string, Socket>();
 
 @WebSocketGateway({ namespace: '/lobby', cors: '*:*' })
 export class LobbyGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
-  constructor(private jwt: JwtService, private userService: UserService) {}
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  constructor(private jwt: JwtService, private userService: UserService) { }
 
   @WebSocketServer() wss: Server;
   private logger: Logger = new Logger('LobbyGateway');
@@ -73,6 +72,9 @@ export class LobbyGateway
     const user: UserLite = connectedClients.get(client.id);
     if (!user) return;
     this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
+    (async () =>
+      await this.statusChange(user.id, UserStatus.OFFLINE)
+    )();
     connectedClients.delete(client.id);
     socketMap.delete(client.id); // lhs: sid, rhs: userId
   }
@@ -100,11 +102,18 @@ export class LobbyGateway
     });
   }
 
-  friendShipRemove(friendship: Friendship) {
-    
+  async statusChange(userId: number, newStatus: UserStatus) {
+    const onlineFriendsId = await this.userService.updateUserStatus(userId, newStatus);
+    onlineFriendsId.forEach(id => {
+      const socket = this.getSocketByUserId(id);
+      if (socket)
+        this.wss.to(socket.id).emit("friendStatus", { userId, status: newStatus })
+    })
   }
 
+  friendShipRemove(friendship: Friendship) {
 
+  }
 
   @SubscribeMessage('userStatus')
   handleStatus(
@@ -114,6 +123,8 @@ export class LobbyGateway
     this.logger.log('br 2');
     const user: UserLite = connectedClients.get(client.id);
     if (!user) return;
-    this.userService.updateUserStatus(user.id, newStatus);
+    (async () =>
+      await this.statusChange(user.id, newStatus)
+    )();
   }
 }

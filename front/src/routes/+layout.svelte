@@ -18,6 +18,7 @@
     type DiscussionMsg,
     type Friendship,
     StatusInv,
+    type User,
   } from "$lib/models/prismaSchema";
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
@@ -178,6 +179,15 @@
             default:
               break;
           }
+        }).on("friendStatus", (data: Pick<User, "id" | "status">) => {
+          let userToUpdate = $data.friends.find(user => user.id == data.id);
+          if (!userToUpdate)
+            return ;
+          let newFriends = $data.friends.filter(user => user.id != data.id);
+          userToUpdate.status = data.status;
+          newFriends.push(userToUpdate);
+          $data.friends = newFriends;
+          alert("ok status ouais" + JSON.stringify(data));
         });
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }
