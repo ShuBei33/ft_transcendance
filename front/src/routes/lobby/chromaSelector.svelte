@@ -15,7 +15,6 @@
   });
 
   let searchValue = "";
-  export let handleChange: (value: string) => void = () => {};
   const handleSearch = () => {
     return "";
   };
@@ -28,6 +27,15 @@
       },
     };
   };
+
+  $: matchSearch = (chroma: Chroma): boolean => {
+    if (searchValue.length < 3)
+      return true;
+    const test = chroma.id.toLowerCase().includes(searchValue.toLowerCase());
+    return test;
+  }
+  $: ownedChromaIds = $user?.chromas.map(chroma => chroma.id) || [];
+  $: chromasOwned = $user?.chromas.filter(chroma => ownedChromaIds?.includes(chroma.id) && matchSearch(chroma)) || [];
 </script>
 
 <main>
@@ -51,9 +59,9 @@
           onSubmit={handleSearch}
         />
       </div>
-      {#if $user?.chromas.length}
+      {#if chromasOwned.length}
         <div class="render-chromas">
-          {#each $user.chromas as chroma}
+          {#each chromasOwned as chroma}
             <button
               class={cn(chromaCardCn(chroma))}
               on:click={() => {

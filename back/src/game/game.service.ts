@@ -101,7 +101,7 @@ export class GameService {
         id: user.id,
       },
       data: {
-        money: user.money - chromaToBuy.price,
+        money: userMoney - chromaToBuy.price,
         chromas: {
           connect: { id },
         }

@@ -4,6 +4,8 @@
   import ChromaRender from "../../components/chromaRender.svelte";
   import Button from "../../components/Button.svelte";
   import { handle } from "./handlers";
+    import { user } from "$lib/stores";
+    import type { Chroma } from "$lib/models/prismaSchema";
 
   const handler = new handle();
   let searchValue = "";
@@ -11,6 +13,13 @@
   const handleSearch = () => {
     return "";
   };
+  $: matchSearch = (chroma: Chroma): boolean => {
+    if (searchValue.length < 3)
+      return true;
+    return chroma.id.toLowerCase().includes(searchValue.toLowerCase());
+  }
+  $: ownedChromaIds = $user?.chromas.map(chroma => chroma.id) || [];
+  $: chromasNotOwned = data.chromas.filter(chroma => !ownedChromaIds?.includes(chroma.id) && matchSearch(chroma))
 </script>
 
 <main>
@@ -41,9 +50,9 @@
           onSubmit={handleSearch}
         />
       </div>
-      {#if data && data.chromas.length}
+      {#if data && chromasNotOwned.length}
         <div class="render-chromas">
-          {#each data.chromas as chroma}
+          {#each chromasNotOwned as chroma}
             <div class="card">
               <div class="top">
                 <ChromaRender stops={JSON.parse(chroma.fill)} />
