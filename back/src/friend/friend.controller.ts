@@ -57,7 +57,6 @@ export class FriendController {
     @Param('filterUser', ParseBoolPipe) filterUser: boolean,
   ) {
     try {
-      // console.log('xXXXXXXxXxx-x_-x_', filterUser === true);
       const data = await this.friendService.getFriendsList(
         user.id,
         status,
@@ -69,7 +68,7 @@ export class FriendController {
     }
   }
 
-  @Delete('remove/:uid') //! => THIS IS THE EXAMPLE FUNCTION
+  @Delete('remove/:uid')
   @ApiOperation({
     summary: "Suppresion d'un utilisateur de votre liste d'amis",
   })
@@ -87,10 +86,9 @@ export class FriendController {
     @Res() res: Response,
   ) {
     try {
-      await this.friendService.deleteFriend(user.id, uid);
-      await this.friendService.deleteFriend(uid, user.id);
+      const deletedFriendship = await this.friendService.deleteFriend(user.id, uid);
 
-      return res.status(200).json({ success: true });
+      return success.general(res, "Friendship deleted", deletedFriendship);
     } catch (err: any) {
       return res.status(400).json({ success: false, message: err.message });
     }

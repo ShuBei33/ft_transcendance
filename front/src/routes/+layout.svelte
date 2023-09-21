@@ -17,6 +17,7 @@
     type ChannelMsg,
     type DiscussionMsg,
     type Friendship,
+    StatusInv,
   } from "$lib/models/prismaSchema";
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
@@ -157,7 +158,26 @@
           $socketState.set("lobby", false);
         })
         .on("friendShipChange", (data: Friendship) => {
-          console.log("----------------==+++++++++++++++", data);
+          switch (data.inviteStatus) {
+            case StatusInv.ACCEPTED:
+              const newFriendUser =
+                data.senderId == $user?.id ? data.receiver : data.sender;
+              $data.friendShips = $data.friendShips.filter(
+                (friendship) => friendship.id != data.id
+              );
+              $data.friends = [...$data.friends, newFriendUser];
+              break;
+            // case StatusInv.PENDING:
+            // case StatusInv.REJECT:
+            case StatusInv.BLOCKED:
+              $data.friendShips = $data.friendShips.filter(
+                (friendship) => friendship.id != data.id
+              );
+              $data.friendShips = [...$data.friendShips, data];
+              break;
+            default:
+              break;
+          }
         });
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }

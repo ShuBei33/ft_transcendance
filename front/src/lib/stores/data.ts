@@ -5,6 +5,7 @@ import type {
   ChanUserExtended,
   Discussion,
   Friendship,
+  User,
   UserExtended,
 } from "$lib/models/prismaSchema";
 import { writableHook } from "./hooks";
@@ -20,7 +21,7 @@ interface dataType {
   myChannels: ChanUserExtended[];
   discussions: DiscussionLite[];
   channelFeedMap: Map<number, channelFeedInfo>;
-  friends: UserExtended[];
+  friends: User[];
   friendShips: Friendship[];
 }
 

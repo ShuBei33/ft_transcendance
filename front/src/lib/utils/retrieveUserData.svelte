@@ -45,10 +45,15 @@
       await _Friend.getFriends(StatusInv.ACCEPTED).then(({ data }) => {
         $dataStore.friends = data.data as UserExtended[];
       });
-      await _Friend.getFriends(StatusInv.PENDING, false).then(({ data }) => {
-        // console.log("friend pending result", data);
-        $dataStore.friendShips = data.data as Friendship[];
-      });
+      Promise.all([
+        _Friend.getFriends(StatusInv.PENDING, false),
+        _Friend.getFriends(StatusInv.BLOCKED, false)
+      ]).then(([pending, blocked]) => {
+        const pendingData = pending.data.data as  Friendship[];
+        const blockedData = blocked.data.data as  Friendship[];
+        
+        $dataStore.friendShips = pendingData.concat(blockedData);
+      })
     } catch (e) {
       addAnnouncement({
         message: "An error occured while retrieving your friendlist.",

@@ -7,7 +7,7 @@
   import type { ChanUserExtended, ChannelMsg } from "$lib/models/prismaSchema";
   import { goto } from "$app/navigation";
   import { getChannelDropDownActions, getChannelMessageWriter } from "./right";
-  import ActionButton from "../../../actionButton.svelte";
+  import ActionButton from "../../../ActionButton.svelte";
   import Input from "../../../Input.svelte";
   import MessageFeed from "./messageFeed.svelte";
   import RightTemplate from "../rightTemplate.svelte";

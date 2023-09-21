@@ -6,13 +6,15 @@ import { UserLite } from 'src/user/dto';
 import { Logger } from '@nestjs/common';
 import { error } from 'src/utils/utils_error';
 import { DiscussionService } from 'src/chat/discussion/discussion.service';
+import { userLite } from 'src/utils/safeUser';
 
 const logger = new Logger();
 @Injectable()
 export class FriendService {
-  constructor(private prisma: PrismaService, private dm: DiscussionService) {}
+  constructor(private prisma: PrismaService, private dm: DiscussionService) { }
 
   async getFriendsList(userId: number, status: StatusInv, filterUser: boolean) {
+    // TODO sender receiver safe user
     const friendShip = await this.prisma.friendship.findMany({
       where: {
         OR: [
@@ -38,7 +40,6 @@ export class FriendService {
         sender: true,
       },
     });
-    if (filterUser == true) logger.log('here 1', friendShip);
     if (!friendShip) return [];
 
     if (filterUser) {
@@ -48,12 +49,13 @@ export class FriendService {
       });
       return friends;
     } else {
-      logger.log('here 2', friendShip);
       return friendShip;
     }
   }
 
   async deleteFriend(userId: number, friendId: number) {
+    if (userId === friendId)
+      error.hasConflict('You cannot delete yourself');
     // Check if the users are friends
     const friendship = await this.prisma.friendship.findFirst({
       where: {
@@ -65,20 +67,13 @@ export class FriendService {
       },
     });
 
-    if (userId === friendId) {
-      throw new Error('You cannot delete yourself');
-    }
-
-    if (!friendship) {
-      throw new NotFoundException('Friendship not found');
-    }
+    if (!friendship)
+      error.notFound("Friendship does not exist");
 
     // Delete the friendship
-    await this.prisma.friendship.delete({
+    return await this.prisma.friendship.delete({
       where: { id: friendship.id },
     });
-
-    return 'Friend deleted successfully';
   }
 
   async getReceivedPendingInvites(userId: number): Promise<Friendship[]> {
@@ -106,6 +101,18 @@ export class FriendService {
       data: {
         inviteStatus: StatusInv.ACCEPTED,
       },
+      include: {
+        receiver: {
+          select: {
+            ...userLite
+          },
+        },
+        sender: {
+          select: {
+            ...userLite
+          },
+        }
+      }
     });
 
     if (updatedFriendShip) {

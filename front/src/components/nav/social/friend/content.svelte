@@ -1,17 +1,35 @@
 <script lang="ts">
   import { data, user } from "$lib/stores";
   import { onMount } from "svelte";
+  import type { ComponentProps } from "svelte";
   import Tabs from "../tabs.svelte";
   import FriendCard from "./friendCard.svelte";
   import { Friend } from "$lib/apiCalls";
-  import { StatusInv, UserStatus } from "$lib/models/prismaSchema";
+  import { StatusInv, UserStatus, type User } from "$lib/models/prismaSchema";
   import AvatarFrame from "../avatarFrame.svelte";
   import Divider from "../../../divider.svelte";
   import Typography from "../../../Typography.svelte";
   import Button from "../../../Button.svelte";
   import { handle } from "./handlers";
-
+  import ActionButton from "../../../ActionButton.svelte";
   const handler = new handle();
+  const dropDown = class {
+    friend(_friend: User): ComponentProps<ActionButton>["actions"] {
+      return [
+        {
+          label: "unfriend",
+          callback: async () => await handler.FriendshipRemove(_friend.id),
+        },
+        {
+          label: "block",
+          callback: () => {
+            console.log("block user");
+          },
+        },
+      ];
+    }
+  };
+  const actions = new dropDown();
   // Pending
   $: pending = $data.friendShips.filter(
     (friendship) => friendship.inviteStatus == StatusInv.PENDING
@@ -19,13 +37,22 @@
   $: countReceivedInvites = pending.filter(
     (friendship) => friendship.receiverId == $user?.id
   ).length;
-  $: countSentInvites = pending.filter((friendship) => friendship.receiverId != $user?.id).length;
+  $: countSentInvites = pending.filter(
+    (friendship) => friendship.receiverId != $user?.id
+  ).length;
   // Accepted
-  $: onlineFriends = $data.friends.filter((user) => user.status == UserStatus.ONLINE);
-  $: blocked = $data.friendShips.filter(
+  $: onlineFriends = $data.friends.filter(
+    (user) => user.status == UserStatus.ONLINE
+  );
+
+  // Blocked
+  $: allBlocked = $data.friendShips.filter(
     (friendship) => friendship.inviteStatus == StatusInv.BLOCKED
   );
-  $: console.log(pending, blocked);
+  $: blocked = allBlocked.filter(
+    (friendship) => friendship.senderId == $user?.id
+  );
+  $: console.log('+_+++++++++++++++++++++blockkc', $data.friendShips);
 </script>
 
 <div class="social-modal-friend-content">
@@ -48,10 +75,16 @@
             <div class="friend-card">
               <AvatarFrame userId={String(friendship.senderId)} />
               <div class="actions">
-                <Button variant="success" on:click={() => handler.FriendshipAccept(friendship)}>
+                <Button
+                  variant="success"
+                  on:click={() => handler.FriendshipAccept(friendship)}
+                >
                   <Typography>{"Accept"}</Typography>
                 </Button>
-                <Button variant="error" on:click={() => handler.FriendshipDecline(friendship)}>
+                <Button
+                  variant="error"
+                  on:click={() => handler.FriendshipDecline(friendship)}
+                >
                   <Typography>{"Decline"}</Typography>
                 </Button>
               </div>
@@ -74,8 +107,32 @@
               <Button>
                 <Typography>{"Send message"}</Typography>
               </Button>
+              <ActionButton actions={actions.friend(friend)}>
+                <Typography>{"..."}</Typography>
+              </ActionButton>
             </div>
           </div>
+        {/each}
+      {/if}
+      <!-- Blocked -->
+      {#if blocked.length}
+        <Divider>
+          <Typography slot="title">
+            {`blocked ${blocked.length}`}
+          </Typography>
+        </Divider>
+        {#each blocked as friendship}
+            <div class="friend-card">
+              <AvatarFrame userId={String(friendship.receiverId)} />
+              <div class="actions">
+                <Button
+                  variant="error"
+                  on:click={() => handler.FriendshipAccept(friendship)}
+                >
+                  <Typography>{"Unblock"}</Typography>
+              </Button>
+              </div>
+            </div>
         {/each}
       {/if}
     </div>

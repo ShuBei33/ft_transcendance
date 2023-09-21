@@ -88,7 +88,9 @@ export class LobbyGateway
     if (!sid.length) return undefined;
     return socketMap.get(sid);
   }
-
+  ///////////////////
+  //     EVENTS    //
+  ///////////////////
   friendShipChange(friendship: Friendship) {
     [
       this.getSocketByUserId(friendship.receiverId),
@@ -98,9 +100,11 @@ export class LobbyGateway
     });
   }
 
-  ///////////////////
-  //     EVENTS    //
-  ///////////////////
+  friendShipRemove(friendship: Friendship) {
+    
+  }
+
+
 
   @SubscribeMessage('userStatus')
   handleStatus(

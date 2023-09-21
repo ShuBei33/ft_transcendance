@@ -5,12 +5,23 @@
   let useVariant = false;
   export { className as class };
 
+  const parseClass = (className: string): string => {
+    let result = "";
+    if (className && className.length > 3) {
+      if (className.substring(0, 3) == "...") {
+        result = `generic-button ${className.substring(3).trim()}`;
+      }
+    }
+    return result;
+  };
+
   onMount(() => {
     if (className == undefined) {
       className = "generic-button";
-      useVariant = true;
     } else {
+      className = parseClass(className);
     }
+    useVariant = true;
   });
   // Function to set the className based on the variant prop
   $: {

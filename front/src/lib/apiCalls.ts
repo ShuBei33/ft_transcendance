@@ -145,4 +145,8 @@ export class Friend {
   async resolveInvitation(data: { accept: boolean; friendShipId: number }) {
     return await this.instance.post("resolveInvitation", data);
   }
+
+  async deleteFriend(friendId: number) {
+    return await this.instance.delete<{data: Friendship}>(`remove/${friendId}`);
+  }
 }

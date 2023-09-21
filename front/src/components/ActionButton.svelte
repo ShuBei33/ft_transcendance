@@ -1,4 +1,7 @@
 <script lang="ts">
+  import Button from "./Button.svelte";
+  import Typography from "./Typography.svelte";
+
   export let actions: { label: string; callback: () => void }[] = [];
   export let showMenu = false;
 </script>
@@ -7,9 +10,11 @@
   {#if showMenu}
     <div class="action-button-menu">
       {#each actions as action}
-        <button class="action-button" on:click={() => action.callback()}
-          >{action.label}</button
-        >
+        <Button  class="... dropdownBtn" on:click={() => action.callback()}>
+          <Typography>
+            {action.label}
+          </Typography>
+        </Button>
       {/each}
     </div>
   {/if}
@@ -19,6 +24,7 @@
 </div>
 
 <style lang="scss">
+  @import '../../src/lib/style/colors.scss';
   .action-button-wrapper {
     position: relative;
     display: box;
@@ -27,12 +33,17 @@
   .action-button-menu {
     position: absolute;
     transform: translate(-3em, 1em);
-    background-color: whitesmoke;
+   background-color: darken($slateMarine, 4%);
     float: right;
     padding-top: 1em;
     padding-bottom: 1em;
     border: 1px solid black;
+    border-radius: 0.3em;
     overflow-x: hidden;
+    padding: 0.2em;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.2em;
   }
   .action-button-toggle,
   .action-button {
@@ -53,5 +64,8 @@
     &:active {
       background-color: grey;
     }
+  }
+  :global(.dropdownBtn) {
+    width: 100%;
   }
 </style>

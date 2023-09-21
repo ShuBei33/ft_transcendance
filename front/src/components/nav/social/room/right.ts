@@ -9,7 +9,7 @@ import {
 import { data } from "$lib/stores";
 import type { ComponentProps } from "svelte";
 import { get } from "svelte/store";
-import type ActionButton from "../../../actionButton.svelte";
+import type ActionButton from "../../../ActionButton.svelte";
 import type { Action } from "svelte/action";
 import { axiosConfig } from "$lib/stores";
 import { Channel } from "$lib/apiCalls";
