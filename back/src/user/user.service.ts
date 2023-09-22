@@ -45,6 +45,30 @@ export class UserService {
     return user;
   }
 
+  async changePseudo(userId: number, newPseudo:string) : Promise<User> {
+	try {
+		const alreadyExist = await this.prisma.user.findFirst({
+			where: {
+				pseudo: newPseudo,
+			},
+		});
+		if (alreadyExist) {
+			throw new Error('Pseudo already taken');
+		}
+		const user = await this.prisma.user.update({
+			where: {
+				id: userId,
+			},
+			data: {
+				pseudo: newPseudo,
+			},
+		});
+		return user;
+	} catch (err: any) {
+		throw new Error(err.message);
+	}
+  }
+
   async updateUserStatus(userId: number, newStatus: UserStatus): Promise<number[]> {
     try {
       const existingUser = await this.prisma.user.findUnique({

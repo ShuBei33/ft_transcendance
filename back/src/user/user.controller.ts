@@ -1,12 +1,13 @@
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiHeader,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Controller, Get, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, HttpException, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
 import { success } from 'src/utils/utils_success';
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/auth/guard';
@@ -14,6 +15,7 @@ import { Param } from '@nestjs/common';
 import { Response } from 'express';
 import { GetUser } from 'src/auth/decorator';
 import { UserLite } from './dto';
+import { error } from 'src/utils/utils_error';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -45,4 +47,22 @@ export class UserController {
     });
     return success.general(res, 'sucess', userRes);
   }
+
+  @Post('changePseudo')
+  @ApiOperation({ summary: "Changement du pseudo d'un utilisateur" })
+  @ApiResponse({ status: 200, description: 'Succes de la Requete' })
+  @ApiResponse({ status: 404, description: 'Echec de la Requete' })
+  @ApiBody({ description: 'Pseudo to replace', type: String })
+  async changePseudo(
+	@Body('pseudo') pseudo: string,
+	@GetUser() user: UserLite,
+	@Res() res: Response,
+	) {
+		const userRes = await this.userService.changePseudo(user.id, pseudo);
+		return success.general(res, 'Pseudo changed successfully', userRes);
+	} catch (err: any) {
+		if (err instanceof HttpException) throw err;
+		else return error.unexpected(err);
+	}
+
 }

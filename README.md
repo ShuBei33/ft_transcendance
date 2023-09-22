@@ -20,3 +20,15 @@ JWT:
 Passport:
 <code>npm install --save @nestjs/passport passport passport-local</code>
 <code>npm install --save-dev @types/passport-local</code>
+
+## ToDo:
+- [x] Changement de pseudo (Back done not in front)
+- [ ] Changement d'avatar
+- [ ] Avatar de base (aucun pour l'instant)
+- [ ] 2fa (via google ou autre)
+- [ ] Stats
+- [ ] User blocking
+- [ ] Page de profil d'un utilisateur en general
+- [ ] Acceder au profil d'un user avec le chat
+- [ ] Acceder au profil d'un user via l'interface du Pong
+- [ ] 
