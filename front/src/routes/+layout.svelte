@@ -187,7 +187,6 @@
           userToUpdate.status = data.status;
           newFriends.push(userToUpdate);
           $data.friends = newFriends;
-          alert("ok status ouais" + JSON.stringify(data));
         });
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }

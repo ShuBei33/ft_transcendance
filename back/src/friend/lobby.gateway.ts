@@ -14,7 +14,7 @@ import { UserLite } from '../user/dto';
 import { UserService } from '../user/user.service';
 import { Friendship, UserStatus } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-
+let debug = 0;
 // lhs: sid, rhs: userId
 const connectedClients = new Map<string, UserLite>();
 // lhs: sid, rhs: socket
@@ -101,13 +101,14 @@ export class LobbyGateway
       if (socket) this.wss.to(socket.id).emit('friendShipChange', friendship);
     });
   }
-
   async statusChange(userId: number, newStatus: UserStatus) {
     const onlineFriendsId = await this.userService.updateUserStatus(userId, newStatus);
     onlineFriendsId.forEach(id => {
       const socket = this.getSocketByUserId(id);
-      if (socket)
-        this.wss.to(socket.id).emit("friendStatus", { userId, status: newStatus })
+      if (socket) {
+        this.logger.log(`-----send status to id: ${id}, status: ${newStatus}, debug: ${debug++}`)
+        this.wss.to(socket.id).emit("friendStatus", { id: userId, status: newStatus })
+      }
     })
   }
 
@@ -120,7 +121,6 @@ export class LobbyGateway
     @MessageBody() newStatus: UserStatus,
     @ConnectedSocket() client: Socket,
   ) {
-    this.logger.log('br 2');
     const user: UserLite = connectedClients.get(client.id);
     if (!user) return;
     (async () =>

@@ -29,7 +29,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
   async checkJWT(@GetUser() user: UserLite) {
-    console.log('user: ', user);
     return { user: user };
   }
 
