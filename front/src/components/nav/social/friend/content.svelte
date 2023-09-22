@@ -22,7 +22,7 @@
         },
         {
           label: "block",
-          callback: async () => await handler.FriendshipRemove(_friend.id),
+          callback: async () => await handler.FriendShipBlock(_friend.id),
         },
       ];
     }
@@ -47,10 +47,12 @@
   $: allBlocked = $data.friendShips.filter(
     (friendship) => friendship.inviteStatus == StatusInv.BLOCKED
   );
-  $: blocked = allBlocked.filter(
-    (friendship) => friendship.senderId == $user?.id
-  );
-  $: console.log('+_+++++++++++++++++++++blockkc', $data.friendShips);
+  $: hasBlocked = allBlocked.filter((friendship) => {
+    const isUserSender = friendship.senderId == $user?.id;
+    if (isUserSender)
+      return friendship.receiverIsBlocked;
+    return friendship.senderIsBlocked;
+  });
 </script>
 
 <div class="social-modal-friend-content">
@@ -113,24 +115,24 @@
         {/each}
       {/if}
       <!-- Blocked -->
-      {#if blocked.length}
+      {#if hasBlocked.length}
         <Divider>
           <Typography slot="title">
-            {`blocked ${blocked.length}`}
+            {`blocked ${hasBlocked.length}`}
           </Typography>
         </Divider>
-        {#each blocked as friendship}
-            <div class="friend-card">
-              <AvatarFrame userId={String(friendship.receiverId)} />
-              <div class="actions">
-                <Button
-                  variant="error"
-                  on:click={() => handler.FriendshipAccept(friendship)}
-                >
-                  <Typography>{"Unblock"}</Typography>
+        {#each hasBlocked as friendship}
+          <div class="friend-card">
+            <AvatarFrame userId={String(friendship.receiverId)} />
+            <div class="actions">
+              <Button
+                variant="error"
+                on:click={() => handler.FriendShipUnBlock(friendship)}
+              >
+                <Typography>{"Unblock"}</Typography>
               </Button>
-              </div>
             </div>
+          </div>
         {/each}
       {/if}
     </div>

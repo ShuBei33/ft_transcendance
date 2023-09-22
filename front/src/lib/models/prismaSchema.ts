@@ -66,6 +66,8 @@ export interface Friendship {
   senderId: number;
   receiver: User;
   receiverId: number;
+  senderIsBlocked: boolean
+  receiverIsBlocked: boolean;
 }
 
 export interface Game {

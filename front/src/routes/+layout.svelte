@@ -168,14 +168,18 @@
               );
               $data.friends = [...$data.friends, newFriendUser];
               break;
-            // case StatusInv.PENDING:
             // case StatusInv.REJECT:
+            case StatusInv.PENDING:
+              $data.friendShips = [...$data.friendShips, data];
+              break ;
             case StatusInv.BLOCKED:
+              const userIdToRemove = data.receiverId == $user?.id ? data.senderId : data.receiverId;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );
               $data.friendShips = [...$data.friendShips, data];
-              break;
+              $data.friends = $data.friends.filter(user => user.id != userIdToRemove);
+              break ;
             default:
               break;
           }

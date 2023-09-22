@@ -3,14 +3,11 @@ import type { Friendship } from "$lib/models/prismaSchema";
 import { data as dataStore, user } from "$lib/stores";
 import type { ComponentProps } from "svelte";
 import { get } from "svelte/store";
-// export class dropDown {
-//   friend(): ComponentProps<ActionB {
 
-//   }
-// }
+// TODO handle catch errors
 
 export class handle {
-  constructor(private Friend = new FriendApi()) {}
+  constructor(private Friend = new FriendApi()) { }
   // Pending
   async FriendshipAccept(friendShip: Friendship) {
     await this.Friend.resolveInvitation({
@@ -38,9 +35,9 @@ export class handle {
       });
   };
 
-  // Accpepted
+  // Accepted
   async FriendshipRemove(friendId: number) {
-    await this.Friend.deleteFriend(friendId).then(({data}) => {
+    await this.Friend.deleteFriend(friendId).then(({ data }) => {
       const friendshipRemove = data.data;
       const userIdToRemove = friendshipRemove.senderId == get(user)?.id ? friendshipRemove.receiverId : friendshipRemove.senderId;
       dataStore.update(prev => {
@@ -48,6 +45,21 @@ export class handle {
         return prev;
       });
     }).catch(e => {
+    })
+  }
+
+  async FriendShipBlock(receiverId: number) {
+    await this.Friend.blockUser(receiverId).then(({ data }) => {
+    }).catch(e => {
+    })
+  }
+
+  async FriendShipUnBlock(friendship: Friendship) {
+    const receiverId = friendship.receiverId == get(user)?.id ? friendship.senderId: friendship.receiverId;
+    await this.Friend.unBlockUser(receiverId).then(({ data }) => {
+      alert("unblock ok" + JSON.stringify(data));
+    }).catch(e => {
+      alert("error");
     })
   }
 }

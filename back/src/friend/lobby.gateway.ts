@@ -113,6 +113,12 @@ export class LobbyGateway
   }
 
   friendShipRemove(friendship: Friendship) {
+    [
+      this.getSocketByUserId(friendship.receiverId),
+      this.getSocketByUserId(friendship.senderId),
+    ].forEach((socket) => {
+      if (socket) this.wss.to(socket.id).emit('friendShipRemove', friendship);
+    });
 
   }
 

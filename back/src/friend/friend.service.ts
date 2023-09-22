@@ -161,7 +161,22 @@ export class FriendService {
   }
 
   //! ############################################################################################################
-
+  async getFriendship(receiverId: number, senderId: number) {
+    return await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          {
+            senderId: receiverId,
+            receiverId: senderId,
+          },
+          {
+            receiverId: receiverId,
+            senderId: senderId,
+          },
+        ],
+      },
+    });
+  }
   async sendFriendInvitation(
     senderId: number,
     receiverId: number,
@@ -201,6 +216,60 @@ export class FriendService {
       });
     else {
       error.hasConflict('Friend request already sent');
+    }
+  }
+
+  async unBlockUser(
+    userId: number,
+    userToUnBlockId: number,
+  ) {
+    const friendship = await this.getFriendship(userId, userToUnBlockId);
+    if (!friendship)
+      error.notFound("Friendship does not exist");
+    const isUserSender = friendship.senderId == userId;
+    if ((isUserSender && !friendship.receiverIsBlocked) || (!isUserSender && !friendship.senderIsBlocked))
+      error.notAuthorized("User is not blocked");
+    return await this.prisma.friendship.delete({
+      where: {
+        id: friendship.id
+      },
+    })
+  }
+
+  async blockUser(
+    userId: number,
+    userToBlockId: number,
+  ) {
+    const friendship = await this.getFriendship(userId, userToBlockId);
+    if (!friendship) {
+      return await this.prisma.friendship.create({
+        data: {
+          sender: {
+            connect: {
+              id: userId,
+            }
+          },
+          receiver: {
+            connect: {
+              id:
+                userToBlockId
+            }
+          },
+          inviteStatus: StatusInv.BLOCKED,
+          receiverIsBlocked: true,
+        }
+      })
+    } else {
+      const isUserSender = friendship.senderId == userId;
+      return await this.prisma.friendship.update({
+        where: {
+          id: friendship.id,
+        }, data: {
+          inviteStatus: StatusInv.BLOCKED,
+          receiverIsBlocked: isUserSender,
+          senderIsBlocked: !isUserSender,
+        }
+      });
     }
   }
 }

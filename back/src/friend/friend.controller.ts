@@ -141,6 +141,66 @@ export class FriendController {
     }
   }
 
+  @Post('blockUser') //! => THIS IS THE FUNCTION TO CHANGE
+  @ApiOperation({ summary: "Blocks a user" })
+  @ApiResponse({
+    status: 200,
+    description: "User blocked",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Failed to block user",
+  })
+  @ApiBody({ description: 'Username to Add', type: String })
+  async blockUser(
+    @Body('data')
+    data: Pick<Friendship, 'receiverId'>,
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+  ) {
+    try {
+      const response = await this.friendService.blockUser(
+        user.id,
+        data.receiverId,
+      );
+      this.lobbyGate.friendShipChange(response);
+      return success.general(res, 'User blocked', response);
+    } catch (err: any) {
+      if (err instanceof HttpException) throw err;
+      else return error.unexpected(err);
+    }
+  }
+
+@Post('unBlockUser') //! => THIS IS THE FUNCTION TO CHANGE
+  @ApiOperation({ summary: "UnBlocks a user" })
+  @ApiResponse({
+    status: 200,
+    description: "User blocked",
+  })
+  @ApiResponse({
+    status: 400,
+    description: "Failed to block user",
+  })
+  @ApiBody({ description: 'Username to Add', type: String })
+  async unBlockUser(
+    @Body('data')
+    data: Pick<Friendship, 'receiverId'>,
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+  ) {
+    try {
+      const response = await this.friendService.unBlockUser(
+        user.id,
+        data.receiverId,
+      );
+      this.lobbyGate.friendShipChange(response);
+      return success.general(res, 'User unBlocked', response);
+    } catch (err: any) {
+      if (err instanceof HttpException) throw err;
+      else return error.unexpected(err);
+    }
+  }
+
   @Post('resolveInvitation')
   @ApiOperation({ summary: "Envoi de la Resolution d'une requete d'ami" })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })

@@ -142,6 +142,22 @@ export class Friend {
     });
   }
 
+  async blockUser(receiverId: number) {
+    return await this.instance.post<{ data: Friendship }>(`blockUser`, {
+      data: {
+        receiverId,
+      },
+    });
+  }
+
+  async unBlockUser(receiverId: number) {
+    return await this.instance.post<{ data: Friendship }>(`unBlockUser`, {
+      data: {
+        receiverId,
+      },
+    });
+  }
+
   async resolveInvitation(data: { accept: boolean; friendShipId: number }) {
     return await this.instance.post("resolveInvitation", data);
   }
