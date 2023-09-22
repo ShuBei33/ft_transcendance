@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { data, user } from "$lib/stores";
+  import { data, ui, user } from "$lib/stores";
   import { onMount } from "svelte";
   import type { ComponentProps } from "svelte";
   import Tabs from "../tabs.svelte";
@@ -13,6 +13,24 @@
   import { handle } from "./handlers";
   import ActionButton from "../../../ActionButton.svelte";
   const handler = new handle();
+
+  const handleSendMessage = (friend: User) => {
+    const discussion = $data.discussions.find(
+      (value) => value.userId1 == friend.id || value.userId2 == friend.id
+    );
+    if (!discussion) {
+      //TODO handle disc not found error
+      return; 
+    }
+    const isDiscToggle = $data.discToggleMap.get(discussion.id);
+    if (!isDiscToggle) {
+      let newMap = $data.discToggleMap;
+      newMap.set(discussion.id, true);
+      $data.discToggleMap = newMap;
+    }
+    $ui.chat.selected = "DM";
+  };
+
   const dropDown = class {
     friend(_friend: User): ComponentProps<ActionButton>["actions"] {
       return [
@@ -49,8 +67,7 @@
   );
   $: hasBlocked = allBlocked.filter((friendship) => {
     const isUserSender = friendship.senderId == $user?.id;
-    if (isUserSender)
-      return friendship.receiverIsBlocked;
+    if (isUserSender) return friendship.receiverIsBlocked;
     return friendship.senderIsBlocked;
   });
 </script>
@@ -104,7 +121,7 @@
           <div class="friend-card">
             <AvatarFrame userId={String(friend.id)} />
             <div class="actions">
-              <Button>
+              <Button on:click={() => handleSendMessage(friend)}>
                 <Typography>{"Send message"}</Typography>
               </Button>
               <ActionButton actions={actions.friend(friend)}>

@@ -23,9 +23,9 @@
       match.lhsScore > match.rhsScore && match.winnerId != match.lhsPlayerId;
     const isRhsForfeit =
       match.rhsScore > match.lhsScore && match.winnerId != match.rhsPlayerId;
-    if (isLhsForfeit) return `(forfeit) ${match.lhsScore} VS ${match.rhsScore}`;
-    if (isRhsForfeit) return `${match.lhsScore} VS ${match.rhsScore} (forfeit)`;
-    return `${match.lhsScore} VS ${match.rhsScore}`;
+    if (isLhsForfeit) return `(forfeit) ${match.lhsScore} - ${match.rhsScore}`;
+    if (isRhsForfeit) return `${match.lhsScore} - ${match.rhsScore} (forfeit)`;
+    return `${match.lhsScore} - ${match.rhsScore}`;
   };
 </script>
 

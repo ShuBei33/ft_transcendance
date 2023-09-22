@@ -193,7 +193,7 @@ export class FriendController {
         user.id,
         data.receiverId,
       );
-      this.lobbyGate.friendShipChange(response);
+      this.lobbyGate.friendShipRemove(response);
       return success.general(res, 'User unBlocked', response);
     } catch (err: any) {
       if (err instanceof HttpException) throw err;

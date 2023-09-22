@@ -7,7 +7,11 @@
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
   import { ui, token, data } from "$lib/stores";
-  import { socketState } from "$lib/stores/session";
+  import {
+    gameInvite,
+    socketState,
+    type announcement,
+  } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
   import {
@@ -23,12 +27,11 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
-  // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
+  import { isDiscToggle, toggleDisc } from "$lib/stores/data";
+  import SimpleModal from "../components/modal/simpleModal.svelte";
 
-  onMount(() => {
-    // console.log($user);
-  });
+  onMount(() => {});
 
   let navItems: ComponentProps<NavButton>[];
   $: navItems = [
@@ -129,6 +132,7 @@
                 ...$data.discussions[index].discussionsMsgs,
                 data,
               ];
+              !isDiscToggle(disc.id) && toggleDisc(disc.id, true);
               return;
             }
           });
@@ -158,6 +162,11 @@
         .on("disconnect", () => {
           $socketState.set("lobby", false);
         })
+        .on("friendShipRemove", (data: Friendship) => {
+          $data.friendShips = $data.friendShips.filter(
+            (friendship) => friendship.id != data.id
+          );
+        })
         .on("friendShipChange", (data: Friendship) => {
           switch (data.inviteStatus) {
             case StatusInv.ACCEPTED:
@@ -171,30 +180,57 @@
             // case StatusInv.REJECT:
             case StatusInv.PENDING:
               $data.friendShips = [...$data.friendShips, data];
-              break ;
+              break;
             case StatusInv.BLOCKED:
-              const userIdToRemove = data.receiverId == $user?.id ? data.senderId : data.receiverId;
+              const userIdToRemove =
+                data.receiverId == $user?.id ? data.senderId : data.receiverId;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );
               $data.friendShips = [...$data.friendShips, data];
-              $data.friends = $data.friends.filter(user => user.id != userIdToRemove);
-              break ;
+              $data.friends = $data.friends.filter(
+                (user) => user.id != userIdToRemove
+              );
+              break;
             default:
               break;
           }
-        }).on("friendStatus", (data: Pick<User, "id" | "status">) => {
-          let userToUpdate = $data.friends.find(user => user.id == data.id);
-          if (!userToUpdate)
-            return ;
-          let newFriends = $data.friends.filter(user => user.id != data.id);
+        })
+        .on("friendStatus", (data: Pick<User, "id" | "status">) => {
+          let userToUpdate = $data.friends.find((user) => user.id == data.id);
+          if (!userToUpdate) return;
+          let newFriends = $data.friends.filter((user) => user.id != data.id);
           userToUpdate.status = data.status;
           newFriends.push(userToUpdate);
           $data.friends = newFriends;
+        })
+        .on("gameInvite", (data: User) => {
+          addAnnouncement({
+            message: `${data.pseudo} invited you to play!`,
+            level: "success",
+            confirm: {
+              yes: () => {
+                alert("Invite to play accepted");
+              },
+              no: () => {
+                alert("Invite to play declined");
+              }
+            },
+          });
+          // alert(`${data.pseudo} invited you to play!`);
+        })
+        .on("pushMessage", (data: Pick<announcement, "level" | "message">) => {
+          addAnnouncement(data);
         });
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }
   }
+  $: (() => {
+    if ($gameInvite == undefined || !lobbySocket) return;
+    lobbySocket.emit("inviteToGame", { userId: $gameInvite });
+    $gameInvite = undefined;
+    // alert("emit invite");
+  })();
 </script>
 
 <AuthRouter>

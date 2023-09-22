@@ -119,7 +119,6 @@ export class LobbyGateway
     ].forEach((socket) => {
       if (socket) this.wss.to(socket.id).emit('friendShipRemove', friendship);
     });
-
   }
 
   @SubscribeMessage('userStatus')
@@ -132,5 +131,31 @@ export class LobbyGateway
     (async () =>
       await this.statusChange(user.id, newStatus)
     )();
+  }
+
+  @SubscribeMessage('inviteToGame')
+  inviteToGame(client: Socket, payload: { userId: number }) {
+    const myUser = connectedClients.get(client.id);
+    if (!myUser) {
+      this.wss.to(client.id).emit("pushMessage", {
+        message: "please try again later.",
+        level: "error"
+      })
+      return;
+    }
+    const socket = this.getSocketByUserId(payload.userId);
+    if (!socket) {
+      this.wss.to(client.id).emit("pushMessage", {
+        message: "please try again later.",
+        level: "error"
+      })
+      return;
+    }
+    this.wss.to(socket.id).emit('gameInvite', myUser);
+    this.wss.to(client.id).emit("pushMessage", {
+      message: `Invitation to play sent.`,
+      level: "success"
+    })
+    this.logger.log("+++++++_+_+_+_+_+ invite");
   }
 }

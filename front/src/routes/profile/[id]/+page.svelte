@@ -7,6 +7,7 @@
   import GenericButton from "../../../components/genericButton.svelte";
   import Typography from "../../../components/Typography.svelte";
   import MatchHistory from "./matchHistory.svelte";
+    import UserProfileInfo from "../../../components/userProfileInfo.svelte";
 
   export let data;
   const _Friend = new Friend();
@@ -30,14 +31,12 @@
       });
   };
   const { id, user, history } = data;
-  // console.log("history", history);
 </script>
 
 <main>
   {#if id}
     <section class="profile">
-      <Typography big class="... title"><h1>{`${user.pseudo}`}</h1></Typography>
-      <AvatarFrame userId={id} />
+      <UserProfileInfo {id} {user}/>
     </section>
     <section class="match-history">
       <Typography big class="... title"><h1>{"Match history"}</h1></Typography>
