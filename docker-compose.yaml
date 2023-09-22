@@ -1,0 +1,85 @@
+version: "3.8"
+services:
+  postgres:
+    container_name: ${DB_NAME:-db}
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/posgresql/data
+    restart: unless-stopped
+    networks:
+      - postgres
+
+  back:
+    container_name: back
+    image: node:lts-alpine
+    depends_on:
+      - postgres
+    ports:
+      - "${BACK_PORT:-5500}:${BACK_PORT:-5500}"
+      - "5555:5555"
+    restart: always
+    command: /bin/sh -c "apk add bash; apk add --no-cache tzdata; export TZ_DATA='Europe/Paris';npm install; cp /usr/share/zoneinfo/Europe/Paris /etc/localtime; npx prisma generate && npx prisma migrate reset; npx prisma migrate dev --name build; npx prisma db seed; npm run start:dev"
+    environment:
+      BACK_PORT: ${BACK_PORT:-5500}
+      CORS: ${CORS}
+      DATABASE_URL: ${DATABASE_URL}
+      API_UID42: ${API_UID42}
+      API_SECRET42: ${API_SECRET42}
+      API_AUTH_URL: ${API_AUTH_URL}
+      API_TOKEN_URL: ${API_TOKEN_URL}
+      RED_URI: ${RED_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      SWAGGER: ${SWAGGER}
+      HASH_SALT_ROUND: ${HASH_SALT_ROUND}
+      TZ_DATA: 'Europe/Paris'
+    volumes:
+      - "./back:/app"
+    working_dir: /app
+    networks:
+      - postgres
+
+  file_service:
+    container_name: file_service
+    image: node:latest
+    ports:
+      - "${FILESERVICE_PORT:-5170}:${FILESERVICE_PORT:-5170}"
+    restart: always
+    command: /bin/sh -c "npm install && npm run start:dev"
+    environment:
+      API: ${API}
+      BACK_HOST: ${BACK_HOST}
+      FILESERVICE_PORT: ${FILESERVICE_PORT}
+      CORS: ${CORS}
+    volumes:
+      - "./file_service:/app"
+    working_dir: /app
+    networks:
+      - postgres
+
+  front:
+    container_name: front
+    image: node:latest
+    volumes:
+      - ./front/:/app
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "${FRONT_PORT:-5000}:${FRONT_PORT:-5000}"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  postgres:
+    driver: bridge
+# La ligne ci dessous sert a cree une boucle inf afin de maintenir le container ouvert
+# pour installer des packages a la main. ( utile pour le back et le front ).
+# Ainsi vous n'avais pas de probleme d'installation a l'ecole!
+# Attention a ne laisser qu'une balise command active.
+
+# command: "tail -f"

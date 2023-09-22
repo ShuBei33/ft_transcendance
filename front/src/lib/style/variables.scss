@@ -1,0 +1,6 @@
+@use "./colors.scss";
+$animation-duration: 0.5s;
+$errorColor: colors.$magentaPurple;
+$warningColor: yellow;
+$successColor: green;
+$defaultColor: colors.$blueBell;
