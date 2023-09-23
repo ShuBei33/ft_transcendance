@@ -2,6 +2,9 @@
   import { announcements, removeAnnouncement } from "$lib/stores/session";
   import { fly } from "svelte/transition";
   import Typography from "../../components/Typography.svelte";
+  import Divider from "../../components/divider.svelte";
+  import Button from "../../components/Button.svelte";
+    import { not } from "svelte-forms/validators";
 </script>
 
 <div class="notificationFlex">
@@ -18,6 +21,19 @@
       <Typography>
         {notification.message}
       </Typography>
+      {#if notification.confirm}
+      <Divider>
+        {""}
+      </Divider>
+        <div class="notificationActions">
+          <Button variant="success" on:click={() => notification.confirm?.yes.callback()}>
+            <Typography>{notification.confirm.yes.label}</Typography>
+          </Button>
+          <Button variant="error" on:click={() => notification.confirm?.no.callback()}>
+            <Typography>{notification.confirm.no.label}</Typography>
+          </Button>
+        </div>
+      {/if}
     </div>
   {/each}
 </div>
@@ -27,7 +43,9 @@
   .overlayNotification,
   .overlayNotification-error,
   .overlayNotification-success {
-    height: 2em;
+    display: flex;
+    flex-direction: column;
+    height: auto;
     width: 14em;
     padding: 1em;
     background-color: $shipsOfficer;

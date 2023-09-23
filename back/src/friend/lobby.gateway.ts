@@ -133,6 +133,21 @@ export class LobbyGateway
     )();
   }
 
+  @SubscribeMessage("acceptGameInvite")
+  acceptGameInvite(client: Socket, payload: { userId: number }) {
+    this.logger.log("game invite ok +)@)@)@)@)@)@@)@", JSON.stringify(payload));
+    const otherPlayerSocket = this.getSocketByUserId(payload.userId);
+    const myUser = connectedClients.get(client.id);
+    if (!otherPlayerSocket || !myUser) {
+      // handle error
+      return;
+    }
+    [
+      otherPlayerSocket.id,
+      client.id
+    ].forEach(id => this.wss.to(id).emit('GAME_ID', String(payload.userId + myUser.id)));
+  }
+
   @SubscribeMessage('inviteToGame')
   inviteToGame(client: Socket, payload: { userId: number }) {
     const myUser = connectedClients.get(client.id);
@@ -156,6 +171,5 @@ export class LobbyGateway
       message: `Invitation to play sent.`,
       level: "success"
     })
-    this.logger.log("+++++++_+_+_+_+_+ invite");
   }
 }

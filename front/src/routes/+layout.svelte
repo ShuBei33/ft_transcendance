@@ -11,6 +11,7 @@
     gameInvite,
     socketState,
     type announcement,
+    acceptGameInvite,
   } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
@@ -30,6 +31,7 @@
   import UserWidget from "../components/userWidget/userWidget.svelte";
   import { isDiscToggle, toggleDisc } from "$lib/stores/data";
   import SimpleModal from "../components/modal/simpleModal.svelte";
+  import { goto } from "$app/navigation";
 
   onMount(() => {});
 
@@ -140,7 +142,8 @@
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
-              $ui.game.id = Number(data.data);
+              goto("/lobby");
+              // $ui.game.id = Number(data.data);
               break;
             default:
               break;
@@ -209,15 +212,24 @@
             message: `${data.pseudo} invited you to play!`,
             level: "success",
             confirm: {
-              yes: () => {
-                alert("Invite to play accepted");
+              yes: {
+                label: "Accept",
+                callback: () => {
+                  $acceptGameInvite = data.id;
+                },
               },
-              no: () => {
-                alert("Invite to play declined");
-              }
+              no: {
+                label: "Decline",
+                callback: () => {
+                  alert("Invitation declined");
+                },
+              },
             },
           });
-          // alert(`${data.pseudo} invited you to play!`);
+        })
+        .on("GAME_ID", (id: string) => {
+          $ui.game.id = Number(id);
+          goto("/lobby");
         })
         .on("pushMessage", (data: Pick<announcement, "level" | "message">) => {
           addAnnouncement(data);
@@ -229,7 +241,10 @@
     if ($gameInvite == undefined || !lobbySocket) return;
     lobbySocket.emit("inviteToGame", { userId: $gameInvite });
     $gameInvite = undefined;
-    // alert("emit invite");
+  })();
+  $: (() => {
+    if ($acceptGameInvite == undefined) return;
+    lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
   })();
 </script>
 
