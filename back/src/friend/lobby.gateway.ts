@@ -49,10 +49,11 @@ export class LobbyGateway
 
   handleConnection(client: Socket, ...args: any[]) {
     if (socketMap.has(client.id)) {
-      this.logger.warn(`Socket $${client.id} already connected.`);
+      this.logger.warn(`Socket ${client.id} already connected.`, socketMap.size);
+      // client.disconnect();
       return;
     }
-
+    this.logger.warn(`Socket ${client.id} !.`);
     const token = client.handshake.auth.token;
     const user: UserLite = this.verifyTokenAndGetUser(token);
 
@@ -77,6 +78,7 @@ export class LobbyGateway
     )();
     connectedClients.delete(client.id);
     socketMap.delete(client.id); // lhs: sid, rhs: userId
+    this.logger.warn(`Socket ${client.id} disconnected`);
   }
 
   getSocketByUserId(userId: number): Socket | undefined {
@@ -150,6 +152,7 @@ export class LobbyGateway
 
   @SubscribeMessage('inviteToGame')
   inviteToGame(client: Socket, payload: { userId: number }) {
+    this.logger.log(`debug -+_+_+_+_+++++++_++++++++____________ ${debug++}`);
     const myUser = connectedClients.get(client.id);
     if (!myUser) {
       this.wss.to(client.id).emit("pushMessage", {

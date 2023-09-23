@@ -237,15 +237,15 @@
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }
   }
-  $: (() => {
-    if ($gameInvite == undefined || !lobbySocket) return;
-    lobbySocket.emit("inviteToGame", { userId: $gameInvite });
-    $gameInvite = undefined;
-  })();
-  $: (() => {
-    if ($acceptGameInvite == undefined) return;
-    lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
-  })();
+  // $: (() => {
+  //   if ($gameInvite == undefined || !lobbySocket) return;
+  //   lobbySocket.emit("inviteToGame", { userId: $gameInvite });
+  //   $gameInvite = undefined;
+  // })();
+  // $: (() => {
+  //   if ($acceptGameInvite == undefined) return;
+  //   lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
+  // })();
 </script>
 
 <AuthRouter>
