@@ -7,7 +7,7 @@
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
   import { ui, token, data } from "$lib/stores";
-  import { socketState } from "$lib/stores/session";
+  import { acceptGameInvite, gameInvite, socketState } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
   import {
@@ -101,9 +101,9 @@
         .on("channelUserEdited", (data: ChanUsr) => {
           $data.myChannels.forEach((myChanUsr, index) => {
             if (myChanUsr.channel.id == data.chanId) {
-              const prevChanUsr = $data.myChannels[
-                index
-              ].channel.channelUsers.find((chanUsr) => chanUsr.id == data.id);
+              const prevChanUsr = $data.myChannels[index].channel.channelUsers.find(
+                (chanUsr) => chanUsr.id == data.id
+              );
 
               if (!prevChanUsr) return;
               const newChanUsr: ChanUserExtended = {
@@ -161,8 +161,7 @@
         .on("friendShipChange", (data: Friendship) => {
           switch (data.inviteStatus) {
             case StatusInv.ACCEPTED:
-              const newFriendUser =
-                data.senderId == $user?.id ? data.receiver : data.sender;
+              const newFriendUser = data.senderId == $user?.id ? data.receiver : data.sender;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );
@@ -171,23 +170,23 @@
             // case StatusInv.REJECT:
             case StatusInv.PENDING:
               $data.friendShips = [...$data.friendShips, data];
-              break ;
+              break;
             case StatusInv.BLOCKED:
               const userIdToRemove = data.receiverId == $user?.id ? data.senderId : data.receiverId;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );
               $data.friendShips = [...$data.friendShips, data];
-              $data.friends = $data.friends.filter(user => user.id != userIdToRemove);
-              break ;
+              $data.friends = $data.friends.filter((user) => user.id != userIdToRemove);
+              break;
             default:
               break;
           }
-        }).on("friendStatus", (data: Pick<User, "id" | "status">) => {
-          let userToUpdate = $data.friends.find(user => user.id == data.id);
-          if (!userToUpdate)
-            return ;
-          let newFriends = $data.friends.filter(user => user.id != data.id);
+        })
+        .on("friendStatus", (data: Pick<User, "id" | "status">) => {
+          let userToUpdate = $data.friends.find((user) => user.id == data.id);
+          if (!userToUpdate) return;
+          let newFriends = $data.friends.filter((user) => user.id != data.id);
           userToUpdate.status = data.status;
           newFriends.push(userToUpdate);
           $data.friends = newFriends;
@@ -195,6 +194,15 @@
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }
   }
+  $: (() => {
+    if ($gameInvite == undefined || !lobbySocket) return;
+    lobbySocket.emit("inviteToGame", { userId: $gameInvite });
+    $gameInvite = undefined;
+  })();
+  $: (() => {
+    if ($acceptGameInvite == undefined) return;
+    lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
+  })();
 </script>
 
 <AuthRouter>
@@ -207,9 +215,7 @@
   {#if chatSocket}
     <SocialModal {chatSocket} />
     <div class="bottom-acion-section">
-      <button
-        class="chat-toggle"
-        on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
+      <button class="chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
         >chat {(!$ui.chat.toggle && "+") || "-"}</button
       >
     </div>
