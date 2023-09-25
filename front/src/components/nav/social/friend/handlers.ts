@@ -1,6 +1,7 @@
 import { Friend as FriendApi } from "$lib/apiCalls";
 import type { Friendship } from "$lib/models/prismaSchema";
 import { data as dataStore, user } from "$lib/stores";
+import { addAnnouncement } from "$lib/stores/session";
 import type { ComponentProps } from "svelte";
 import { get } from "svelte/store";
 
@@ -8,6 +9,27 @@ import { get } from "svelte/store";
 
 export class handle {
   constructor(private Friend = new FriendApi()) { }
+
+  async AddFriend(receiverId: number) {
+    await this.Friend
+      .sendInvitation(receiverId)
+      .then(({ data }) => {
+        dataStore.update(prev => {
+          prev.friendShips = [...prev.friendShips, data.data];
+          addAnnouncement({
+            message: "Friend request sent",
+            level: "success",
+          });
+          return prev;
+        });
+      })
+      .catch((e) => {
+        addAnnouncement({
+          message: "Failed to send friend request",
+          level: "error",
+        });
+      });
+  };
   // Pending
   async FriendshipAccept(friendShip: Friendship) {
     await this.Friend.resolveInvitation({
@@ -55,7 +77,7 @@ export class handle {
   }
 
   async FriendShipUnBlock(friendship: Friendship) {
-    const receiverId = friendship.receiverId == get(user)?.id ? friendship.senderId: friendship.receiverId;
+    const receiverId = friendship.receiverId == get(user)?.id ? friendship.senderId : friendship.receiverId;
     await this.Friend.unBlockUser(receiverId).then(({ data }) => {
       alert("unblock ok" + JSON.stringify(data));
     }).catch(e => {

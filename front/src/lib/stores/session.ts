@@ -18,10 +18,21 @@ export const token = writableHook<string>({
   },
 });
 
+export type confirmBtn = {
+  label: string,
+  callback: () => void
+}
+
+export type confirm = {
+  yes: confirmBtn,
+  no: confirmBtn,
+}
+
 export interface announcement {
   id: number;
   message: string;
   level: "error" | "success";
+  confirm?: confirm;
 }
 
 export const announcements = writableHook<announcement[]>({
@@ -48,3 +59,8 @@ export const initialSocketState = new Map<string, boolean>([
 ]);
 
 export const socketState = writable<Map<string, boolean>>(initialSocketState);
+
+export const gameInvite = writable<string | undefined>(undefined);
+
+export const acceptGameInvite = writable<number | undefined>(undefined);
+
