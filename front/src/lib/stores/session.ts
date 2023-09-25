@@ -18,7 +18,7 @@ export const token = writableHook<string>({
   },
 });
 
-type confirmBtn = {
+export type confirmBtn = {
   label: string,
   callback: () => void
 }
