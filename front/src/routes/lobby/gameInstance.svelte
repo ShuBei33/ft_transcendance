@@ -5,6 +5,7 @@
   import type { DefaultSettings } from "$lib/models/game";
   import draw from "./draw";
   import { goto } from "$app/navigation";
+  import { uiInitialValue } from "$lib/stores/ui";
 
   export let gameId: number = -1;
   export let userId: number = -1;
@@ -35,9 +36,10 @@
         }
       })
       .on("disconnect", () => {
-        $ui.game.id = 0;
+        $ui.game.id = uiInitialValue.game.id;
+        $ui.game.state = "NONE";
       });
-    if (gameId != -1 && userId != -1)
+    if (gameId != uiInitialValue.game.id && userId != -1)
       socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
   });
 </script>
