@@ -183,6 +183,26 @@
               break;
           }
         })
+        .on("gameInvite", (data: User) => {
+          addAnnouncement({
+            message: `${data.pseudo} invited you to play!`,
+            level: "success",
+            confirm: {
+              yes: {
+                label: "Accept",
+                callback: () => {
+                  $acceptGameInvite = data.id;
+                },
+              },
+              no: {
+                label: "Decline",
+                callback: () => {
+                  alert("Invitation declined");
+                },
+              },
+            },
+          });
+        })
         .on("friendStatus", (data: Pick<User, "id" | "status">) => {
           let userToUpdate = $data.friends.find((user) => user.id == data.id);
           if (!userToUpdate) return;
