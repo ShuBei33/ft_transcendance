@@ -1,9 +1,50 @@
 import { writable, type Writable } from "svelte/store";
 import { writableHook, type WritableHook } from "./hooks";
+import { deepCopy } from "$lib/utils/parsing/deepCopy";
 
 type chatType = {
   labelFocusId: number;
   textInputMap: Map<number, string>;
+};
+
+class interval<T> {
+  private id: number = -1;
+  private data: T;
+  constructor(
+    private handler: (data: T) => any,
+    data: T
+  ) {
+    this.data = data;
+  }
+  stop() {
+    if (this.id != -1) {
+      clearInterval(this.id);
+      this.id = -1;
+    }
+  }
+  setData(data: T) {
+    this.data = data;
+  }
+  getData() {
+    return this.data;
+  }
+  start(ms: number) {
+    if (this.id != -1) this.id = Number(setInterval(this.handler, ms));
+  }
+  getId() {
+    return this.id;
+  }
+  getHandler() {
+    return this.handler;
+  }
+  setHander(handler: (data: T) => any) {
+    this.handler = handler;
+  }
+}
+
+type countDownType = {
+  id: number;
+  seconds: number;
 };
 
 interface ui {
@@ -15,7 +56,7 @@ interface ui {
   };
   game: {
     state: "NONE" | "PLAYING" | "COUNTDOWN" | "QUEUE";
-    countDown: number;
+    countDown: interval<{ secondLeft: number }>;
     id: number;
     selectedChroma: string;
     controls: {
@@ -24,25 +65,6 @@ interface ui {
     };
   };
   modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
-}
-
-function deepCopy<T>(obj: T): T {
-  // Check if the input is an object
-  if (typeof obj !== "object" || obj === null) {
-    return obj; // If not an object, return it as is (base case)
-  }
-
-  // Create a new object or array, depending on the type of obj
-  const copy: any = Array.isArray(obj) ? [] : {};
-
-  // Recursively copy each property in obj
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      copy[key] = deepCopy(obj[key]);
-    }
-  }
-
-  return copy as T;
 }
 
 export const uiInitialValue: ui = {
@@ -60,7 +82,14 @@ export const uiInitialValue: ui = {
   },
   game: {
     state: "NONE",
-    countDown: 0,
+    countDown: new interval(
+      (data) => {
+        console.log(`seconds left ${data.secondLeft}`);
+      },
+      {
+        secondLeft: 10,
+      }
+    ),
     id: 0,
     selectedChroma: "",
     controls: {
@@ -79,8 +108,28 @@ export const ui = writableHook<ui>({
   onUpdate(prev, value) {},
   onSet(value) {
     console.log("!set", value);
-    if (value.game.id && value.game.state == "QUEUE") {
-      value.game.state = "PLAYING";
-    } else if (!value.game.id && value.game.state == "PLAYING") value.game.state = "NONE";
+    if (value.game.id) {
+      switch (value.game.state) {
+        case "QUEUE":
+          value.game.state = "COUNTDOWN";
+          break;
+        case "COUNTDOWN":
+          alert("start");
+          value.game.countDown.start(5000);
+          break;
+        default:
+          return;
+      }
+    } else {
+      if (value.game.state == "PLAYING") {
+        value.game.state = "NONE";
+        value.game.countDown.stop();
+      } else {
+        alert("state is " + value.game.state)
+      }
+    }
+    // if (value.game.id && value.game.state == "QUEUE") {
+    //   value.game.state = "PLAYING";
+    // } else if (!value.game.id && value.game.state == "PLAYING") value.game.state = "NONE";
   },
 });
