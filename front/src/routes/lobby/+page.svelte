@@ -40,6 +40,8 @@
         </Typography></Button
       >
     </span>
+    {#if $ui.game.state == "COUNTDOWN"}
+    {/if}
   {/if}
 </main>
 

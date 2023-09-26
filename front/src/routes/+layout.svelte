@@ -7,7 +7,12 @@
   import { get } from "svelte/store";
   import SocialModal from "../components/nav/social/socialModal.svelte";
   import { ui, token, data } from "$lib/stores";
-  import { acceptGameInvite, gameInvite, socketState, type announcement } from "$lib/stores/session";
+  import {
+    acceptGameInvite,
+    gameInvite,
+    socketState,
+    type announcement,
+  } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
   import {

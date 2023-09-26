@@ -1,3 +1,4 @@
+import { writable, type Writable } from "svelte/store";
 import { writableHook, type WritableHook } from "./hooks";
 
 type chatType = {
@@ -13,7 +14,8 @@ interface ui {
     dm: chatType;
   };
   game: {
-    state: "NONE" | "PLAYING" | "QUEUE";
+    state: "NONE" | "PLAYING" | "COUNTDOWN" | "QUEUE";
+    countDown: number;
     id: number;
     selectedChroma: string;
     controls: {
@@ -22,6 +24,25 @@ interface ui {
     };
   };
   modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
+}
+
+function deepCopy<T>(obj: T): T {
+  // Check if the input is an object
+  if (typeof obj !== "object" || obj === null) {
+    return obj; // If not an object, return it as is (base case)
+  }
+
+  // Create a new object or array, depending on the type of obj
+  const copy: any = Array.isArray(obj) ? [] : {};
+
+  // Recursively copy each property in obj
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      copy[key] = deepCopy(obj[key]);
+    }
+  }
+
+  return copy as T;
 }
 
 export const uiInitialValue: ui = {
@@ -39,6 +60,7 @@ export const uiInitialValue: ui = {
   },
   game: {
     state: "NONE",
+    countDown: 0,
     id: 0,
     selectedChroma: "",
     controls: {
@@ -50,14 +72,15 @@ export const uiInitialValue: ui = {
 };
 
 export const ui = writableHook<ui>({
-  initialValue: uiInitialValue,
-  onUpdate(prev, value) {
-    // console.log("update", prev, " ", value);
+  initialValue: deepCopy(uiInitialValue),
+  copyMethod(value) {
+    return { ...value };
   },
+  onUpdate(prev, value) {},
   onSet(value) {
     console.log("!set", value);
-    if (value.game.id) value.game.state = "PLAYING";
-    else if (!value.game.id && value.game.state == "PLAYING") value.game.state = "NONE";
-    // console.log("!set", value);
+    if (value.game.id && value.game.state == "QUEUE") {
+      value.game.state = "PLAYING";
+    } else if (!value.game.id && value.game.state == "PLAYING") value.game.state = "NONE";
   },
 });

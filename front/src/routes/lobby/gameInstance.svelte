@@ -36,11 +36,12 @@
         }
       })
       .on("disconnect", () => {
+        console.log("initial +gidjodhg-+", uiInitialValue);
         $ui.game.id = uiInitialValue.game.id;
-        $ui.game.state = "NONE";
       });
-    if (gameId != uiInitialValue.game.id && userId != -1)
+    if (gameId != uiInitialValue.game.id && userId != -1) {
       socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
+    }
   });
 </script>
 
