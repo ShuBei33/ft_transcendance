@@ -44,10 +44,10 @@ export function writableHook<T>({
 
   const customUpdate = (updater: (value: T) => T) => {
     update((currentValue) => {
-      if (!copyMethod) console.warn("No copy method provided, using reference");
-      const previousValue = copyMethod && copyMethod(currentValue);
+      if (!copyMethod) console.warn("(WritableHook) No copy method provided, using reference");
+      const previousValue = (copyMethod && copyMethod(currentValue)) || currentValue;
       const updatedValue = updater(currentValue);
-      if (onUpdate) onUpdate(updatedValue, updatedValue);
+      if (onUpdate) onUpdate(previousValue, updatedValue);
       return updatedValue;
     });
   };

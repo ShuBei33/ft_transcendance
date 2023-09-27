@@ -7,44 +7,9 @@ type chatType = {
   textInputMap: Map<number, string>;
 };
 
-class interval<T> {
-  private id: number = -1;
-  private data: T;
-  constructor(
-    private handler: (data: T) => any,
-    data: T
-  ) {
-    this.data = data;
-  }
-  stop() {
-    if (this.id != -1) {
-      clearInterval(this.id);
-      this.id = -1;
-    }
-  }
-  setData(data: T) {
-    this.data = data;
-  }
-  getData() {
-    return this.data;
-  }
-  start(ms: number) {
-    if (this.id != -1) this.id = Number(setInterval(this.handler, ms));
-  }
-  getId() {
-    return this.id;
-  }
-  getHandler() {
-    return this.handler;
-  }
-  setHander(handler: (data: T) => any) {
-    this.handler = handler;
-  }
-}
-
-type countDownType = {
-  id: number;
-  seconds: number;
+type countDownType<T> = {
+  intervalId: number;
+  data: T;
 };
 
 interface ui {
@@ -56,7 +21,7 @@ interface ui {
   };
   game: {
     state: "NONE" | "PLAYING" | "COUNTDOWN" | "QUEUE";
-    countDown: interval<{ secondLeft: number }>;
+    countDown: countDownType<{ secondsLeft: number }>;
     id: number;
     selectedChroma: string;
     controls: {
@@ -66,6 +31,8 @@ interface ui {
   };
   modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
 }
+// 1 second
+export const countDownDelay = 1000 / 2;
 
 export const uiInitialValue: ui = {
   chat: {
@@ -82,14 +49,12 @@ export const uiInitialValue: ui = {
   },
   game: {
     state: "NONE",
-    countDown: new interval(
-      (data) => {
-        console.log(`seconds left ${data.secondLeft}`);
+    countDown: {
+      intervalId: -1,
+      data: {
+        secondsLeft: 10,
       },
-      {
-        secondLeft: 10,
-      }
-    ),
+    },
     id: 0,
     selectedChroma: "",
     controls: {
@@ -102,32 +67,58 @@ export const uiInitialValue: ui = {
 
 export const ui = writableHook<ui>({
   initialValue: deepCopy(uiInitialValue),
-  copyMethod(value) {
-    return { ...value };
-  },
-  onUpdate(prev, value) {},
-  onSet(value) {
-    console.log("!set", value);
-    if (value.game.id) {
-      switch (value.game.state) {
-        case "QUEUE":
-          value.game.state = "COUNTDOWN";
-          break;
-        case "COUNTDOWN":
-          alert("start");
-          value.game.countDown.start(5000);
-          break;
-        default:
-          return;
-      }
-    } else {
-      if (value.game.state == "PLAYING") {
-        value.game.state = "NONE";
-        value.game.countDown.stop();
+  copyMethod: (value) => deepCopy(value),
+  onUpdate(prev, value) {
+    console.log("updatePrev", prev);
+    const isGameIdUpdate = prev.game.id != value.game.id;
+    if (isGameIdUpdate) {
+      if (value.game.id) {
+        value.game.countDown.intervalId = Number(
+          setInterval(() => {
+            ui.update((prev) => {
+              let newPrev = deepCopy(prev);
+              newPrev.game.countDown.data.secondsLeft--;
+              if (!newPrev.game.countDown.data.secondsLeft) newPrev.game.state = "PLAYING";
+              else newPrev.game.state = "COUNTDOWN";
+              console.log(
+                `sec: ${newPrev.game.countDown.data.secondsLeft}, state: ${newPrev.game.state}`
+              );
+              return newPrev;
+            });
+            // value.game.countDown.data.secondsLeft--;
+          }, countDownDelay)
+        );
       } else {
-        alert("state is " + value.game.state)
+        alert("ooooooooooooooooooooooooooooooooohoo");
+        clearInterval(value.game.countDown.intervalId);
+        value.game.countDown.data.secondsLeft = 10;
+        value.game.state = "NONE";
       }
     }
+    console.log("updateNew", value);
+  },
+  onSet(value) {
+    console.log("!set", value);
+    // if (value.game.id) {
+    //   switch (value.game.state) {
+    //     case "QUEUE":
+    //       value.game.state = "COUNTDOWN";
+    //       break;
+    //     case "COUNTDOWN":
+    //       alert("start");
+    //       value.game.countDown.start(5000);
+    //       break;
+    //     default:
+    //       return;
+    //   }
+    // } else {
+    //   if (value.game.state == "PLAYING") {
+    //     value.game.state = "NONE";
+    //     value.game.countDown.stop();
+    //   } else {
+    //     alert("state is " + value.game.state);
+    //   }
+    // }
     // if (value.game.id && value.game.state == "QUEUE") {
     //   value.game.state = "PLAYING";
     // } else if (!value.game.id && value.game.state == "PLAYING") value.game.state = "NONE";

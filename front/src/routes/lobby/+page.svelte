@@ -41,6 +41,9 @@
       >
     </span>
     {#if $ui.game.state == "COUNTDOWN"}
+      <Typography>{`Game starts in ${$ui.game.countDown.data.secondsLeft}`}</Typography>
+      {:else}
+        <h1>{"wtf im doing here ?!"}</h1>
     {/if}
   {/if}
 </main>

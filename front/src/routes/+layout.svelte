@@ -30,6 +30,7 @@
   import { addAnnouncement } from "$lib/stores/session";
   // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
+  import { deepCopy } from "$lib/utils/parsing/deepCopy";
 
   onMount(() => {
     // console.log($user);
@@ -141,7 +142,12 @@
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
-              $ui.game.id = Number(data.data);
+              ui.update((prev) => {
+                let newPrev = deepCopy(prev);
+                newPrev.game.id = Number(data.data);
+                return newPrev;
+              });
+              // $ui.game.id = Number(data.data);
               break;
             default:
               break;
