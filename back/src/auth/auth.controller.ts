@@ -1,8 +1,11 @@
 import {
+	Body,
   Controller,
   Get,
+  Post,
   HttpCode,
   HttpStatus,
+  HttpException,
   Req,
   Res,
   UseGuards,
@@ -15,6 +18,7 @@ import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { UserLite } from 'src/user/dto';
+import { User } from '@prisma/client';
 
 const logger = new Logger();
 
@@ -28,7 +32,7 @@ export class AuthController {
   @ApiHeader({ name: 'Authorization', description: 'Token d\'authentification' })
   @HttpCode(HttpStatus.OK)
   @Get('checkJWT')
-  async checkJWT(@GetUser() user: UserLite) {
+  async checkJWT(@GetUser() user: User) {
     return { user: user };
   }
 
@@ -56,4 +60,29 @@ export class AuthController {
     logger.log(token);
     res.redirect(redirectUrl);
   }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtGuard)
+  @Post('2fa/turn-on')
+  async turnOn2FA(@Req() request, @Body() body) {
+	const isCodeValid = this.authService.is2FAAuthCodeValid(
+		body.twoFA,
+		request.user,
+	);
+	if (!isCodeValid) {
+		throw new HttpException('Invalid two-factor authentication code', HttpStatus.BAD_REQUEST);
+  	}
+	await this.authService.turnOnTwoFactorAuth(request.user.id);
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtGuard)
+  @Post('2fa/authenticate')
+  @HttpCode(200)
+  async authenticate2FA(@Req() request, @Body() body) {
+	const isCodeValid = this.authService.is2FAAuthCodeValid(
+		body.twoFASecret,
+		request.user,
+		);
+	}
 }

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@types/otplib": "^10.0.0",
+    "otplib": "^12.0.1"
+  }
+}

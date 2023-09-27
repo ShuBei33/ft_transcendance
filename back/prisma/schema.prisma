@@ -15,6 +15,7 @@ model User {
   pseudo          String          @unique
   avatar          String?
   twoFA           Boolean         @default(false)
+  twoFASecret     String?
   status          UserStatus      @default(OFFLINE)
   rank            Int
   money           Int             @default(0)
