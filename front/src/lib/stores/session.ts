@@ -10,6 +10,7 @@ export const token = writableHook<string>({
   onSet(value) {
     Cookies.set(COOKIE_TOKEN_NAME, value, { expires: TOKEN_EXPIRATION });
   },
+  //TODO
   onUpdate(_, newValue) {
     Cookies.set(COOKIE_TOKEN_NAME, newValue, { expires: TOKEN_EXPIRATION });
   },
@@ -63,4 +64,3 @@ export const socketState = writable<Map<string, boolean>>(initialSocketState);
 export const gameInvite = writable<string | undefined>(undefined);
 
 export const acceptGameInvite = writable<number | undefined>(undefined);
-

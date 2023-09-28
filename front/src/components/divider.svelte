@@ -4,7 +4,7 @@
   const SLOTS = $$props.$$slots;
 </script>
 
-{#if SLOTS.title}
+{#if SLOTS && SLOTS.title}
   <div class="divider-with-title">
     <span class={className} />
     <div class="title-mask">

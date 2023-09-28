@@ -31,13 +31,12 @@
       });
   };
   const { id, user, history } = data;
-  // console.log("history", history);
 </script>
 
 <main>
   {#if id}
     <section class="profile">
-      <UserProfileInfo {id} {user}/>
+      <UserProfileInfo {id} {user} />
     </section>
     <section class="match-history">
       <Typography big class="... title"><h1>{"Match history"}</h1></Typography>

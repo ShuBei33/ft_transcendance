@@ -68,6 +68,19 @@ export class ChanAdminService {
 		})
 		return userRole.role;
 	}
+	
+	async unmute(chanUsr: ChanUsr) : Promise<ChanUsr> {
+		return await this.prisma.chanUsr.update({
+			where: { id: chanUsr.id },
+			data: { status: 'NORMAL', statusDuration: null },
+		  });
+	}
+
+	async unmuteTimer(duration: number, chanUsr: ChanUsr) {
+		setTimeout(() => {
+			this.unmute(chanUsr);
+		}, duration);
+	}
 
 	async updateUserChannel(myRole: ChanUsrRole, chanId: number, userToModify: DTO_UpdateChanUsr): Promise<ChanUsr> {
 		const targetUser = await this.prisma.chanUsr.findFirst({
@@ -82,6 +95,12 @@ export class ChanAdminService {
 			error.notAuthorized("Cannot modify role of the owner.");
 		if (myRole == "ADMIN" && targetUser.role == "ADMIN")
 			error.notAuthorized("An admin cannot modify another admin's role/status.");
+		if (userToModify.status == 'MUTED') {
+			if (!userToModify.statusDuration || userToModify.statusDuration == undefined)
+				error.badRequest("You must specify for how long you want to mute this user.");
+			else
+				this.unmuteTimer(userToModify.statusDuration, targetUser);
+		}
 		const { id, ...data } = userToModify;
 		return await this.prisma.chanUsr.update({
 			where: { id: targetUser.id },

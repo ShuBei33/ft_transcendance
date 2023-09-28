@@ -28,11 +28,11 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
-  // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
   import { deepCopy } from "$lib/utils/parsing/deepCopy";
   import { updateGameId } from "$lib/stores/ui";
   import { goto } from "$app/navigation";
+  import { isDiscToggle, toggleDisc } from "$lib/stores/data";
 
   // setTimeout to avoid race condition if game is found immediately
   const handleGameId = (gameId: number) => {
@@ -144,6 +144,7 @@
                 ...$data.discussions[index].discussionsMsgs,
                 data,
               ];
+              !isDiscToggle(disc.id) && toggleDisc(disc.id, true);
               return;
             }
           });
@@ -173,6 +174,11 @@
         .on("disconnect", () => {
           $socketState.set("lobby", false);
         })
+        .on("friendShipRemove", (data: Friendship) => {
+          $data.friendShips = $data.friendShips.filter(
+            (friendship) => friendship.id != data.id
+          );
+        })
         .on("friendShipChange", (data: Friendship) => {
           switch (data.inviteStatus) {
             case StatusInv.ACCEPTED:
@@ -187,7 +193,8 @@
               $data.friendShips = [...$data.friendShips, data];
               break;
             case StatusInv.BLOCKED:
-              const userIdToRemove = data.receiverId == $user?.id ? data.senderId : data.receiverId;
+              const userIdToRemove =
+                data.receiverId == $user?.id ? data.senderId : data.receiverId;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );

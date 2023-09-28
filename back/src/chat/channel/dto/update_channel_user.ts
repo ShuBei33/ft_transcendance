@@ -16,7 +16,7 @@ export class DTO_UpdateChanUsr {
 	@IsOptional()
 	@IsEnum(ChanUsrRole)
 	@ApiPropertyOptional({
-		description: 'Role de l\'Utilisateur dans le Channel',
+		description: 'User role in channel',
 		default: ChanUsrRole.NORMAL,
 		examples: [ ChanUsrRole.ADMIN, ChanUsrRole.NORMAL, ChanUsrRole.OWNER ],
 		type: String,
@@ -27,17 +27,18 @@ export class DTO_UpdateChanUsr {
 	@IsOptional()
 	@IsEnum(UserStatusMSGs)
 	@ApiPropertyOptional({
-		description: 'Status de l\'utilisateur',
+		description: 'User status',
 		default: UserStatusMSGs.NORMAL,
 		examples: [ UserStatusMSGs.NORMAL, UserStatusMSGs.BLOCKED, UserStatusMSGs.MUTED, UserStatusMSGs.BANNED ],
 		type: String,
 	})
 	status?: UserStatusMSGs;
 
+	@IsInt()
 	@IsOptional()
 	@ApiPropertyOptional({
-		description: 'Temps du status avant retour en normal',
-		type: Date,
+		description: 'Duration in milliseconds until it unmutes the user',
+		type: Number,
 	})
-	statusDuration?: Date;
+	statusDuration?: number;
 }
