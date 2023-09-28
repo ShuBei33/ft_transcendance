@@ -31,6 +31,7 @@
   // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
   import { deepCopy } from "$lib/utils/parsing/deepCopy";
+  import { updateGameId } from "$lib/stores/ui";
 
   onMount(() => {
     // console.log($user);
@@ -142,12 +143,8 @@
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
-              ui.update((prev) => {
-                let newPrev = deepCopy(prev);
-                newPrev.game.id = Number(data.data);
-                return newPrev;
-              });
-              // $ui.game.id = Number(data.data);
+              // setTimeout to avoid race condition if game is found immediately
+              setTimeout(() => updateGameId(Number(data.data)), 100);
               break;
             default:
               break;

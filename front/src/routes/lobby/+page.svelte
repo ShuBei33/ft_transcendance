@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ui } from "$lib/stores/ui";
+  import { ui, updateGameState } from "$lib/stores/ui";
   import { Game } from "$lib/apiCalls";
   import GameInstance from "./gameInstance.svelte";
   import { axiosInstance } from "$lib/stores";
@@ -12,14 +12,14 @@
     if ($ui.game.state == "NONE")
       await _Game
         .joinQueue()
-        .then(() => ($ui.game.state = "QUEUE"))
+        .then(() => updateGameState("QUEUE"))
         .catch((e) => {
           // console.log("queue error happened", e);
         });
     else
       await _Game
         .leaveQueue()
-        .then(() => ($ui.game.state = "NONE"))
+        .then(() => updateGameState("NONE"))
         .catch((e) => {
           // console.log("leave queue error happened", e);
         });
@@ -39,11 +39,25 @@
           {$ui.game.state == "NONE" ? "Queue" : "Leave queue"}
         </Typography></Button
       >
+      <Button
+        on:click={() => {
+          if (!$ui.game.id) updateGameId(23);
+          else updateGameId(0);
+        }}
+      >
+        <Typography>{"ID"}</Typography>
+      </Button>
+      <Button
+        on:click={() => {
+          console.log("id", $ui.game.id);
+          console.log("state", $ui.game.state);
+        }}
+      >
+        <Typography>{"log"}</Typography>
+      </Button>
     </span>
     {#if $ui.game.state == "COUNTDOWN"}
       <Typography>{`Game starts in ${$ui.game.countDown.data.secondsLeft}`}</Typography>
-      {:else}
-        <h1>{"wtf im doing here ?!"}</h1>
     {/if}
   {/if}
 </main>
