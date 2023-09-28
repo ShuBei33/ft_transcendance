@@ -84,5 +84,9 @@ export class AuthController {
 		body.twoFASecret,
 		request.user,
 		);
+	if (!isCodeValid) {
+		throw new HttpException('Invalid two-factor authentication code', HttpStatus.BAD_REQUEST);
 	}
+	await this.authService.login2FA(request.user);
+}
 }

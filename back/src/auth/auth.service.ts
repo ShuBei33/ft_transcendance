@@ -128,13 +128,13 @@ export class AuthService {
 	async login2FA(userNoPsw: Partial<User>) {
 		const payload = {
 			login: userNoPsw.login,
-			is2FAAthenticated: true,
+			is2FAAuthenticated: true,
 			is2FAEnabled: !!userNoPsw.twoFA,
 		}
 
 		return {
 			login: payload.login,
-			access_token: payload.is2FAAthenticated,
+			access_token: payload.is2FAAuthenticated,
 		}
 	}
 }
