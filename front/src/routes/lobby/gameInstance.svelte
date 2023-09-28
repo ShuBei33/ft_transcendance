@@ -36,8 +36,8 @@
       .on("disconnect", () => {
         updateGameId(0);
       });
-    if (userId != -1 && true) {
-      // socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
+    if (userId != -1 && gameId && $ui.game.state == "PLAYING") {
+      socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
     }
   });
 </script>

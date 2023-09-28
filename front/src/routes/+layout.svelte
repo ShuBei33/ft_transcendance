@@ -32,7 +32,15 @@
   import UserWidget from "../components/userWidget/userWidget.svelte";
   import { deepCopy } from "$lib/utils/parsing/deepCopy";
   import { updateGameId } from "$lib/stores/ui";
+  import { goto } from "$app/navigation";
 
+  // setTimeout to avoid race condition if game is found immediately
+  const handleGameId = (gameId: number) => {
+    setTimeout(() => {
+      updateGameId(Number(gameId));
+      goto("/lobby");
+    }, 100);
+  };
   onMount(() => {
     // console.log($user);
   });
@@ -143,8 +151,7 @@
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
-              // setTimeout to avoid race condition if game is found immediately
-              setTimeout(() => updateGameId(Number(data.data)), 100);
+              handleGameId(Number(data.data));
               break;
             default:
               break;
@@ -210,6 +217,9 @@
               },
             },
           });
+        })
+        .on("GAME_ID", (data: string) => {
+          handleGameId(Number(data));
         })
         .on("friendStatus", (data: Pick<User, "id" | "status">) => {
           let userToUpdate = $data.friends.find((user) => user.id == data.id);

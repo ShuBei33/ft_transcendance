@@ -39,22 +39,6 @@
           {$ui.game.state == "NONE" ? "Queue" : "Leave queue"}
         </Typography></Button
       >
-      <Button
-        on:click={() => {
-          if (!$ui.game.id) updateGameId(23);
-          else updateGameId(0);
-        }}
-      >
-        <Typography>{"ID"}</Typography>
-      </Button>
-      <Button
-        on:click={() => {
-          console.log("id", $ui.game.id);
-          console.log("state", $ui.game.state);
-        }}
-      >
-        <Typography>{"log"}</Typography>
-      </Button>
     </span>
     {#if $ui.game.state == "COUNTDOWN"}
       <Typography>{`Game starts in ${$ui.game.countDown.data.secondsLeft}`}</Typography>

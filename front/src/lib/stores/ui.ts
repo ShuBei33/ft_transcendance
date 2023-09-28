@@ -68,24 +68,31 @@ export const uiInitialValue: uiType = {
 export const ui = writableHook<uiType>({
   initialValue: deepCopy(uiInitialValue),
   copyMethod: (value) => deepCopy(value),
+  // Middleware for values update
   onUpdate(prev, value) {
     const isGameIdUpdate = prev.game.id != value.game.id;
-    const isGameStateUpdate = prev.game.state != value.game.state;
     if (isGameIdUpdate) {
-      console.log(`${prev.game.id}:${value.game.id}`);
       if (value.game.id) {
         value.game.state = "COUNTDOWN";
+        value.game.countDown.intervalId = Number(
+          setInterval(() => {
+            ui.update((prev) => {
+              if (prev.game.countDown.data.secondsLeft == 0) {
+                value.game.state = "PLAYING";
+                clearInterval(prev.game.countDown.intervalId);
+                prev.game.countDown.data.secondsLeft = 10;
+              } else prev.game.countDown.data.secondsLeft--;
+              return prev;
+            });
+          }, countDownDelay)
+        );
       } else {
         value.game.state = "NONE";
       }
     }
-    if (isGameStateUpdate) {
-    }
     return value;
   },
-  onSet(value) {
-    console.log("!set", value);
-  },
+  onSet(value) {},
 });
 
 export const updateGameId = (id: number, delay?: number) => {

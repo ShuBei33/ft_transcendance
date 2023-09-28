@@ -139,13 +139,13 @@ export class LobbyGateway
 
   @SubscribeMessage('acceptGameInvite')
   acceptGameInvite(client: Socket, payload: { userId: number }) {
-    this.logger.log('game invite ok +)@)@)@)@)@)@@)@', JSON.stringify(payload));
     const otherPlayerSocket = this.getSocketByUserId(payload.userId);
     const myUser = connectedClients.get(client.id);
     if (!otherPlayerSocket || !myUser) {
       // handle error
       return;
     }
+    this.logger.log(" =D=D=D emitting", payload);
     [otherPlayerSocket.id, client.id].forEach((id) =>
       this.wss.to(id).emit('GAME_ID', String(payload.userId + myUser.id)),
     );
