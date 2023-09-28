@@ -177,45 +177,4 @@ export class LobbyGateway
       level: 'success',
     });
   }
-
-  @SubscribeMessage("acceptGameInvite")
-  acceptGameInvite(client: Socket, payload: { userId: number }) {
-    this.logger.log("game invite ok +)@)@)@)@)@)@@)@", JSON.stringify(payload));
-    const otherPlayerSocket = this.getSocketByUserId(payload.userId);
-    const myUser = connectedClients.get(client.id);
-    if (!otherPlayerSocket || !myUser) {
-      // handle error
-      return;
-    }
-    [
-      otherPlayerSocket.id,
-      client.id
-    ].forEach(id => this.wss.to(id).emit('GAME_ID', String(payload.userId + myUser.id)));
-  }
-
-  @SubscribeMessage('inviteToGame')
-  inviteToGame(client: Socket, payload: { userId: number }) {
-    this.logger.log(`debug -+_+_+_+_+++++++_++++++++____________ ${debug++}`);
-    const myUser = connectedClients.get(client.id);
-    if (!myUser) {
-      this.wss.to(client.id).emit("pushMessage", {
-        message: "please try again later.",
-        level: "error"
-      })
-      return;
-    }
-    const socket = this.getSocketByUserId(payload.userId);
-    if (!socket) {
-      this.wss.to(client.id).emit("pushMessage", {
-        message: "please try again later.",
-        level: "error"
-      })
-      return;
-    }
-    this.wss.to(socket.id).emit('gameInvite', myUser);
-    this.wss.to(client.id).emit("pushMessage", {
-      message: `Invitation to play sent.`,
-      level: "success"
-    })
-  }
 }
