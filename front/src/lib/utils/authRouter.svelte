@@ -5,7 +5,6 @@
   import { token, user, axiosConfig } from "$lib/stores";
   import Cookies from "js-cookie";
   import { COOKIE_TOKEN_NAME } from "$lib/stores/session";
-  import SocketEventsHandler from "./socketEventsHandler.svelte";
   import RetrieveUserData from "./retrieveUserData.svelte";
   import Notifications from "./notifications.svelte";
   import SimpleModal from "../../components/modal/simpleModal.svelte";
@@ -49,9 +48,7 @@
       default:
         if (!isAuthenticated) {
           if (retrivedToken)
-            goto(
-              `/callback?token=${retrivedToken}&redirect=${$page.url.pathname}`
-            )
+            goto(`/callback?token=${retrivedToken}&redirect=${$page.url.pathname}`)
               .then(() => (allowSlot = true))
               .catch(() => (allowSlot = false));
           else
@@ -62,7 +59,6 @@
     }
   };
   $: browser && monitorPage();
-  let inputValue = ""; // Added variable to hold the input value
 
   $: getModalTitle = () => {
     switch ($ui.modal) {
@@ -120,7 +116,6 @@
   <div class="app-container">
     {#if allowSlot}
       {#if $user && $axiosConfig}
-        <SocketEventsHandler />
         <RetrieveUserData />
         <slot name="nav" />
       {/if}

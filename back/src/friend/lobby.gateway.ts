@@ -22,8 +22,9 @@ const socketMap = new Map<string, Socket>();
 
 @WebSocketGateway({ namespace: '/lobby', cors: '*:*' })
 export class LobbyGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private jwt: JwtService, private userService: UserService) { }
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(private jwt: JwtService, private userService: UserService) {}
 
   @WebSocketServer() wss: Server;
   private logger: Logger = new Logger('LobbyGateway');
@@ -73,9 +74,7 @@ export class LobbyGateway
     const user: UserLite = connectedClients.get(client.id);
     if (!user) return;
     this.userService.updateUserStatus(user.id, UserStatus.OFFLINE);
-    (async () =>
-      await this.statusChange(user.id, UserStatus.OFFLINE)
-    )();
+    (async () => await this.statusChange(user.id, UserStatus.OFFLINE))();
     connectedClients.delete(client.id);
     socketMap.delete(client.id); // lhs: sid, rhs: userId
     this.logger.warn(`Socket ${client.id} disconnected`);
@@ -104,14 +103,21 @@ export class LobbyGateway
     });
   }
   async statusChange(userId: number, newStatus: UserStatus) {
-    const onlineFriendsId = await this.userService.updateUserStatus(userId, newStatus);
-    onlineFriendsId.forEach(id => {
+    const onlineFriendsId = await this.userService.updateUserStatus(
+      userId,
+      newStatus,
+    );
+    onlineFriendsId.forEach((id) => {
       const socket = this.getSocketByUserId(id);
       if (socket) {
-        this.logger.log(`-----send status to id: ${id}, status: ${newStatus}, debug: ${debug++}`)
-        this.wss.to(socket.id).emit("friendStatus", { id: userId, status: newStatus })
+        this.logger.log(
+          `-----send status to id: ${id}, status: ${newStatus}, debug: ${debug++}`,
+        );
+        this.wss
+          .to(socket.id)
+          .emit('friendStatus', { id: userId, status: newStatus });
       }
-    })
+    });
   }
 
   friendShipRemove(friendship: Friendship) {
@@ -130,9 +136,46 @@ export class LobbyGateway
   ) {
     const user: UserLite = connectedClients.get(client.id);
     if (!user) return;
-    (async () =>
-      await this.statusChange(user.id, newStatus)
-    )();
+    (async () => await this.statusChange(user.id, newStatus))();
+  }
+
+  @SubscribeMessage('acceptGameInvite')
+  acceptGameInvite(client: Socket, payload: { userId: number }) {
+    const otherPlayerSocket = this.getSocketByUserId(payload.userId);
+    const myUser = connectedClients.get(client.id);
+    if (!otherPlayerSocket || !myUser) {
+      // handle error
+      return;
+    }
+    this.logger.log(" =D=D=D emitting", payload);
+    [otherPlayerSocket.id, client.id].forEach((id) =>
+      this.wss.to(id).emit('GAME_ID', String(payload.userId + myUser.id)),
+    );
+  }
+
+  @SubscribeMessage('inviteToGame')
+  inviteToGame(client: Socket, payload: { userId: number }) {
+    const myUser = connectedClients.get(client.id);
+    if (!myUser) {
+      this.wss.to(client.id).emit('pushMessage', {
+        message: 'please try again later.',
+        level: 'error',
+      });
+      return;
+    }
+    const socket = this.getSocketByUserId(payload.userId);
+    if (!socket) {
+      this.wss.to(client.id).emit('pushMessage', {
+        message: 'please try again later.',
+        level: 'error',
+      });
+      return;
+    }
+    this.wss.to(socket.id).emit('gameInvite', myUser);
+    this.wss.to(client.id).emit('pushMessage', {
+      message: `Invitation to play sent.`,
+      level: 'success',
+    });
   }
 
   @SubscribeMessage("acceptGameInvite")

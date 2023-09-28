@@ -2,12 +2,14 @@
 import { writable, type Writable } from "svelte/store";
 
 type OnSetCallback<T> = (value: T) => void;
-type OnUpdateCallback<T> = (previousValue: T, newValue: T) => void;
+type OnUpdateCallback<T> = (previousValue: T, newValue: T) => T;
 type OnClearCallback = () => void;
+type copyMethodCallback<T> = (value: T) => T;
 
 export interface WritableHookOptions<T> {
   initialValue: T;
   onSet?: OnSetCallback<T>;
+  copyMethod?: copyMethodCallback<T>;
   onUpdate?: OnUpdateCallback<T>;
   onClear?: OnClearCallback;
 }
@@ -27,6 +29,7 @@ export type WritableHook<T> = Writable<T> & {
 export function writableHook<T>({
   initialValue,
   onSet,
+  copyMethod,
   onUpdate,
   onClear,
 }: WritableHookOptions<T>): WritableHook<T> {
@@ -41,11 +44,10 @@ export function writableHook<T>({
 
   const customUpdate = (updater: (value: T) => T) => {
     update((currentValue) => {
-      const updatedValue = updater(currentValue);
-      if (onUpdate) {
-        // currentValue is previousValue in this context
-        onUpdate(currentValue, updatedValue);
-      }
+      if (!copyMethod) console.warn("(WritableHook) No copy method provided, using reference");
+      const previousValue = (copyMethod && copyMethod(currentValue)) || currentValue;
+      let updatedValue = updater(currentValue);
+      if (onUpdate) updatedValue = onUpdate(previousValue, updatedValue);
       return updatedValue;
     });
   };

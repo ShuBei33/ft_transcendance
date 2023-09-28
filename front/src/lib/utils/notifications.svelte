@@ -4,7 +4,10 @@
   import Typography from "../../components/Typography.svelte";
   import Divider from "../../components/divider.svelte";
   import Button from "../../components/Button.svelte";
+<<<<<<< HEAD
     import { not } from "svelte-forms/validators";
+=======
+>>>>>>> master
 </script>
 
 <div class="notificationFlex">
@@ -22,9 +25,15 @@
         {notification.message}
       </Typography>
       {#if notification.confirm}
+<<<<<<< HEAD
       <Divider>
         {""}
       </Divider>
+=======
+        <Divider>
+          {""}
+        </Divider>
+>>>>>>> master
         <div class="notificationActions">
           <Button variant="success" on:click={() => notification.confirm?.yes.callback()}>
             <Typography>{notification.confirm.yes.label}</Typography>

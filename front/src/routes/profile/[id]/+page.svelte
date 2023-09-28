@@ -7,7 +7,11 @@
   import GenericButton from "../../../components/genericButton.svelte";
   import Typography from "../../../components/Typography.svelte";
   import MatchHistory from "./matchHistory.svelte";
+<<<<<<< HEAD
     import UserProfileInfo from "../../../components/userProfileInfo.svelte";
+=======
+  import UserProfileInfo from "../../../components/userProfileInfo.svelte";
+>>>>>>> master
 
   export let data;
   const _Friend = new Friend();

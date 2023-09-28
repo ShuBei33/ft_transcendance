@@ -58,6 +58,5 @@ export const data = writableHook<dataType>({
     channelFeedMap: new Map(),
   },
   onSet(value) {
-    console.log("++++++++++++++ data change", value);
   },
 });

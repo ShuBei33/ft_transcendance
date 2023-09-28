@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ui } from "$lib/stores/ui";
+  import { ui, updateGameState } from "$lib/stores/ui";
   import { Game } from "$lib/apiCalls";
   import GameInstance from "./gameInstance.svelte";
   import { axiosInstance } from "$lib/stores";
@@ -12,14 +12,14 @@
     if ($ui.game.state == "NONE")
       await _Game
         .joinQueue()
-        .then(() => ($ui.game.state = "QUEUE"))
+        .then(() => updateGameState("QUEUE"))
         .catch((e) => {
           // console.log("queue error happened", e);
         });
     else
       await _Game
         .leaveQueue()
-        .then(() => ($ui.game.state = "NONE"))
+        .then(() => updateGameState("NONE"))
         .catch((e) => {
           // console.log("leave queue error happened", e);
         });
@@ -40,6 +40,9 @@
         </Typography></Button
       >
     </span>
+    {#if $ui.game.state == "COUNTDOWN"}
+      <Typography>{`Game starts in ${$ui.game.countDown.data.secondsLeft}`}</Typography>
+    {/if}
   {/if}
 </main>
 

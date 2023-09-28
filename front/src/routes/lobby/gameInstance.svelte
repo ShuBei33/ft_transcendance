@@ -5,6 +5,7 @@
   import type { DefaultSettings } from "$lib/models/game";
   import draw from "./draw";
   import { goto } from "$app/navigation";
+  import { uiInitialValue, updateGameId } from "$lib/stores/ui";
 
   export let gameId: number = -1;
   export let userId: number = -1;
@@ -16,8 +17,6 @@
     if (!socket) return;
     if (!(e.key == $ui.game.controls.up || e.key == $ui.game.controls.down)) return;
     const key = e.key == $ui.game.controls.up ? "a" : "d";
-    // console.log("!!!!!!!!!!!!key", key);
-    // console.log(e.key);
     socket.emit("keyStroke", { ...e, key });
   }
 
@@ -35,10 +34,11 @@
         }
       })
       .on("disconnect", () => {
-        $ui.game.id = 0;
+        updateGameId(0);
       });
-    if (gameId != -1 && userId != -1)
+    if (userId != -1 && gameId && $ui.game.state == "PLAYING") {
       socket.emit("joinGame", { userId, gameId, chroma: $ui.game.selectedChroma });
+    }
   });
 </script>
 

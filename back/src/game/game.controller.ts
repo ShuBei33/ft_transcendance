@@ -30,7 +30,7 @@ import { success } from 'src/utils/utils_success';
 @ApiBearerAuth()
 @Controller('game')
 export class GameController {
-  constructor(private gameService: GameService) { }
+  constructor(private gameService: GameService) {}
 
   @Get('getHistory/:uid')
   @ApiOperation({
@@ -87,9 +87,12 @@ export class GameController {
   })
   @ApiResponse({ status: 200, description: 'Succes de la Requete' })
   @ApiResponse({ status: 400, description: 'Echec de la Requete' })
-  async buyChroma(@GetUser() user: User, @Res() res: Response, @Param('id') id: string,
+  async buyChroma(
+    @GetUser() user: User,
+    @Res() res: Response,
+    @Param('id') id: string,
   ) {
-    new Logger().log("okkkk");
+    new Logger().log('okkkk');
     const chroma = await this.gameService.buyChroma(user, id);
     return success.general(res, 'chroma bought', chroma);
   }
