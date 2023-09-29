@@ -13,6 +13,7 @@
     | "Thin" = "Regular";
 
   let className: string | undefined = undefined;
+  export let externalRef: HTMLSpanElement | undefined = undefined;
   export { className as class };
 
   const parseClass = (className: string): string => {
@@ -28,11 +29,11 @@
 </script>
 
 {#if className}
-  <span class={parseClass(className)}><slot /></span>
+  <span bind:this={externalRef} class={parseClass(className)}><slot /></span>
 {:else if big}
-  <span class="bigTypo"><slot /></span>
+  <span bind:this={externalRef} class="bigTypo"><slot /></span>
 {:else}
-  <span class={`typo-${weight}`}><slot /></span>
+  <span bind:this={externalRef} class={`typo-${weight}`}><slot /></span>
 {/if}
 
 <style lang="scss">

@@ -71,15 +71,15 @@
   }
 }
 // Tab
-.tab-window-toggle {
+.tab-window-toggle,
+.tab-window-toggle-active {
   width: 100%;
-  @include mix.button-style($fierFuchsia);
-  border-radius: 0;
+  height: 3em;
+  background-color: darken($shipsOfficer, 4%);
+  border: 0;
+  cursor: pointer;
   &-active {
-    @include mix.button-style-basic(lighten($fierFuchsia, 15%));
-    width: 100%;
-    border-radius: 0;
-    cursor: default;
+    background-color: $shipsOfficer;
   }
 }
 
