@@ -33,6 +33,8 @@
   import { deepCopy } from "$lib/utils/parsing/deepCopy";
   import { updateGameId } from "$lib/stores/ui";
   import { goto } from "$app/navigation";
+  import Button from "../components/Button.svelte";
+  import Typography from "../components/Typography.svelte";
 
   // setTimeout to avoid race condition if game is found immediately
   const handleGameId = (gameId: number) => {
@@ -249,23 +251,24 @@
 <AuthRouter>
   <!-- <UserWidget /> -->
   <span slot="nav">
-    <!-- <button on:click={() => token.clear()}>logout</button> -->
     <Nav {navItems} />
   </span>
   <slot />
   {#if chatSocket}
     <SocialModal {chatSocket} />
     <div class="bottom-acion-section">
-      <button class="chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}
-        >chat {(!$ui.chat.toggle && "+") || "-"}</button
-      >
+      <Button class="... chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}>
+        <Typography>{`Chat ${(!$ui.chat.toggle && "+") || "-"}`}</Typography>
+      </Button>
     </div>
+  {:else}
+    <h1>{"Chat socket not connected."}</h1>
   {/if}
 </AuthRouter>
 
 <style lang="scss">
-  .chat-toggle {
-    position: absolute;
+  :global(.chat-toggle) {
+    position: absolute !important;
     bottom: 1em;
     right: 1em;
   }

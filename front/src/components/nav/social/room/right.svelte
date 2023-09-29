@@ -14,11 +14,10 @@
 
   export let chatSocket: Socket;
   let value = "";
-  $: chanUsr = $data.myChannels.find(
-    (chan) => chan.channel.id == $ui.chat.room.labelFocusId
-  );
+  $: chanUsr = $data.myChannels.find((chan) => chan.channel.id == $ui.chat.room.labelFocusId);
   $: messages = chanUsr?.channel.channelMsgs;
-  $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
+  // TODO
+  // $: $ui.chat.room.textInputMap.set($ui.chat.room.labelFocusId, value);
 
   function handleSubmit() {
     if (!value.length) return "";
@@ -30,10 +29,7 @@
   }
 </script>
 
-<RightTemplate
-  onSubmit={() => handleSubmit()}
-  onChange={(_value) => (value = _value)}
->
+<RightTemplate onSubmit={() => handleSubmit()} onChange={(_value) => (value = _value)}>
   <MessageFeed slot="feed" {messages} />
 </RightTemplate>
 
