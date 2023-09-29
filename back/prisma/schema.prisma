@@ -14,7 +14,9 @@ model User {
   login           String          @unique
   pseudo          String          @unique
   avatar          String?
+  otpAuthUrl    String?
   twoFA           Boolean         @default(false)
+  twoFASecret     String?
   status          UserStatus      @default(OFFLINE)
   rank            Int
   money           Int             @default(0)

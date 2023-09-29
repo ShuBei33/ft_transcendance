@@ -4,6 +4,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { LIST_SUFFIX_PSEUDO } from './data';
 import { Logger } from '@nestjs/common';
 import { UserLite } from 'src/user/dto';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
+import { User } from '@prisma/client';
+
+
 const logger = new Logger();
 
 @Injectable()
@@ -85,4 +90,42 @@ export class AuthService {
 		if ((await this.user_validator(login)) == false) { this.signup(login) }
 		return await this.signToken(refresh_token, access_token, login);
 	}
+
+	async generate2FASecret(userId: number) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+		});
+		if (!user) {
+			throw new Error('User not found');
+		}
+		const secret = authenticator.generateSecret();
+		const otpAuthUrl = authenticator.keyuri(`${user.login}@student.42.fr`, '42', secret);
+		
+		await this.prisma.user.update({
+			where: { id: userId },
+			data: { twoFASecret: secret,
+					otpAuthUrl: otpAuthUrl
+				},
+			});
+		return (toDataURL(otpAuthUrl))
+	}
+
+	async turnOn2FA(userId: number) {
+		await this.prisma.user.update({
+			where: { id: userId },
+			data: { twoFA: true },
+		});
+	}
+
+	isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: UserLite) {
+		return authenticator.verify({
+		  token: twoFactorAuthenticationCode,
+		  secret: user.twoFASecret,
+		});
+	  }
+
+	//   async loginWith2FA(user: UserLite) {
+	// 	const 
+	//   }
+
 }

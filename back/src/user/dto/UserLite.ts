@@ -5,4 +5,7 @@ export class UserLite {
 	pseudo: string;
 	id: number;
 	status: UserStatus;
+	otpAuthUrl: string;
+	// twoFA: boolean;
+	twoFASecret: string;
 }

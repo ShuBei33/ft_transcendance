@@ -40,6 +40,9 @@ export class UserService {
         login: true,
         pseudo: true,
         status: true,
+		otpAuthUrl: true,
+		twoFASecret: true,
+		// twoFA: true;
       }
     });
     return user;

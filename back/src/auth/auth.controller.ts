@@ -1,11 +1,13 @@
 import {
   Controller,
   Get,
+  Post,
   HttpCode,
   HttpStatus,
   Req,
   Res,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { FtGuard, JwtGuard } from './guard';
 import { Request, Response } from 'express';
@@ -15,6 +17,7 @@ import { FTAuth } from './dto';
 import { Logger } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { UserLite } from 'src/user/dto';
+import { HttpException } from '@nestjs/common';
 
 const logger = new Logger();
 
@@ -56,4 +59,18 @@ export class AuthController {
     logger.log(token);
     res.redirect(redirectUrl);
   }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtGuard)
+  @Post('2fa-turn-on')
+  async turnOn2FA(@GetUser() user: UserLite, @Body() body) {
+	const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+		body.twoFactorAuthenticationCode,
+		user,
+	);
+	if (!isCodeValid)
+		throw new HttpException('Invalid two factor authentication code', HttpStatus.BAD_REQUEST);
+	await this.authService.turnOn2FA(user.id);
+  }
 }
+

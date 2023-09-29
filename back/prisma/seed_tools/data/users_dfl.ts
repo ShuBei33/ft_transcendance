@@ -24,7 +24,7 @@ const USER_LIANA: GEN_CreateUser = {
 
 const USER_NATHAN: GEN_CreateUser = {
 	login : "ngobert",
-	pseudo : "Fantomas",
+	pseudo : "bladeefan123",
 	rank : 1800,
 }
 
