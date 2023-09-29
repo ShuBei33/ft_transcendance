@@ -43,14 +43,16 @@
 </script>
 
 <div class="editchan">
-  <Slider
-    {levels}
-    initialValue={payload.visibility}
-    onChange={(value) => {
-      payload["visibility"] = value;
-      console.log("slider change", value);
-    }}
-  />
+  <div class="editchan-top">
+    <Slider
+      {levels}
+      initialValue={payload.visibility}
+      onChange={(value) => {
+        payload["visibility"] = value;
+        console.log("slider change", value);
+      }}
+    />
+  </div>
   <div class="editchan-inputSection">
     <Input
       attributes={{
@@ -73,27 +75,33 @@
       />
     {/if}
   </div>
-
-  <Button variant="success" on:click={() => handleFormSubmit()}
-    ><Typography>Confirm</Typography></Button
-  >
-  <Button variant="error" on:click={() => ($ui.modal = "NONE")}
-    ><Typography>Cancel</Typography></Button
-  >
+  <div class="actions">
+    <Button variant="success" on:click={() => handleFormSubmit()}
+      ><Typography>Confirm</Typography></Button
+    >
+    <Button variant="error" on:click={() => ($ui.modal = "NONE")}
+      ><Typography>Cancel</Typography></Button
+    >
+  </div>
 </div>
 
 <style lang="scss">
   .editchan {
-    height: 70vh;
+    height: 30vh;
     width: auto;
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: space-between;
     &-inputSection {
       display: flex;
       flex-direction: column;
       row-gap: 0.5em;
     }
+  }
+  .actions {
+    display: flex;
+    justify-content: center;
+    column-gap: 0.5em;
   }
   .modal-input {
     z-index: 99999;

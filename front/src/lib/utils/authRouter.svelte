@@ -13,6 +13,7 @@
   import Createchan from "../../components/modal/createchan.svelte";
   import TabModal from "../../components/modal/tabModal.svelte";
   import Members from "../../components/modal/members.svelte";
+  import Join from "../../components/modal/join.svelte";
 
   let allowSlot = false;
 
@@ -105,7 +106,7 @@
         },
         {
           title: "Join",
-          component: Members,
+          component: Join,
         },
       ]}
     />

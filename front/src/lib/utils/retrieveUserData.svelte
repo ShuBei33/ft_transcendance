@@ -20,10 +20,6 @@
 
     // Channel
     await _Channel
-      .all()
-      .then(({ data }) => ($dataStore.channels = data.data))
-      .catch((e) => {});
-    await _Channel
       .mine()
       .then(async ({ data }) => {
         const myChannels = data.data;
@@ -47,13 +43,13 @@
       });
       Promise.all([
         _Friend.getFriends(StatusInv.PENDING, false),
-        _Friend.getFriends(StatusInv.BLOCKED, false)
+        _Friend.getFriends(StatusInv.BLOCKED, false),
       ]).then(([pending, blocked]) => {
-        const pendingData = pending.data.data as  Friendship[];
-        const blockedData = blocked.data.data as  Friendship[];
-        
+        const pendingData = pending.data.data as Friendship[];
+        const blockedData = blocked.data.data as Friendship[];
+
         $dataStore.friendShips = pendingData.concat(blockedData);
-      })
+      });
     } catch (e) {
       addAnnouncement({
         message: "An error occured while retrieving your friendlist.",
@@ -65,7 +61,7 @@
     // Discussion
     await _Discussion.all().then(({ data }) => {
       $dataStore.discussions = data.data;
-      console.log("!disc", data.data);
+      console.log("💬", data.data);
     });
     // .then(({ data }) => {
     //   console.log("user disc !", data);

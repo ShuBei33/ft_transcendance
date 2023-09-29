@@ -8,10 +8,10 @@
   export let levels: string[] = [];
   let spanRefs: HTMLSpanElement[] = [];
   let thumbWidth = "";
+  let translateThumb = "";
   $: {
-    if (spanRefs[selectedLevel]) thumbWidth = `${spanRefs[selectedLevel].offsetWidth}px`;
+    if (spanRefs[selectedLevel]) thumbWidth = `${spanRefs[selectedLevel].offsetWidth + 20}px`;
   }
-  $: console.log("!thumb", thumbWidth);
 
   onMount(() => {
     if (initialValue.length) selectedLevel = levels.indexOf(initialValue);
@@ -36,40 +36,55 @@
     bind:value={selectedLevel}
     on:input={handleSliderChange}
     data-selected-level={levels[selectedLevel]}
-    style={`--thumb-width: 200px`}
   />
   <div class="slider-labels">
     {#each levels as level, i}
-      <Typography bind:externalRef={spanRefs[i]} class={`... sliderText ${isSelected(i)}`}
-        >{level}</Typography
-      >
+      <div class={`slider-level-wrapper ${(i == selectedLevel && "active") || ""}`}>
+        <Typography bind:externalRef={spanRefs[i]} class={`... sliderText ${isSelected(i)}`}
+          >{level}</Typography
+        >
+      </div>
     {/each}
   </div>
 </div>
 
-<style>
+<style lang="scss">
+  @import "../lib/style/colors.scss";
   .slider-container {
     width: 300px;
     position: relative;
     margin: 50px auto;
   }
 
-  .slider {
-    width: 100%;
-    height: 3em;
+  .slider-level-wrapper {
+    height: auto;
+    width: auto;
     border-radius: 10px;
-    background: #ccc;
+    padding: 0.5em;
+  }
+  .active {
+    background-color: $shipsOfficer;
+    cursor: pointer;
+  }
+
+  .slider {
+    width: calc(100% - 1em);
+    padding: 0.5em;
+    height: 2em;
+    border-radius: 10px;
+    background: darken($shipsOfficer, 8%);
+    border: 1px solid black;
     appearance: none;
     outline: none;
     opacity: 0.7;
     transition: opacity 0.2s;
     z-index: 1;
   }
-
   .slider::-webkit-slider-thumb {
+    opacity: 0;
     width: var(--thumb-width, 50px); /* adjusted for the text */
     height: 30px;
-    border-radius: 15px;
+    border-radius: 1em;
     background: #4caf50;
     cursor: pointer;
     appearance: none;
@@ -81,7 +96,8 @@
   }
 
   .slider::-webkit-slider-thumb::before {
-    content: attr(data-selected-level); /* Get the current level from data attribute */
+    opacity: 0;
+    content: attr(data-selected-level);
     position: absolute;
     width: 100%;
     height: 100%;
@@ -90,11 +106,11 @@
   }
 
   .slider::-moz-range-thumb {
+    opacity: 0;
     width: var(--thumb-width, 50px);
     height: 30px;
     border-radius: 15px;
     background: #4caf50;
-    cursor: pointer;
     font-size: 0.8em;
     color: white;
     text-align: center;
@@ -103,11 +119,12 @@
 
   .slider-labels {
     position: absolute;
-    top: 50%;
+    top: 48%;
     left: 0;
     right: 0;
     transform: translateY(-50%);
     display: flex;
+
     justify-content: space-between;
     padding: 0 15px;
     pointer-events: none;
