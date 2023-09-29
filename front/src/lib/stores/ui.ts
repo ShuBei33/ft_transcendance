@@ -39,11 +39,11 @@ export const uiInitialValue: uiType = {
     toggle: false,
     selected: "FRIEND",
     room: {
-      textInputMap: new Map<number, string>(),
+      textInputMap: new Map(),
       labelFocusId: -1,
     },
     dm: {
-      textInputMap: new Map<number, string>(),
+      textInputMap: new Map(),
       labelFocusId: -1,
     },
   },
