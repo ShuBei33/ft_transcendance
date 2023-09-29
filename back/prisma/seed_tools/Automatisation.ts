@@ -6,8 +6,9 @@ import { connect_friends } from './generate/generate_friend';
 import { generate_channels } from './generate/generate_channel';
 import { generate_discussion } from './generate/generate_discussion';
 import { generate_games } from './generate/generate_game';
-import { PrismaClient } from '@prisma/client';
 import { generate_chroma } from './generate/generate_chroma';
+import { generate_achievements } from './generate/generate_achievements';
+import { PrismaClient } from '@prisma/client';
 
 export async function seed_dfl() {
   const prisma = new PrismaClient();
@@ -42,6 +43,8 @@ export async function seed_dfl() {
   }
 
   await generate_chroma();
+
+  await generate_achievements();
 
   // Creation des discussions.
   for (let i = 0; i < user_dfl.length; i++) {

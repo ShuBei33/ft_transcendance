@@ -70,6 +70,32 @@ export class GameController {
     }
   }
 
+  @Get('leaderboard')
+  @ApiOperation({
+    summary: "Retrieve a user's leaderboard",
+  })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 400, description: 'Failure' })
+  async getLeaderboard(
+    @Res() res: Response,
+  ) {
+    try {
+      console.log('FUNCTION getLeaderboard was called');
+      const leaderboard = await this.gameService.getLeaderboard();
+
+      return res.status(200).json({
+        success: true,
+        message: "Leaderboard successfully retrieved.",
+        data: leaderboard,
+      });
+    } catch (err: any) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  }
+
   @Get('shop/list/chroma')
   @ApiOperation({
     summary: 'Returns list of available chromas',

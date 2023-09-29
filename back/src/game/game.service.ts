@@ -6,7 +6,10 @@ import { Chroma, Game, User } from '@prisma/client';
 import { GameGateway } from 'src/sockets/game.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { LobbyGateway } from 'src/friend/lobby.gateway';
+import { UserLite } from 'src/user/dto';
+import * as cron from 'node-cron';
 // import { GameGateway } from '../game.gateway';
+
 const logger = new Logger();
 let queue: number[] = [];
 
@@ -14,14 +17,101 @@ let queue: number[] = [];
 export class GameService {
   constructor(private prisma: PrismaService, private lobbyGate: LobbyGateway) { }
 
-  async saveGame(_data: {
-    winnerId: number;
-    lhsPlayerId: number;
-    rhsPlayerId: number;
-    lhsScore: number;
-    rhsScore: number;
-  }) {
+  /* ACHIEVEMENTS */
+
+  async checkBeginnersLuck(userId: number) : Promise<Boolean> {
+    const userGames = await this.prisma.game.findMany({
+      where: {
+        winnerId: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    if (userGames.length < 5) {
+      return false;
+    }
+    for (let i = 0; i < 5; i++) {
+      const currentGame = userGames[i];
+      if (currentGame.winnerId != userId)
+        return false;
+    }
+    return true;
+  }
+
+  async checkOneABoveAll(userId: number) : Promise<Boolean> {
+    const usrToCheck = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+        rank: 1,
+      },
+    });
+    if (usrToCheck)
+      return true;
+    
+    return false;
+  }
+
+  async checkSkillGap(userId: number) : Promise<Boolean> {
+    const usrToCheck = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        rank: true,
+      },
+    });
+
+    const gameWithSkillGap = await this.prisma.game.findFirst({
+      where: {
+        winnerId: userId,
+        OR: [
+          {
+            lhsPlayer: {
+              rank: { lte: usrToCheck.rank + 10 },
+              NOT: {
+                id: userId,
+              },
+            },
+          },
+          {
+            rhsPlayer: {
+              rank: { lte: usrToCheck.rank + 10 },
+              NOT: {
+                id: userId,
+              },
+            },
+          },
+        ],
+      },
+    });
+    if (gameWithSkillGap)
+      return true;
+    
+    return false;
+  }
+
+  async checkCollectioner(userId: number) : Promise<Boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        chromas: true,
+      },
+    });
+    return user?.chromas.length === 5;
+  }
+
+  async saveGame(_data: { winnerId: number; lhsPlayerId: number; rhsPlayerId: number; lhsScore: number; rhsScore: number; }) {
+
     const { winnerId, lhsPlayerId, rhsPlayerId, lhsScore, rhsScore } = _data;
+    const achievementPromises = [];
+    [lhsPlayerId, rhsPlayerId].forEach(userId => {
+      achievementPromises.push(this.checkBeginnersLuck(userId));
+      achievementPromises.push(this.checkOneABoveAll(userId));
+      achievementPromises.push(this.checkSkillGap(userId));
+      achievementPromises.push(this.checkCollectioner(userId));
+    });
     const [savedGame, updatedLoserMoney, updatedWinnerMoney] = await this.prisma.$transaction([
       this.prisma.game.create({
         data: {
@@ -60,7 +150,8 @@ export class GameService {
           })(),
         }
       })
-    ])
+    ]);
+    await Promise.all(achievementPromises);
     return savedGame;
   }
 
@@ -73,7 +164,8 @@ export class GameService {
     if (!user) error.notFound('User not found');
   }
 
-  // Chroma
+  /* CHROMA */
+
   async listChroma(): Promise<Chroma[]> {
     return await this.prisma.chroma.findMany();
   }
@@ -115,6 +207,8 @@ export class GameService {
     return await this.prisma.chroma.findUnique({ where: { id } });
   }
 
+  /* LEADERBOARD */
+
   async getHistory(userId: number): Promise<Game[]> {
     const history = await this.prisma.game.findMany({
       where: {
@@ -134,6 +228,77 @@ export class GameService {
     });
     return history;
   }
+  
+  async calculateWinRate(userId: number): Promise<number> {
+    const wins: number = await this.prisma.game.count({
+      where: { winnerId: userId }
+    });  
+    const totalGames: number = await this.prisma.game.count({
+      where: {
+          OR: [
+                { lhsPlayerId: userId },
+                { rhsPlayerId: userId },
+            ]
+        }
+    })
+
+    let winRate: number;
+    if (totalGames <= 4)
+      winRate = (wins / 4) * 100;
+    else
+      winRate = (wins / totalGames) * 100;
+    
+    return parseFloat(winRate.toFixed(2));
+  }
+
+  async assignRanks() : Promise<void> {
+    const allUsers: User[] = await this.prisma.user.findMany();
+  
+    const userWinRates: { user: User; winRate: number }[] = [];
+    for (const user of allUsers) {
+      const winRate = await this.calculateWinRate(user.id);
+      userWinRates.push({ user, winRate });
+    }
+    userWinRates.sort((a, b) => b.winRate - a.winRate);
+    
+    let currentRank = 1;
+    let currentWinRate = -1;
+    for (let i = 0; i < userWinRates.length; i++) {
+      const { user, winRate } = userWinRates[i];
+      if (winRate !== currentWinRate) {
+        currentRank = i + 1;
+        currentWinRate = winRate;
+      }
+      await this.prisma.user.update({
+          where: { id: user.id },
+          data: { rank: currentRank },
+      });
+    }
+  }
+
+  async getLeaderboard(): Promise<UserLite[]> {
+    const users: User[] = await this.prisma.user.findMany({
+      orderBy: {
+        rank: 'asc',
+      },
+    });
+    const leaderboard: UserLite[] = users.map((user) => ({
+      login: user.login,
+      pseudo: user.pseudo,
+      id: user.id,
+      status: user.status,
+    }));
+    return leaderboard;
+  }
+
+  /* CRONJOBS */
+  async startRankAssignmentCronJob(): Promise<void> {
+    cron.schedule('*/2 * * *', async () => {
+        await this.assignRanks();
+    });
+  }
+
+  /* GAME */
 
   async createGame(userIds: number[]) {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
