@@ -123,7 +123,7 @@ model ChanUsr {
   chanId         Int
   role           ChanUsrRole
   status         UserStatusMSGs
-  statusDuration DateTime?
+  statusDuration Int?
   invitedToChan  StatusInv?
   channel        Channel        @relation(fields: [chanId], references: [id], onDelete: Cascade)
   user           User           @relation(fields: [userId], references: [id])
