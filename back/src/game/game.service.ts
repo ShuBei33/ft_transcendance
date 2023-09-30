@@ -28,7 +28,6 @@ export class GameService {
         createdAt: 'desc',
       },
     });
-
     if (userGames.length < 5) {
       return false;
     }
@@ -37,6 +36,14 @@ export class GameService {
       if (currentGame.winnerId != userId)
         return false;
     }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { 
+        achievements: {
+          connect: { title: 'Beginner\'s Luck' },
+        },
+      },
+    });
     return true;
   }
 
@@ -47,9 +54,17 @@ export class GameService {
         rank: 1,
       },
     });
-    if (usrToCheck)
+    if (usrToCheck) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'The One Above All' },
+          },
+        },
+      });
       return true;
-    
+    }
     return false;
   }
 
@@ -62,7 +77,6 @@ export class GameService {
         rank: true,
       },
     });
-
     const gameWithSkillGap = await this.prisma.game.findFirst({
       where: {
         winnerId: userId,
@@ -70,36 +84,51 @@ export class GameService {
           {
             lhsPlayer: {
               rank: { lte: usrToCheck.rank + 10 },
-              NOT: {
-                id: userId,
-              },
+              NOT: { id: userId },
             },
           },
           {
             rhsPlayer: {
               rank: { lte: usrToCheck.rank + 10 },
-              NOT: {
-                id: userId,
-              },
+              NOT: { id: userId },
             },
           },
         ],
       },
     });
-    if (gameWithSkillGap)
+    if (gameWithSkillGap) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'Skill Gap' },
+          },
+        },
+      });
       return true;
-    
+    }
     return false;
   }
 
-  async checkCollectioner(userId: number) : Promise<Boolean> {
+  async checkCollector(userId: number) : Promise<Boolean> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
         chromas: true,
       },
     });
-    return user?.chromas.length === 5;
+    if (user.chromas.length == 5) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'The Collector' },
+          },
+        },
+      });
+      return true;
+    }
+    return false;
   }
 
   async saveGame(_data: { winnerId: number; lhsPlayerId: number; rhsPlayerId: number; lhsScore: number; rhsScore: number; }) {
@@ -110,7 +139,7 @@ export class GameService {
       achievementPromises.push(this.checkBeginnersLuck(userId));
       achievementPromises.push(this.checkOneABoveAll(userId));
       achievementPromises.push(this.checkSkillGap(userId));
-      achievementPromises.push(this.checkCollectioner(userId));
+      achievementPromises.push(this.checkCollector(userId));
     });
     const [savedGame, updatedLoserMoney, updatedWinnerMoney] = await this.prisma.$transaction([
       this.prisma.game.create({

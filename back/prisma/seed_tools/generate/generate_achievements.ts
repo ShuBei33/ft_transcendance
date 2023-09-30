@@ -20,9 +20,9 @@ export async function generate_achievements() {
           icon: "skillgap.jpeg",
         },
         {
-          title: "The Collectioner",
+          title: "The Collector",
           desc: "buy all available Chromas",
-          icon: "collectioner.jpeg",
+          icon: "collector.jpeg",
         },
       ];
   
