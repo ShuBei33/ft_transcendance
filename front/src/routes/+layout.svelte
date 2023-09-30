@@ -256,9 +256,12 @@
   <slot />
   {#if chatSocket}
     <SocialModal {chatSocket} />
-    <div class="bottom-acion-section">
+    <div class="bottom-action-section">
       <Button class="... chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}>
         <Typography>{`Chat ${(!$ui.chat.toggle && "+") || "-"}`}</Typography>
+      </Button>
+      <Button on:click={() => $ui.modal = "SETTINGS"}>
+        <Typography>{"Settings ⚙"}</Typography>
       </Button>
     </div>
   {:else}
@@ -267,9 +270,12 @@
 </AuthRouter>
 
 <style lang="scss">
-  :global(.chat-toggle) {
+  .bottom-action-section {
+    display: flex;
+    flex-direction: row;
     position: absolute !important;
     bottom: 1em;
     right: 1em;
+    column-gap: 0.5em;
   }
 </style>

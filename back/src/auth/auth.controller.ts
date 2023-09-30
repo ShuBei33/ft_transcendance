@@ -20,6 +20,7 @@ import { ApiExcludeEndpoint, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { UserLite } from 'src/user/dto';
 import { User } from '@prisma/client';
 import { success } from 'src/utils/utils_success';
+import { error } from 'src/utils/utils_error';
 
 const logger = new Logger();
 
@@ -75,28 +76,46 @@ export class AuthController {
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
-  @Post('2fa/turn-on')
-  async turnOn2FA(@Req() request, @Body() body) {
+  @Post('2fa/turnOn')
+  async turnOn2FA(@Req() request, @Body() body, @Res() res: Response) {
     const isCodeValid = this.authService.is2FAAuthCodeValid(
       body.twoFA,
       request.user,
     );
-    if (!isCodeValid) {
-      throw new HttpException(
-        'Invalid two-factor authentication code',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    await this.authService.turnOnTwoFactorAuth(request.user.id);
+    if (!isCodeValid) error.notAuthorized('Code invalid');
+    const user = await this.authService.toggleTwoFA(request.user.id);
+    if (user) return success.general(res, 'success');
+    return error.unexpected('An unexpected error occurred')
+  }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtGuard)
+  @Post('2fa/turnOff')
+  async turnOff2FA(@Req() request, @Body() body, @Res() res: Response) {
+    const isCodeValid = this.authService.is2FAAuthCodeValid(
+      body.twoFA,
+      request.user,
+    );
+    if (!isCodeValid) error.notAuthorized('Code invalid');
+    const user = await this.authService.toggleTwoFA(request.user.id, false);
+    if (user) return success.general(res, 'success');
+    return error.unexpected('An unexpected error occurred')
   }
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
   @Post('2fa/authenticate')
   @HttpCode(200)
-  async authenticate2FA(@Req() request, @Body() body) {
+  async authenticate2FA(
+    @Req() request,
+    @Res() res: Response,
+    @Body('data')
+    data: {
+      twoFACode: string;
+    },
+  ) {
     const isCodeValid = this.authService.is2FAAuthCodeValid(
-      body.twoFASecret,
+      data.twoFACode,
       request.user,
     );
     if (!isCodeValid) {
@@ -105,6 +124,6 @@ export class AuthController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    await this.authService.login2FA(request.user);
+    return success.general(res, 'success');
   }
 }

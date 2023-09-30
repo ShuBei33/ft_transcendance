@@ -9,10 +9,10 @@
 
   onMount(async () => {
     if (!browser) return;
-    const retrivedToken = $page.url.searchParams.get("token");
+    const retrievedToken = $page.url.searchParams.get("token");
     const redirect = $page.url.searchParams.get("redirect");
 
-    if (!retrivedToken) goto("/login");
+    if (!retrievedToken) goto("/login");
 
     const config: CreateAxiosDefaults = {
       baseURL: "http://localhost:5500",
@@ -20,7 +20,7 @@
       timeout: 10000,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${retrivedToken}`,
+        Authorization: `Bearer ${retrievedToken}`,
       },
     };
     axiosConfig.set(config);
@@ -28,12 +28,12 @@
       _axios
         .get("/auth/checkJWT")
         .then(async (res) => {
-          token.set(retrivedToken!);
+          token.set(retrievedToken!);
           // Retrieve user profile
           await _axios
             .get(`/user/${res.data.user.id}`)
             .then(({ data }) => {
-              user.set({id: res.data.user.id, ...data.data});
+              user.set({ id: res.data.user.id, ...data.data });
               goto((redirect && redirect) || `/profile/${res.data.user.id}`);
             })
             .catch(() => {

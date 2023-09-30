@@ -64,10 +64,9 @@ export class Discussion {
     })
   ) {}
 
-    async all() {
-      return await this.instance.get<{data: DiscussionLite[]}>('all');
-    }
-
+  async all() {
+    return await this.instance.get<{ data: DiscussionLite[] }>("all");
+  }
 }
 
 export class Channel {
@@ -119,6 +118,24 @@ export class Channel {
   }
 }
 
+export class twoFa {
+  constructor(
+    baseUrl?: string,
+    private instance: AxiosInstance = axios.create({
+      ...get(axiosConfig),
+      baseURL: baseUrl || `${get(axiosConfig)?.baseURL}/auth/2fa`,
+    })
+  ) {}
+
+  async generate() {
+    return await this.instance.get<string>("generate");
+  }
+
+  async authenticate(twoFACode: string) {
+    // return await this.instance.post<
+  }
+}
+
 export class Friend {
   constructor(
     baseUrl?: string,
@@ -163,6 +180,6 @@ export class Friend {
   }
 
   async deleteFriend(friendId: number) {
-    return await this.instance.delete<{data: Friendship}>(`remove/${friendId}`);
+    return await this.instance.delete<{ data: Friendship }>(`remove/${friendId}`);
   }
 }

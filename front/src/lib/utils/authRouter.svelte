@@ -14,6 +14,7 @@
   import TabModal from "../../components/modal/tabModal.svelte";
   import Members from "../../components/modal/members.svelte";
   import Join from "../../components/modal/join.svelte";
+  import Security from "../../components/modal/Security.svelte";
 
   let allowSlot = false;
 
@@ -107,6 +108,18 @@
         {
           title: "Join",
           component: Join,
+        },
+      ]}
+    />
+  </SimpleModal>
+{:else if $ui.modal == "SETTINGS"}
+  <SimpleModal raw title={""} isOpen={true}>
+    <svelte:component
+      this={TabModal}
+      tabs={[
+        {
+          title: "Security",
+          component: Security,
         },
       ]}
     />

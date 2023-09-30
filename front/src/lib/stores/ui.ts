@@ -29,7 +29,7 @@ interface uiType {
       down: string;
     };
   };
-  modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN";
+  modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN" | "SETTINGS";
 }
 // 1 second
 export const countDownDelay = 1000 / 2;
