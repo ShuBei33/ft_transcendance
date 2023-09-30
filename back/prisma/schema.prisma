@@ -8,27 +8,29 @@ datasource db {
 }
 
 model User {
-  id              Int             @id @default(autoincrement())
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  login           String          @unique
-  pseudo          String          @unique
-  avatar          String?
-  twoFA           Boolean         @default(false)
-  status          UserStatus      @default(OFFLINE)
-  rank            Int
-  money           Int             @default(0)
-  channelMember   ChanUsr[]
-  channelsMsgs    ChannelMsg[]
-  asUser1         Discussion[]    @relation("userOne")
-  asUser2         Discussion[]    @relation("userTwo")
-  discussionsMsgs DiscussionMsg[]
-  receivedInvites Friendship[]    @relation("receivedInvites")
-  sentInvites     Friendship[]    @relation("sentInvites")
-  leftPlayer      Game[]          @relation("left")
-  rightPlayer     Game[]          @relation("right")
-  achievements    Achievement[]   @relation("AchievementToUser")
-  chromas         Chroma[]        @relation("ChromaToUser")
+  id                 Int             @id @default(autoincrement())
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  login              String          @unique
+  pseudo             String          @unique
+  avatar             String?
+  twoFASecret        String?
+  twoFA              Boolean         @default(false)
+  is2FAAuthenticated Boolean         @default(false)
+  status             UserStatus      @default(OFFLINE)
+  rank               Int
+  money              Int             @default(0)
+  channelMember      ChanUsr[]
+  channelsMsgs       ChannelMsg[]
+  asUser1            Discussion[]    @relation("userOne")
+  asUser2            Discussion[]    @relation("userTwo")
+  discussionsMsgs    DiscussionMsg[]
+  receivedInvites    Friendship[]    @relation("receivedInvites")
+  sentInvites        Friendship[]    @relation("sentInvites")
+  leftPlayer         Game[]          @relation("left")
+  rightPlayer        Game[]          @relation("right")
+  achievements       Achievement[]   @relation("AchievementToUser")
+  chromas            Chroma[]        @relation("ChromaToUser")
 }
 
 model Friendship {
