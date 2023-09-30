@@ -37,7 +37,7 @@ export class DTO_UpdateChanUsr {
 	@IsOptional()
 	@ApiPropertyOptional({
 		description: 'Temps du status avant retour en normal',
-		type: Date,
+		type: Number,
 	})
-	statusDuration?: Date;
+	statusDuration?: number;
 }
