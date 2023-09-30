@@ -10,12 +10,12 @@ DB_NAME= db
 .PHONY: all
 all:
 	@docker-compose up --build -d
-	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
+	@echo "$(_GREEN) Docker Container was created $(_ENDL)"
 
 .PHONY: no-detach
 no-detach:
 	@docker-compose up --build
-	@echo "$(_GREEN) Docker Container was Created $(_ENDL)"
+	@echo "$(_GREEN) Docker Container was created $(_ENDL)"
 
 .PHONY: re
 re: fclean all
@@ -23,7 +23,7 @@ re: fclean all
 .PHONY: clean
 clean:
 	@docker-compose stop
-	@echo "$(_GREEN) Docker Container was stoped $(_ENDL)"
+	@echo "$(_GREEN) Docker Container was stopped $(_ENDL)"
 
 .PHONY: fclean
 fclean: clean
@@ -37,27 +37,27 @@ fclean: clean
 
 .PHONY: enter-file_service
 enter-file_service:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du FileService $(_ENDL)"
+	@echo "$(_CYAN) You $(_GREEN)entered$(_CYAN) the FileService container $(_ENDL)"
 	@docker exec -it file_service sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du FileService $(_ENDL)"
+	@echo "$(_CYAN) You $(_RED)exited$(_CYAN) the FileService container $(_ENDL)"
 
 .PHONY: enter-back
 enter-back:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du BackEnd $(_ENDL)"
+	@echo "$(_CYAN) You $(_GREEN)entered$(_CYAN) the BackEnd container $(_ENDL)"
 	@docker exec -it back sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du BackEnd $(_ENDL)"
+	@echo "$(_CYAN) You $(_RED)exited$(_CYAN) the BackEnd container $(_ENDL)"
 
 .PHONY: enter-db
 enter-db:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container de la BDD $(_ENDL)"
+	@echo "$(_CYAN) You $(_GREEN)entered$(_CYAN) the DB container $(_ENDL)"
 	@docker exec -it ${DB_NAME} sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container de la BDD $(_ENDL)"
+	@echo "$(_CYAN) You $(_RED)exited$(_CYAN) the BDD container $(_ENDL)"
 
 .PHONY: enter-front
 enter-front:
-	@echo "$(_CYAN) Tu es $(_GREEN)Entrer$(_CYAN) dans le container du FrontEnd $(_ENDL)"
+	@echo "$(_CYAN) You $(_GREEN)entered$(_CYAN) the FrontEnd container $(_ENDL)"
 	@docker exec -it front sh
-	@echo "$(_CYAN) Tu es $(_RED)Sorti$(_CYAN) le container du FrontEnd $(_ENDL)"
+	@echo "$(_CYAN) You $(_RED)exited$(_CYAN) the FrontEnd container $(_ENDL)"
 
 
 # SHORTCUT 
@@ -79,4 +79,5 @@ log-db:
 .PHONY: log-front
 log-front:
 	@docker logs front -f
+
 
