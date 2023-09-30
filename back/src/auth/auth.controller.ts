@@ -62,7 +62,7 @@ export class AuthController {
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
-  @Post('2fa-turn-on')
+  @Post('2fa/on')
   async turnOn2FA(@GetUser() user: UserLite, @Body() body) {
 	const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
 		body.twoFactorAuthenticationCode,
@@ -75,7 +75,7 @@ export class AuthController {
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
-  @Post('2fa-signin')
+  @Post('2fa/signin')
   async authenticate(@GetUser() user: UserLite, @Body() body) {
 	const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
 		body.twoFactorAuthenticationCode,
