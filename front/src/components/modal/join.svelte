@@ -9,10 +9,11 @@
   import Slider from "../slider.svelte";
 
   const _Channel = new Channel();
-  let search = "";
-  let currentPage = 0;
   const itemsPerPage = 10;
   const levels = ["PROTECTED", "ALL", "PUBLIC"];
+  let search = "";
+  let selectedLevel = levels[1];
+  let currentPage = 0;
 
   const fetchChannel = async () => {
     await _Channel
@@ -31,6 +32,8 @@
     (currentPage + 1) * itemsPerPage
   );
   $: {
+    if (selectedLevel != "ALL")
+      channels = channels.filter((chan) => chan.visibility == selectedLevel);
     if (search.length > 3)
       channels = $dataStore.channels.filter((chan) => {
         const nameToLower = chan.name.toLowerCase();
@@ -61,7 +64,7 @@
         {levels}
         initialValue={"ALL"}
         onChange={(value) => {
-          // payload["visibility"] = value;
+          selectedLevel = value;
           console.log("slider change", value);
         }}
       />
