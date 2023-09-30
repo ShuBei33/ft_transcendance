@@ -9,10 +9,9 @@ import {
   Req,
   Res,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import { FtGuard, JwtGuard } from './guard';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { GetUser } from './decorator';
 import { FTAuth } from './dto';
@@ -64,16 +63,13 @@ export class AuthController {
   }
 
   @Get('2fa/generate')
-  @UseGuards(FtGuard)
   async generate(
     @Res() res: Response,
     @Req() req: Request,
     @GetUser() user: UserLite,
   ) {
-    const otpAuthUrl = await this.authService.generate2FASecret(
-      user.id,
-    );
-    success.general(res, 'ok', []);
+    const otpAuthUrl = await this.authService.generate2FASecret(user.id);
+    return success.general(res, 'ok');
     // return response.json(
     //   await this.authService.generateQrCodeDataURL(otpAuthUrl),
     // );
