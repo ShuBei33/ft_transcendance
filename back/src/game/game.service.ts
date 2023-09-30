@@ -21,12 +21,8 @@ export class GameService {
 
   async checkBeginnersLuck(userId: number) : Promise<Boolean> {
     const userGames = await this.prisma.game.findMany({
-      where: {
-        winnerId: userId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      where: { winnerId: userId },
+      orderBy: { createdAt: 'desc' },
     });
     if (userGames.length < 5) {
       return false;
@@ -160,9 +156,7 @@ export class GameService {
         },
       }),
       this.prisma.user.update({
-        where: {
-          id: lhsPlayerId == winnerId ? rhsPlayerId : lhsPlayerId,
-        },
+        where: { id: lhsPlayerId == winnerId ? rhsPlayerId : lhsPlayerId },
         data: {
           money: ((): number => {
             return 50;
@@ -170,9 +164,7 @@ export class GameService {
         }
       }),
       this.prisma.user.update({
-        where: {
-          id: winnerId,
-        },
+        where: { id: winnerId },
         data: {
           money: ((): number => {
             return 70;
@@ -186,9 +178,7 @@ export class GameService {
 
   async userExists(userId: number) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
     if (!user) error.notFound('User not found');
   }
@@ -307,9 +297,7 @@ export class GameService {
 
   async getLeaderboard(): Promise<UserLite[]> {
     const users: User[] = await this.prisma.user.findMany({
-      orderBy: {
-        rank: 'asc',
-      },
+      orderBy: { rank: 'desc' },
     });
     const leaderboard: UserLite[] = users.map((user) => ({
       login: user.login,
