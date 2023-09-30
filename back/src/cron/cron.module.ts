@@ -8,7 +8,7 @@ import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [CronModule, ChatModule],
-  providers: [UserService, JwtService, LobbyGateway, GameService, CronService],
-  exports: [UserService, JwtService, LobbyGateway, GameService, CronService]
+  providers: [UserService, JwtService,GameService, CronService],
+  exports: [UserService, JwtService, GameService, CronService]
 })
 export class CronModule {}
