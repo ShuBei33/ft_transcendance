@@ -11,9 +11,25 @@
   const _Channel = new Channel();
   const itemsPerPage = 10;
   const levels = ["PROTECTED", "ALL", "PUBLIC"];
+  // none, ascending, descending
+  let sort: 0 | 1 | -1 = 0;
+  let sortString: "○" | "+" | "-" = "○";
   let search = "";
   let selectedLevel = levels[1];
   let currentPage = 0;
+
+  const setSort = () => {
+    if (sort == 0) {
+      sort = 1;
+      sortString = "+";
+    } else if (sort == 1) {
+      sort = -1;
+      sortString = "-";
+    } else {
+      sort = 0;
+      sortString = "○";
+    }
+  };
 
   const fetchChannel = async () => {
     await _Channel
@@ -31,17 +47,36 @@
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
+  // Filtering
+  // # search and visibility
   $: {
-    if (selectedLevel != "ALL")
-      channels = channels.filter((chan) => chan.visibility == selectedLevel);
-    if (search.length > 3)
+    if (search || selectedLevel)
       channels = $dataStore.channels.filter((chan) => {
-        const nameToLower = chan.name.toLowerCase();
-        const searchToLower = search.toLowerCase();
+        const matchVisibility = (() => {
+          if (selectedLevel == "ALL") return true;
+          return chan.visibility == selectedLevel;
+        })();
+        const matchSearch = (() => {
+          if (!(search.length > 2)) return true;
+          const nameToLower = chan.name.toLowerCase();
+          const searchToLower = search.toLowerCase();
+          return nameToLower.includes(searchToLower);
+        })();
 
-        return nameToLower.includes(searchToLower);
+        return matchSearch && matchVisibility;
       });
     else channels = $dataStore.channels;
+  }
+  // # members length
+  $: {
+    switch (sort) {
+      case 0:
+        channels = channels.sort();
+        break;
+      case 1:
+        // channels = channels.sort((a, b) => a.channelUsers.length - b.channel);
+        break;
+    }
   }
 
   function nextPage() {
@@ -75,13 +110,16 @@
         attributes={{
           id: "search",
           type: "text",
-          placeholder: "search",
+          placeholder: "search by name",
           name: "search",
         }}
         onChange={(value) => (search = value)}
       />
       <Button variant="error" disabled={search.length == 0} on:click={() => (search = "")}>
         <Typography>{"x"}</Typography>
+      </Button>
+      <Button on:click={async () => await fetchChannel()}>
+        <Typography>{"refresh"}</Typography>
       </Button>
     </div>
   </div>
@@ -92,7 +130,9 @@
           <tr>
             <th><Typography>{"Name"}</Typography></th>
             <th><Typography>{"Visibility"}</Typography></th>
-            <th><Typography>{"Members"}</Typography></th>
+            <th class="members" on:click={() => setSort()}
+              ><Typography>{`Members ${sortString}`}</Typography></th
+            >
           </tr>
         </thead>
         <tbody>
@@ -136,8 +176,12 @@
 
 <style lang="scss">
   @import "../../lib/style/colors.scss";
+  :global(.slider-container) {
+    margin: 0 !important;
+  }
   .joinchan {
-    height: 70vh;
+    min-height: 50vh;
+    max-height: 70vh;
     width: 60vw;
     display: flex;
     flex-direction: column;
@@ -149,6 +193,7 @@
   .slider-result {
     column-gap: 0.5em;
     display: flex;
+    justify-content: center;
   }
   .search {
     width: inherit;
@@ -169,7 +214,9 @@
       display: block;
       height: 0.3em; // Adjust this for desired "margin" height
     }
-
+    .members {
+      cursor: pointer;
+    }
     th,
     td {
       border: 1px solid black;
