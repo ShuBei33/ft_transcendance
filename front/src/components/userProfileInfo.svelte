@@ -81,8 +81,4 @@
         flex-direction: row;
         column-gap: 0.3em;
     }
-<<<<<<< HEAD
 </style>
-=======
-</style>
->>>>>>> master

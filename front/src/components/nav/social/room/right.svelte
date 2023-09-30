@@ -11,7 +11,6 @@
   import Input from "../../../Input.svelte";
   import MessageFeed from "./messageFeed.svelte";
   import RightTemplate from "../rightTemplate.svelte";
-    import Typography from "../../../Typography.svelte";
 
   export let chatSocket: Socket;
   let value = "";
@@ -30,18 +29,8 @@
   }
 </script>
 
-<<<<<<< HEAD
-<RightTemplate
-  onSubmit={() => handleSubmit()}
-  onChange={(_value) => (value = _value)}
-  placeholder={"Please select a discussion"}
->
-{#if messages && messages?.length}
-=======
 <RightTemplate onSubmit={() => handleSubmit()} onChange={(_value) => (value = _value)}>
->>>>>>> master
   <MessageFeed slot="feed" {messages} />
-  {/if}
 </RightTemplate>
 
 <style lang="scss">

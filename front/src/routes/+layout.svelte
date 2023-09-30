@@ -8,17 +8,10 @@
   import SocialModal from "../components/nav/social/socialModal.svelte";
   import { ui, token, data } from "$lib/stores";
   import {
-<<<<<<< HEAD
-    gameInvite,
-    socketState,
-    type announcement,
-    acceptGameInvite,
-=======
     acceptGameInvite,
     gameInvite,
     socketState,
     type announcement,
->>>>>>> master
   } from "$lib/stores/session";
   import { io } from "socket.io-client";
   import type { Socket } from "socket.io-client";
@@ -35,14 +28,8 @@
   import Notifications from "$lib/utils/notifications.svelte";
   import type { channel } from "$lib/models/dtos";
   import { addAnnouncement } from "$lib/stores/session";
+  // console.log("new dm !", data);
   import UserWidget from "../components/userWidget/userWidget.svelte";
-<<<<<<< HEAD
-  import { isDiscToggle, toggleDisc } from "$lib/stores/data";
-  import SimpleModal from "../components/modal/simpleModal.svelte";
-  import { goto } from "$app/navigation";
-
-  onMount(() => {});
-=======
   import { deepCopy } from "$lib/utils/parsing/deepCopy";
   import { updateGameId } from "$lib/stores/ui";
   import { goto } from "$app/navigation";
@@ -59,7 +46,6 @@
   onMount(() => {
     // console.log($user);
   });
->>>>>>> master
 
   let navItems: ComponentProps<NavButton>[];
   $: navItems = [
@@ -160,7 +146,6 @@
                 ...$data.discussions[index].discussionsMsgs,
                 data,
               ];
-              !isDiscToggle(disc.id) && toggleDisc(disc.id, true);
               return;
             }
           });
@@ -168,12 +153,7 @@
         .on(String($user?.id!), (data: { expect: string; data: any }) => {
           switch (data.expect) {
             case "GAME_ID":
-<<<<<<< HEAD
-              goto("/lobby");
-              // $ui.game.id = Number(data.data);
-=======
               handleGameId(Number(data.data));
->>>>>>> master
               break;
             default:
               break;
@@ -195,11 +175,6 @@
         .on("disconnect", () => {
           $socketState.set("lobby", false);
         })
-        .on("friendShipRemove", (data: Friendship) => {
-          $data.friendShips = $data.friendShips.filter(
-            (friendship) => friendship.id != data.id
-          );
-        })
         .on("friendShipChange", (data: Friendship) => {
           switch (data.inviteStatus) {
             case StatusInv.ACCEPTED:
@@ -214,26 +189,17 @@
               $data.friendShips = [...$data.friendShips, data];
               break;
             case StatusInv.BLOCKED:
-              const userIdToRemove =
-                data.receiverId == $user?.id ? data.senderId : data.receiverId;
+              const userIdToRemove = data.receiverId == $user?.id ? data.senderId : data.receiverId;
               $data.friendShips = $data.friendShips.filter(
                 (friendship) => friendship.id != data.id
               );
               $data.friendShips = [...$data.friendShips, data];
-<<<<<<< HEAD
-              $data.friends = $data.friends.filter(
-                (user) => user.id != userIdToRemove
-              );
-=======
               $data.friends = $data.friends.filter((user) => user.id != userIdToRemove);
->>>>>>> master
               break;
             default:
               break;
           }
         })
-<<<<<<< HEAD
-=======
         .on("gameInvite", (data: User) => {
           addAnnouncement({
             message: `${data.pseudo} invited you to play!`,
@@ -257,7 +223,6 @@
         .on("GAME_ID", (data: string) => {
           handleGameId(Number(data));
         })
->>>>>>> master
         .on("friendStatus", (data: Pick<User, "id" | "status">) => {
           let userToUpdate = $data.friends.find((user) => user.id == data.id);
           if (!userToUpdate) return;
@@ -266,50 +231,12 @@
           newFriends.push(userToUpdate);
           $data.friends = newFriends;
         })
-<<<<<<< HEAD
-        .on("gameInvite", (data: User) => {
-          addAnnouncement({
-            message: `${data.pseudo} invited you to play!`,
-            level: "success",
-            confirm: {
-              yes: {
-                label: "Accept",
-                callback: () => {
-                  $acceptGameInvite = data.id;
-                },
-              },
-              no: {
-                label: "Decline",
-                callback: () => {
-                  alert("Invitation declined");
-                },
-              },
-            },
-          });
-        })
-        .on("GAME_ID", (id: string) => {
-          $ui.game.id = Number(id);
-          goto("/lobby");
-        })
-=======
->>>>>>> master
         .on("pushMessage", (data: Pick<announcement, "level" | "message">) => {
           addAnnouncement(data);
         });
       lobbySocket.emit("userStatus", UserStatus.ONLINE);
     }
   }
-<<<<<<< HEAD
-  // $: (() => {
-  //   if ($gameInvite == undefined || !lobbySocket) return;
-  //   lobbySocket.emit("inviteToGame", { userId: $gameInvite });
-  //   $gameInvite = undefined;
-  // })();
-  // $: (() => {
-  //   if ($acceptGameInvite == undefined) return;
-  //   lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
-  // })();
-=======
   $: (() => {
     if ($gameInvite == undefined || !lobbySocket) return;
     lobbySocket.emit("inviteToGame", { userId: $gameInvite });
@@ -319,7 +246,6 @@
     if ($acceptGameInvite == undefined) return;
     lobbySocket?.emit("acceptGameInvite", { userId: $acceptGameInvite });
   })();
->>>>>>> master
 </script>
 
 <AuthRouter>

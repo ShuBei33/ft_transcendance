@@ -39,9 +39,11 @@
   </div>
 </div>
 
-<style>
+<style lang="scss">
+  @import "../../lib/style/colors.scss";
   .tab {
-    background-color: white;
+    background-color: $shipsOfficer;
+    border: 2px solid black;
     border-radius: 0.5em;
     display: flex;
     flex-direction: column;

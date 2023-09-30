@@ -5,36 +5,24 @@
   import Button from "../../../Button.svelte";
   import Typography from "../../../Typography.svelte";
   import AvatarFrame from "../avatarFrame.svelte";
-  import { classNames, classNames as cn } from "$lib/utils/classNames";
-  import type { ClassNamesObject } from "$lib/utils/classNames";
 
-  $: discussions = $data.discussions.filter((value) => {
-    const isToggle = $data.discToggleMap.get(value.id);
-    if (isToggle == undefined) console.warn("disc index error");
-    return isToggle;
-  });
-
-  $: labelCn = (discussion: DiscussionLite): ClassNamesObject => {
-    return {
-      "discussion-label": true,
-      active: {
-        subClass: $ui.chat.dm.labelFocusId == discussion.id
-      }
-    }
-  }
-
+  $: discussions = $data.discussions.filter(
+    (value) => value.discussionsMsgs?.length != 0
+  );
+  $: console.log("disc!!!!", $data.discussions);
   const getDiscussionUser = (discussion: DiscussionLite) => {
     const id = [discussion.userId1, discussion.userId2].filter(
       (id) => id != $user?.id
     )[0];
     return $data.friends.find((value) => value.id == id);
   };
+  $: console.log($ui.chat.dm);
 </script>
 
 <div class="discussion-left">
   {#each discussions as discussion}
     <button
-      class={classNames(labelCn(discussion))}
+      class="discussion-label"
       on:click={() => ($ui.chat.dm.labelFocusId = discussion.id)}
     >
       <div class="lhs">
@@ -58,20 +46,17 @@
 </div>
 
 <style lang="scss">
-  .discussion-label, .discussion-label-active {
+  .discussion-label {
     display: flex;
     background-color: transparent;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
     cursor: pointer;
     border: 0;
     flex-direction: row;
     width: 100%;
     padding: 0.5em;
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-    &-active {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
   }
   .lhs {
     display: flex;

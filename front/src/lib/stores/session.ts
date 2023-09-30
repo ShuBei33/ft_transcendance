@@ -63,7 +63,4 @@ export const socketState = writable<Map<string, boolean>>(initialSocketState);
 export const gameInvite = writable<string | undefined>(undefined);
 
 export const acceptGameInvite = writable<number | undefined>(undefined);
-<<<<<<< HEAD
-=======
 
->>>>>>> master

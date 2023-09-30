@@ -20,26 +20,17 @@
 
     // Channel
     await _Channel
-      .all()
-      .then(({ data }) => ($dataStore.channels = data.data))
-      .catch((e) => {});
-    await _Channel
       .mine()
       .then(async ({ data }) => {
         const myChannels = data.data;
-        const myChannelsIds: number[] = myChannels.map(
-          (chanusr) => chanusr.channel.id
-        );
-        const myChannelsMessages = myChannelsIds.map((chanId) =>
-          _Channel.msgs(chanId)
-        );
+        const myChannelsIds: number[] = myChannels.map((chanusr) => chanusr.channel.id);
+        const myChannelsMessages = myChannelsIds.map((chanId) => _Channel.msgs(chanId));
 
         // Retrieve every channel messages and append then to the channels object
         await Promise.all(myChannelsMessages).then((ChannelMessages) => {
           ChannelMessages.forEach((message, index) => {
             const { data } = message;
-            if (data.data.length)
-              myChannels[index].channel.channelMsgs = data.data;
+            if (data.data.length) myChannels[index].channel.channelMsgs = data.data;
           });
         });
         $dataStore.myChannels = myChannels;
@@ -70,12 +61,7 @@
     // Discussion
     await _Discussion.all().then(({ data }) => {
       $dataStore.discussions = data.data;
-      let newMap = $dataStore.discToggleMap;
-      data.data.forEach((discussion) => {
-        newMap.set(discussion.id, discussion.discussionsMsgs.length > 0);
-      });
-      $dataStore.discToggleMap = newMap;
-      console.log("!disc", data.data);
+      console.log("💬", data.data);
     });
     // .then(({ data }) => {
     //   console.log("user disc !", data);

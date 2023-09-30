@@ -5,7 +5,6 @@
   import { data, ui, user } from "$lib/stores";
   import { onMount } from "svelte";
   import type { DiscussionLite } from "$lib/models/discussion";
-  import Typography from "../../../Typography.svelte";
   export let chatSocket: Socket;
   let value = "";
 
@@ -14,6 +13,11 @@
     receiverId: string;
     message: string;
   };
+
+  // $: (() => {
+  //   if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length)
+  //     $ui.chat.dm.labelFocusId = $data.discussions[0].id;
+  // })();
 
   $: handleSubmit = () => {
     const receiverId = String(
@@ -32,10 +36,8 @@
   };
 
   $: discussion = (() => {
-    if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length) {
-      if ($data.discussions[0].discussionsMsgs.length)
-        $ui.chat.dm.labelFocusId = $data.discussions[0].id;
-    }
+    if ($ui.chat.dm.labelFocusId == -1)
+      $ui.chat.dm.labelFocusId = $data.discussions[0].id;
     return $data.discussions.find(
       (disc) => disc.id == $ui.chat.dm.labelFocusId
     );
@@ -47,9 +49,6 @@
 <RightTemplate
   onSubmit={() => handleSubmit()}
   onChange={(_value) => (value = _value)}
-  showPlaceHolder={$ui.chat.dm.labelFocusId == -1}
 >
   <MessageFeed slot="feed" {messages} />
-  <img slot="placeholder" src="/images/nocontent.gif" />
-  <!-- <Typography slot="placeholder">{"test"}</Typography> -->
 </RightTemplate>
