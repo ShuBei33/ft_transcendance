@@ -42,13 +42,26 @@
     fetchChannel();
   });
   $: channels = $dataStore.channels;
+  // # Pagination
   $: totalPages = Math.ceil(channels.length / itemsPerPage);
   $: paginatedChannels = channels.slice(
     currentPage * itemsPerPage,
     (currentPage + 1) * itemsPerPage
   );
-  // Filtering
-  // # search and visibility
+
+  function nextPage() {
+    if (currentPage < totalPages - 1) {
+      currentPage++;
+    }
+  }
+
+  function previousPage() {
+    if (currentPage > 0) {
+      currentPage--;
+    }
+  }
+  // # Filtering
+  // ## search and visibility
   $: {
     if (search || selectedLevel)
       channels = $dataStore.channels.filter((chan) => {
@@ -67,27 +80,20 @@
       });
     else channels = $dataStore.channels;
   }
-  // # members length
+  // ## members length
   $: {
     switch (sort) {
       case 0:
         channels = channels.sort();
         break;
       case 1:
-        // channels = channels.sort((a, b) => a.channelUsers.length - b.channel);
+        channels = channels.sort((a, b) => b.channelUsers.length - a.channelUsers.length);
         break;
-    }
-  }
-
-  function nextPage() {
-    if (currentPage < totalPages - 1) {
-      currentPage++;
-    }
-  }
-
-  function previousPage() {
-    if (currentPage > 0) {
-      currentPage--;
+      case -1:
+        channels = channels.sort((a, b) => a.channelUsers.length - b.channelUsers.length);
+        break;
+      default:
+        break;
     }
   }
 </script>
