@@ -34,6 +34,7 @@ export class DTO_UpdateChanUsr {
 	})
 	status?: UserStatusMSGs;
 
+	@IsInt()
 	@IsOptional()
 	@ApiPropertyOptional({
 		description: 'Temps du status avant retour en normal',
