@@ -260,6 +260,8 @@ export class GameService {
             ]
         }
     })
+    if (wins == 0 || totalGames == 0)
+      return 0;
 
     let winRate: number;
     if (totalGames <= 4)
