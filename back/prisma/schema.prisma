@@ -47,14 +47,15 @@ model Friendship {
 }
 
 model Game {
-  id          Int  @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
   lhsPlayerId Int
   lhsScore    Int
   rhsPlayerId Int
   rhsScore    Int
   winnerId    Int
-  lhsPlayer   User @relation("left", fields: [lhsPlayerId], references: [id])
-  rhsPlayer   User @relation("right", fields: [rhsPlayerId], references: [id])
+  lhsPlayer   User     @relation("left", fields: [lhsPlayerId], references: [id])
+  rhsPlayer   User     @relation("right", fields: [rhsPlayerId], references: [id])
 }
 
 model Chroma {

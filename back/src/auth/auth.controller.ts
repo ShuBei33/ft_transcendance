@@ -61,18 +61,16 @@ export class AuthController {
     logger.log(token);
     res.redirect(redirectUrl);
   }
-
+  @UseGuards(JwtGuard)
   @Get('2fa/generate')
   async generate(
     @Res() res: Response,
     @Req() req: Request,
-    @GetUser() user: UserLite,
+    @GetUser() user: User,
   ) {
     const otpAuthUrl = await this.authService.generate2FASecret(user.id);
-    return success.general(res, 'ok');
-    // return response.json(
-    //   await this.authService.generateQrCodeDataURL(otpAuthUrl),
-    // );
+    // return success.general(res, 'ok', otpAuthUrl);
+    return res.json(await this.authService.generateQRCode(otpAuthUrl));
   }
 
   @ApiExcludeEndpoint()
@@ -110,4 +108,3 @@ export class AuthController {
     await this.authService.login2FA(request.user);
   }
 }
-
