@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Chroma, Game, User } from '@prisma/client';
 import { GameGateway } from 'src/sockets/game.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
+import { UserLite } from 'src/user/dto';
 // import { GameGateway } from '../game.gateway';
 const logger = new Logger();
 let queue: number[] = [];
@@ -13,14 +14,150 @@ let queue: number[] = [];
 export class GameService {
   constructor(private prisma: PrismaService, private chatGate: ChatGateway) { }
 
-  async saveGame(_data: {
-    winnerId: number;
-    lhsPlayerId: number;
-    rhsPlayerId: number;
-    lhsScore: number;
-    rhsScore: number;
-  }) {
+  /* ACHIEVEMENTS */
+
+  async hasAchievement(userId: number, title: string) : Promise<Boolean> {
+    const achievement = await this.prisma.achievement.findUnique({
+      where: {
+        title,
+        users: {
+          some: { id: userId },
+        },
+      },
+    });
+    return !!achievement;
+  }
+
+  async checkBeginnersLuck(userId: number) : Promise<Boolean> {
+     if (this.hasAchievement(userId, "Beginner's Luck"))
+      return false;
+
+    const userGames = await this.prisma.game.findMany({
+      where: { winnerId: userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (userGames.length < 5) {
+      return false;
+    }
+    for (let i = 0; i < 5; i++) {
+      const currentGame = userGames[i];
+      if (currentGame.winnerId != userId)
+        return false;
+    }
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { 
+        achievements: {
+          connect: { title: 'Beginner\'s Luck' },
+        },
+      },
+    });
+    return true;
+  }
+
+  async checkOneABoveAll(userId: number) : Promise<Boolean> {
+    if (this.hasAchievement(userId, "The One Above All"))
+      return false;
+  
+    const usrToCheck = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+        rank: 1,
+      },
+    });
+    if (usrToCheck) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'The One Above All' },
+          },
+        },
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async checkSkillGap(userId: number) : Promise<Boolean> {
+    if (this.hasAchievement(userId, "Skill Gap"))
+      return false;
+  
+    const usrToCheck = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        rank: true,
+      },
+    });
+    const gameWithSkillGap = await this.prisma.game.findFirst({
+      where: {
+        winnerId: userId,
+        OR: [
+          {
+            lhsPlayer: {
+              rank: { lte: usrToCheck.rank + 10 },
+              NOT: { id: userId },
+            },
+          },
+          {
+            rhsPlayer: {
+              rank: { lte: usrToCheck.rank + 10 },
+              NOT: { id: userId },
+            },
+          },
+        ],
+      },
+    });
+    if (gameWithSkillGap) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'Skill Gap' },
+          },
+        },
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async checkCollector(userId: number) : Promise<Boolean> {
+    if (this.hasAchievement(userId, "The Collector"))
+      return false;
+  
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        chromas: true,
+      },
+    });
+    if (user.chromas.length == 5) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          achievements: {
+            connect: { title: 'The Collector' },
+          },
+        },
+      });
+      return true;
+    }
+    return false;
+  }
+
+  async saveGame(_data: { winnerId: number; lhsPlayerId: number; rhsPlayerId: number; lhsScore: number; rhsScore: number; }) {
+
     const { winnerId, lhsPlayerId, rhsPlayerId, lhsScore, rhsScore } = _data;
+    const achievementPromises = [];
+    [lhsPlayerId, rhsPlayerId].forEach(userId => {
+      achievementPromises.push(this.checkBeginnersLuck(userId));
+      achievementPromises.push(this.checkOneABoveAll(userId));
+      achievementPromises.push(this.checkSkillGap(userId));
+      achievementPromises.push(this.checkCollector(userId));
+    });
     const [savedGame, updatedLoserMoney, updatedWinnerMoney] = await this.prisma.$transaction([
       this.prisma.game.create({
         data: {
@@ -40,9 +177,7 @@ export class GameService {
         },
       }),
       this.prisma.user.update({
-        where: {
-          id: lhsPlayerId == winnerId ? rhsPlayerId : lhsPlayerId,
-        },
+        where: { id: lhsPlayerId == winnerId ? rhsPlayerId : lhsPlayerId },
         data: {
           money: ((): number => {
             return 50;
@@ -50,29 +185,27 @@ export class GameService {
         }
       }),
       this.prisma.user.update({
-        where: {
-          id: winnerId,
-        },
+        where: { id: winnerId },
         data: {
           money: ((): number => {
             return 70;
           })(),
         }
       })
-    ])
+    ]);
+    await Promise.all(achievementPromises);
     return savedGame;
   }
 
   async userExists(userId: number) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
     if (!user) error.notFound('User not found');
   }
 
-  // Chroma
+  /* CHROMA */
+
   async listChroma(): Promise<Chroma[]> {
     return await this.prisma.chroma.findMany();
   }
@@ -114,6 +247,8 @@ export class GameService {
     return await this.prisma.chroma.findUnique({ where: { id } });
   }
 
+  /* LEADERBOARD */
+
   async getHistory(userId: number): Promise<Game[]> {
     const history = await this.prisma.game.findMany({
       where: {
@@ -133,16 +268,79 @@ export class GameService {
     });
     return history;
   }
+  
+  async calculateWinRate(userId: number): Promise<number> {
+    const wins: number = await this.prisma.game.count({
+      where: { winnerId: userId }
+    });  
+    const totalGames: number = await this.prisma.game.count({
+      where: {
+          OR: [
+                { lhsPlayerId: userId },
+                { rhsPlayerId: userId },
+            ]
+        }
+    })
+    if (wins == 0 || totalGames == 0)
+      return 0;
 
+    let winRate: number;
+    if (totalGames <= 4)
+      winRate = (wins / 4) * 100;
+    else
+      winRate = (wins / totalGames) * 100;
+    
+    return parseFloat(winRate.toFixed(2));
+  }
+
+  async assignRanks() : Promise<void> {
+    const allUsers: User[] = await this.prisma.user.findMany();
+    
+    logger.log("ASSIGNING RANK");
+    const userWinRates: { user: User; winRate: number }[] = [];
+    for (const user of allUsers) {
+      const winRate = await this.calculateWinRate(user.id);
+      userWinRates.push({ user, winRate });
+    }
+    userWinRates.sort((a, b) => b.winRate - a.winRate);
+
+    let currentRank = 1;
+    for (let i = 0; i < userWinRates.length; i++) {
+      const { user, winRate } = userWinRates[i];
+      if (i > 0 && winRate !== userWinRates[i - 1].winRate) {
+        currentRank++;
+      }
+      await this.prisma.user.update({
+          where: { id: user.id },
+          data: { rank: currentRank },
+        });
+      logger.log("userId:" + user.id + " rank: " + currentRank);
+    }
+  }
+
+  async getLeaderboard(): Promise<UserLite[]> {
+    const users: User[] = await this.prisma.user.findMany({
+      orderBy: { rank: 'desc' },
+    });
+    const leaderboard: UserLite[] = users.map((user) => ({
+      login: user.login,
+      pseudo: user.pseudo,
+      id: user.id,
+      status: user.status,
+    }));
+    return leaderboard;
+  }
+
+  /* GAME */
   async createGame(userIds: number[]) {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
     logger.log('create game ok!!!!!!!!!!!--=-=-=', gameId);
-    for (let i = 0; i < userIds.length; i++) {
-      this.chatGate.wss.emit(String(userIds[i]), {
-        expect: 'GAME_ID',
-        data: gameId,
-      });
-    }
+    // for (let i = 0; i < userIds.length; i++) {
+    //   this.chatGate.wss.emit(String(userIds[i]), {
+    //     expect: 'GAME_ID',
+    //     data: gameId,
+    //   });
+    // }
     logger.log('Users in game' + JSON.stringify(userIds));
   }
 
