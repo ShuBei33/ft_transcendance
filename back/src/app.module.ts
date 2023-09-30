@@ -9,21 +9,23 @@ import { ChannelModule } from './chat/channel/channel.module';
 import { UserModule } from './user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ChatModule } from './chat/chat.module';
+import { CronModule } from './cron/cron.module';
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true,
-		}),
-		AuthModule,
-		PrismaModule,
-		FriendModule,
-		GameModule,
-		DiscussionModule,
-		ChannelModule,
-		UserModule,
-		JwtModule,
-		ChatModule
-	],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AuthModule,
+    PrismaModule,
+    FriendModule,
+    GameModule,
+    DiscussionModule,
+    ChannelModule,
+    UserModule,
+    JwtModule,
+    ChatModule,
+    CronModule,
+  ],
 })
 export class AppModule {}
