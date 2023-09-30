@@ -72,5 +72,18 @@ export class AuthController {
 		throw new HttpException('Invalid two factor authentication code', HttpStatus.BAD_REQUEST);
 	await this.authService.turnOn2FA(user.id);
   }
+
+  @ApiExcludeEndpoint()
+  @UseGuards(JwtGuard)
+  @Post('2fa-signin')
+  async authenticate(@GetUser() user: UserLite, @Body() body) {
+	const isCodeValid = this.authService.isTwoFactorAuthenticationCodeValid(
+		body.twoFactorAuthenticationCode,
+		user,
+	);
+	if (!isCodeValid)
+		throw new HttpException('Invalid two factor authentication code', HttpStatus.BAD_REQUEST);
+	const token = this.authService.loginWith2FA(user);
+  }
 }
 

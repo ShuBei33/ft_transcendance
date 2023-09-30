@@ -124,8 +124,59 @@ export class AuthService {
 		});
 	  }
 
-	//   async loginWith2FA(user: UserLite) {
-	// 	const 
-	//   }
+	  async loginWith2FA(user: UserLite) {
+		const payload = {
+			login: user.login,
+			twoFAEnabled: true,
+			twoFAAuthed: true,
+		};
+
+		return {
+			login: user.login,
+			access_token: this.jwt.sign(payload),
+		}
+	  }
+
+	  //! Raconte moi une blague sur les développeurs
+	  // - C'est un développeur qui dit à un autre développeur :
+	  // - "Tu connais la blague sur UDP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur TCP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur ICMP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur HTTP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur FTP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SMTP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur POP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur IMAP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur ARP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur RARP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur DHCP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur DNS ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SNMP ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SSL ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur TLS ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SSH ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SSL ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SSL ?"
+	  // - "Je ne l'ai pas reçue."
+	  // - "Tu connais la blague sur SSL ?"
+	  // - "Je ne l'ai pas reçue."
+
 
 }
