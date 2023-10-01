@@ -6,14 +6,13 @@
   import Typography from "../../../Typography.svelte";
   import AvatarFrame from "../avatarFrame.svelte";
 
-  $: discussions = $data.discussions.filter(
-    (value) => value.discussionsMsgs?.length != 0
-  );
-  $: console.log("disc!!!!", $data.discussions);
+  $: discussions = $data.discussions.filter((value) => {
+    const targetUserId = value.userId1 == $user?.id ? value.userId2 : value.userId1;
+    if ($data.friends && $data.friends.some((user) => user.id == targetUserId)) return true;
+    return false;
+  });
   const getDiscussionUser = (discussion: DiscussionLite) => {
-    const id = [discussion.userId1, discussion.userId2].filter(
-      (id) => id != $user?.id
-    )[0];
+    const id = [discussion.userId1, discussion.userId2].filter((id) => id != $user?.id)[0];
     return $data.friends.find((value) => value.id == id);
   };
   $: console.log($ui.chat.dm);
@@ -21,23 +20,17 @@
 
 <div class="discussion-left">
   {#each discussions as discussion}
-    <button
-      class="discussion-label"
-      on:click={() => ($ui.chat.dm.labelFocusId = discussion.id)}
-    >
+    <button class="discussion-label" on:click={() => ($ui.chat.dm.labelFocusId = discussion.id)}>
       <div class="lhs">
         <span class="avatar-frame-wrapper">
           <AvatarFrame
             userId={String(
-              [discussion.userId1, discussion.userId2].filter(
-                (id) => id != $user?.id
-              )[0]
+              [discussion.userId1, discussion.userId2].filter((id) => id != $user?.id)[0]
             )}
             inherit={true}
           />
         </span>
-        <Typography class="... user-pseudo-link"
-          >{getDiscussionUser(discussion)?.pseudo}</Typography
+        <Typography class="... user-pseudo-link">{getDiscussionUser(discussion)?.pseudo}</Typography
         >
       </div>
       <div class="rhs" />

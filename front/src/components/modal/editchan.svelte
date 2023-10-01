@@ -4,7 +4,7 @@
   import TestInput from "../../routes/login/testInput.svelte";
   import GenericButton from "../genericButton.svelte";
   import Slider from "../slider.svelte";
-  import { Channel as ChannelApi } from "$lib/apiCalls";
+  import { Channel, Channel as ChannelApi } from "$lib/apiCalls";
   import { get } from "svelte/store";
   import type { channel as dto } from "$lib/models/dtos";
   import { ChanVisibility } from "$lib/models/prismaSchema";
@@ -84,6 +84,13 @@
       ><Typography>{"Update"}</Typography></Button
     >
     <Button variant="error"><Typography>{"Cancel"}</Typography></Button>
+    <Button
+      variant="warning"
+      on:click={async () => {
+        if (!channel) return;
+        new Channel(`${get(axiosConfig)?.baseURL}/chat/channel`).leave(channel.id);
+      }}><Typography>{"Leave channel"}</Typography></Button
+    >
   </div>
 </div>
 

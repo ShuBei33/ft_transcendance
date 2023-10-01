@@ -62,8 +62,6 @@
   };
 </script>
 
-<Typography>{"WEEEEEEEEEEH secure !"}</Typography>
-
 <Button on:click={async () => await testTwoFa()}>{"generate"}</Button>
 <Button on:click={async () => await tunrOn()}>{"turn on"}</Button>
 <Button on:click={async () => await tunrOff()}>{"turn off"}</Button>

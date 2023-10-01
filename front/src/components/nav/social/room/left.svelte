@@ -42,7 +42,11 @@
       <Typography>+</Typography>
     </Button>
 
-    <Button on:click={() => ($ui.modal = "EDITCHAN")}>
+    <Button
+      on:click={() => {
+        if ($ui.chat.room.labelFocusId != -1) $ui.modal = "EDITCHAN";
+      }}
+    >
       <Typography>{"members 👥"}</Typography>
     </Button>
   </div>

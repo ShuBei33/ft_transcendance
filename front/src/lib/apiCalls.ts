@@ -113,6 +113,10 @@ export class Channel {
   async updateChannelUser(chanId: number, data: channel.DTOUpdateChanUsr) {
     return await this.instance.patch(`admin/${chanId}/user`, data);
   }
+
+  async leave(chanId: number) {
+    return await this.instance.delete(`leave/${chanId}`);
+  }
 }
 
 export class twoFa {

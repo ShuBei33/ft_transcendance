@@ -22,7 +22,6 @@
   const handleInviteToPlay = (userId: string | undefined) => {
     if (!userId) return;
     $gameInvite = userId;
-    // alert("invite" + id);
   };
   export let id: string = "";
   export let user: User | undefined = undefined;
@@ -197,7 +196,7 @@
                 >
               {/if}
               <Button on:click={() => handleInviteToPlay(id)}>{"🏓"}</Button>
-              <Button>{"🚫"}</Button>
+              <Button  on:click={async () => await friendHandler.FriendShipBlock(Number(id))}>{"🚫"}</Button>
             {/if}
           </div>
         </div>
