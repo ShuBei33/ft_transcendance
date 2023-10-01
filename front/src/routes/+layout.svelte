@@ -61,10 +61,10 @@
       name: "store",
       href: "/store",
     },
-    {
-      name: "leaderboard",
-      href: "/leaderboard",
-    },
+    // {
+    //   name: "leaderboard",
+    //   href: "/leaderboard",
+    // },
   ];
 
   $: chatState = $socketState.get("chat");
