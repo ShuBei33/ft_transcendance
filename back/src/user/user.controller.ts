@@ -6,7 +6,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Controller, Get, ParseIntPipe, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  ParseIntPipe,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { success } from 'src/utils/utils_success';
 import { UserService } from './user.service';
 import { JwtGuard } from 'src/auth/guard';
@@ -35,10 +42,12 @@ export class UserController {
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const select = user.id == id ? AuthUserSelect : UserLiteSelect;
+    const select =
+      user.id == id ? AuthUserSelect : { ...UserLiteSelect, rank: true };
     const userRes = await this.userService.getUserById(id, {
       select,
     });
+    new Logger('euhhh').log('shipping usr -+-+_++_+_++_+@@_+$', userRes);
     return success.general(res, 'sucess', userRes);
   }
 }

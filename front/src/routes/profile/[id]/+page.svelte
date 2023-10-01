@@ -30,7 +30,7 @@
         });
       });
   };
-  const { id, user, history } = data;
+  $: ({ id, user, history } = data);
   // console.log("history", history);
 </script>
 

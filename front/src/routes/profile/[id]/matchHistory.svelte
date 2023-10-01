@@ -6,6 +6,7 @@
   import Typography from "../../../components/Typography.svelte";
   import { Friend } from "$lib/apiCalls";
   import { removeAnnouncement } from "$lib/stores/session";
+  import UserLink from "../../../components/UserLink.svelte";
   export let history: GameType[] = [];
   export let profileOfUserId: string;
 
@@ -19,10 +20,8 @@
   };
 
   const getScoreString = (match: GameType): string => {
-    const isLhsForfeit =
-      match.lhsScore > match.rhsScore && match.winnerId != match.lhsPlayerId;
-    const isRhsForfeit =
-      match.rhsScore > match.lhsScore && match.winnerId != match.rhsPlayerId;
+    const isLhsForfeit = match.lhsScore > match.rhsScore && match.winnerId != match.lhsPlayerId;
+    const isRhsForfeit = match.rhsScore > match.lhsScore && match.winnerId != match.rhsPlayerId;
     if (isLhsForfeit) return `(forfeit) ${match.lhsScore} - ${match.rhsScore}`;
     if (isRhsForfeit) return `${match.lhsScore} - ${match.rhsScore} (forfeit)`;
     return `${match.lhsScore} - ${match.rhsScore}`;
@@ -34,15 +33,12 @@
     <div class={cn(matchCn(match))}>
       <div class="avatar-frame-wrapper">
         <AvatarFrame userId={String(match.lhsPlayerId)} />
-        <Typography class="... user-pseudo-link"
-          >{match.lhsPlayer.pseudo}</Typography
-        >
+        <UserLink pseudo={match.lhsPlayer.pseudo} userId={match.lhsPlayer.id} />
+        <!-- <Typography class="... user-pseudo-link">{match.lhsPlayer.pseudo}</Typography> -->
       </div>
       <Typography big class="... vs">{getScoreString(match)}</Typography>
       <div class="avatar-frame-wrapper">
-        <Typography class="... user-pseudo-link"
-          >{match.rhsPlayer.pseudo}</Typography
-        >
+        <UserLink pseudo={match.rhsPlayer.pseudo} userId={match.rhsPlayer.id} />
         <AvatarFrame userId={String(match.rhsPlayerId)} />
       </div>
     </div>

@@ -8,7 +8,10 @@ import { User, UserStatus } from '@prisma/client';
 // }
 // # User
 // ## Unauthenticated
-export type UserLite = Pick<User, 'login' | 'pseudo' | 'id' | 'status'>;
+export type UserLite = Pick<
+  User,
+  'login' | 'pseudo' | 'id' | 'status'
+>;
 
 export type UserLiteSelectType = {
   [K in keyof UserLite]: boolean;

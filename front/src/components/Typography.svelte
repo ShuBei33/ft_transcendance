@@ -29,11 +29,11 @@
 </script>
 
 {#if className}
-  <span bind:this={externalRef} class={parseClass(className)}><slot /></span>
+  <span bind:this={externalRef} on:click|preventDefault   class={parseClass(className)}><slot /></span>
 {:else if big}
-  <span bind:this={externalRef} class="bigTypo"><slot /></span>
+  <span bind:this={externalRef} on:click|preventDefault   class="bigTypo"><slot /></span>
 {:else}
-  <span bind:this={externalRef} class={`typo-${weight}`}><slot /></span>
+  <span bind:this={externalRef}  on:click|preventDefault     class={`typo-${weight}`}><slot /></span>
 {/if}
 
 <style lang="scss">

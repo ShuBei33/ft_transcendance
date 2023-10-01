@@ -22,16 +22,20 @@
     if (!className) className = "avatar-frame";
   });
 
-  let url = `http://localhost:5170/avatar/download/${userId}`;
+  $: url = `http://localhost:5170/avatar/download/${userId}`;
   let imageIsValid = false;
-  onMount(async () => {
+  const fetchImage = async () => {
     await $axiosInstance
       .get(url)
       .then((data) => {
         if (data.data) imageIsValid = true;
       })
       .catch((e) => {});
+  };
+  onMount(async () => {
+    fetchImage();
   });
+  $: userId, async () => await fetchImage();
 </script>
 
 {#if imageIsValid}

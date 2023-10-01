@@ -3,6 +3,7 @@ import { writableHook } from "./hooks";
 import Cookies from "js-cookie";
 import type { ComponentProps } from "svelte";
 import type Input from "../../components/Input.svelte";
+import { goto } from "$app/navigation";
 
 export const COOKIE_TOKEN_NAME = "tr_auth_token";
 const TOKEN_EXPIRATION = 7;
@@ -71,3 +72,8 @@ export const socketState = writable<Map<string, boolean>>(initialSocketState);
 export const gameInvite = writable<string | undefined>(undefined);
 
 export const acceptGameInvite = writable<number | undefined>(undefined);
+
+export const navigateToProfile = (userId: number) => {
+  // url.searchParams.set('noProduct', noProduct ? '1' : '0');
+  goto(`/profile/${userId}`);
+};
