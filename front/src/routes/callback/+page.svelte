@@ -1,11 +1,12 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { onMount } from "svelte";
-  import { token, user } from "$lib/stores";
+  import { token, ui, user } from "$lib/stores";
   import type { CreateAxiosDefaults } from "axios";
   import { axiosInstance, axiosConfig } from "$lib/stores/api";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
+  import type { UserExtended } from "$lib/models/prismaSchema";
 
   onMount(async () => {
     if (!browser) return;
@@ -29,16 +30,24 @@
         .get("/auth/checkJWT")
         .then(async (res) => {
           token.set(retrievedToken!);
-          // Retrieve user profile
-          await _axios
-            .get(`/user/${res.data.user.id}`)
-            .then(({ data }) => {
-              user.set({ id: res.data.user.id, ...data.data });
-              goto((redirect && redirect) || `/profile/${res.data.user.id}`);
-            })
-            .catch(() => {
-              goto("/login");
-            });
+          const retrieveUserProfile = async () => {
+            await _axios
+              .get(`/user/${res.data.user.id}`)
+              .then(({ data }) => {
+                const _user: UserExtended = data.data;
+
+                if (!_user.is2FAAuthenticated && _user.twoFA) {
+                  $ui.modal = "SETTINGS";
+                } else {
+                  user.set(_user);
+                  goto((redirect && redirect) || `/profile/${res.data.user.id}`);
+                }
+              })
+              .catch(() => {
+                goto("/login");
+              });
+          };
+          await retrieveUserProfile();
         })
         .catch(() => {
           goto("/login");

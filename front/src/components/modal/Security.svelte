@@ -3,6 +3,8 @@
   import Typography from "../Typography.svelte";
   import { twoFa as twoFaApi } from "$lib/apiCalls";
   import Input from "../Input.svelte";
+  import { goto } from "$app/navigation";
+  import { token, ui } from "$lib/stores";
 
   const twoFa = new twoFaApi();
   let src: string | undefined = undefined;
@@ -15,10 +17,46 @@
     });
   };
 
+  const tunrOn = async () => {
+    await twoFa
+      .turnOn(code)
+      .then(async (result) => {
+        alert("twoFa turned on");
+      })
+      .catch((e) => {
+        alert("twoFa error");
+        console.error(e);
+      });
+  };
+
+  const tunrOff = async () => {
+    await twoFa
+      .turnOff(code)
+      .then((result) => {
+        alert("twoFa turned off X");
+      })
+      .catch((e) => {
+        alert("twoFa error");
+        console.error(e);
+      });
+  };
+
+  const auth = async () => {
+    await twoFa
+      .authenticate(code)
+      .then(async (result) => {
+        alert("Auth 2fa ok");
+        $ui.modal = "NONE";
+        await goto(`/callback`);
+      })
+      .catch((e) => {
+        alert("X Auth 2fa error");
+      });
+  };
+
   const handleCodeSubmit = () => {
     (async () => {
-      
-    alert("submitting code: " + code);
+      alert("submitting code: " + code);
     })();
     return "";
   };
@@ -27,6 +65,9 @@
 <Typography>{"WEEEEEEEEEEH secure !"}</Typography>
 
 <Button on:click={async () => await testTwoFa()}>{"generate"}</Button>
+<Button on:click={async () => await tunrOn()}>{"turn on"}</Button>
+<Button on:click={async () => await tunrOff()}>{"turn off"}</Button>
+<Button on:click={async () => await auth()}>{"-> login"}</Button>
 {#if src}
   <img {src} alt="qrcode" />
 {:else}

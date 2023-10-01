@@ -13,7 +13,9 @@ import { JwtGuard } from 'src/auth/guard';
 import { Param } from '@nestjs/common';
 import { Response } from 'express';
 import { GetUser } from 'src/auth/decorator';
-import { UserLite } from './dto';
+import { AuthUserSelect, UserLite } from './dto';
+import { UserLiteSelect } from './dto';
+import { User } from '@prisma/client';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -33,15 +35,9 @@ export class UserController {
     @Res() res: Response,
     @Param('id', ParseIntPipe) id: number,
   ) {
+    const select = user.id == id ? AuthUserSelect : UserLiteSelect;
     const userRes = await this.userService.getUserById(id, {
-      select: {
-        avatar: true,
-        pseudo: true,
-        rank: true,
-        login: true,
-        achievements: true,
-        chromas: id == user.id,
-      },
+      select,
     });
     return success.general(res, 'sucess', userRes);
   }

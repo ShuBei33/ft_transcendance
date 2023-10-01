@@ -77,29 +77,47 @@ export class AuthController {
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
   @Post('2fa/turnOn')
-  async turnOn2FA(@Req() request, @Body() body, @Res() res: Response) {
-    const isCodeValid = this.authService.is2FAAuthCodeValid(
-      body.twoFA,
-      request.user,
+  async turnOn2FA(
+    @Req() request,
+    @Body('data')
+    data: {
+      twoFACode: string;
+    },
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+  ) {
+    logger.log('========= weed', data, user, user.id);
+    const isCodeValid = await this.authService.is2FAAuthCodeValid(
+      data.twoFACode,
+      user.id,
     );
-    if (!isCodeValid) error.notAuthorized('Code invalid');
-    const user = await this.authService.toggleTwoFA(request.user.id);
-    if (user) return success.general(res, 'success');
-    return error.unexpected('An unexpected error occurred')
+    if (!isCodeValid) return error.notAuthorized('Code invalid');
+    const result = await this.authService.toggleTwoFA(user.id);
+    if (result) return success.general(res, 'success');
+    return error.unexpected('An unexpected error occurred');
   }
 
   @ApiExcludeEndpoint()
   @UseGuards(JwtGuard)
   @Post('2fa/turnOff')
-  async turnOff2FA(@Req() request, @Body() body, @Res() res: Response) {
-    const isCodeValid = this.authService.is2FAAuthCodeValid(
-      body.twoFA,
-      request.user,
+  async turnOff2FA(
+    @Req() request,
+    @Body('data')
+    data: {
+      twoFACode: string;
+    },
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+  ) {
+    logger.log('========= weed', data, user, user.id);
+    const isCodeValid = await this.authService.is2FAAuthCodeValid(
+      data.twoFACode,
+      user.id,
     );
-    if (!isCodeValid) error.notAuthorized('Code invalid');
-    const user = await this.authService.toggleTwoFA(request.user.id, false);
-    if (user) return success.general(res, 'success');
-    return error.unexpected('An unexpected error occurred')
+    if (!isCodeValid) return error.notAuthorized('Code invalid');
+    const result = await this.authService.toggleTwoFA(user.id, false);
+    if (result) return success.general(res, 'success');
+    return error.unexpected('An unexpected error occurred');
   }
 
   @ApiExcludeEndpoint()
@@ -109,21 +127,17 @@ export class AuthController {
   async authenticate2FA(
     @Req() request,
     @Res() res: Response,
+    @GetUser() user: UserLite,
     @Body('data')
     data: {
       twoFACode: string;
     },
   ) {
-    const isCodeValid = this.authService.is2FAAuthCodeValid(
+    const isCodeValid = await this.authService.login2FA(
       data.twoFACode,
-      request.user,
+      user.id,
     );
-    if (!isCodeValid) {
-      throw new HttpException(
-        'Invalid two-factor authentication code',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    if (!isCodeValid) return error.notAuthorized('Code invalid');
     return success.general(res, 'success');
   }
 }

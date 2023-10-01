@@ -132,7 +132,27 @@ export class twoFa {
   }
 
   async authenticate(twoFACode: string) {
-    // return await this.instance.post<
+    return await this.instance.post("authenticate", {
+      data: {
+        twoFACode,
+      },
+    });
+  }
+
+  async turnOn(twoFACode: string) {
+    return await this.instance.post<{ data: User }>("turnOn", {
+      data: {
+        twoFACode,
+      },
+    });
+  }
+
+  async turnOff(twoFACode: string) {
+    return await this.instance.post<{ data: User }>("turnOff", {
+      data: {
+        twoFACode,
+      },
+    });
   }
 }
 

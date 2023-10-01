@@ -43,6 +43,8 @@ export interface User {
 
 export type UserExtended = User & {
   twoFA: boolean;
+  twoFASecret: string;
+  is2FAAuthenticated: boolean;
   createdAt: Date;
   updatedAt: Date;
   money: number;
@@ -66,7 +68,7 @@ export interface Friendship {
   senderId: number;
   receiver: User;
   receiverId: number;
-  senderIsBlocked: boolean
+  senderIsBlocked: boolean;
   receiverIsBlocked: boolean;
 }
 

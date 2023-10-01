@@ -3,10 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LIST_SUFFIX_PSEUDO } from './data';
 import { Logger } from '@nestjs/common';
-import { UserLite } from 'src/user/dto';
+import { AuthUser, AuthUserSelect, UserLite } from 'src/user/dto';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { User } from '@prisma/client';
+import { UserLiteSelect } from 'src/user/dto';
+import { error } from 'src/utils/utils_error';
 
 const logger = new Logger();
 @Injectable()
@@ -33,13 +35,13 @@ export class AuthService {
     }
   }
 
-  async get_user(login: string): Promise<UserLite> {
+  async get_user(login: string): Promise<AuthUser> {
     try {
       const user = await this.prisma.user.findFirst({
         where: { login: login },
+        select: AuthUserSelect,
       });
-      const { createdAt, updatedAt, avatar, rank, ...rest } = user;
-      return rest;
+      return user;
     } catch (error) {
       logger.error('Erreur lors de la recuperation du user');
       return null;
@@ -77,11 +79,11 @@ export class AuthService {
     access_token: string,
     login: string,
   ): Promise<{ token: string }> {
-    const user_lite: UserLite = await this.get_user(login);
+    const authUser: AuthUser = await this.get_user(login);
     const payload = {
       refresh: refresh_token,
       access: access_token,
-      user: user_lite,
+      user: authUser,
     };
     const secret = process.env.JWT_SECRET;
     const token = await this.jwt.signAsync(payload, {
@@ -117,7 +119,7 @@ export class AuthService {
   }
 
   async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
-    this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: userId },
       data: { twoFASecret: secret },
     });
@@ -131,11 +133,16 @@ export class AuthService {
       });
     } catch (error) {
       return undefined;
-      logger.error("Erreur lors de l'activation de la 2FA");
     }
   }
 
-  async is2FAAuthCodeValid(twoFACode: string, user: User) {
+  async is2FAAuthCodeValid(twoFACode: string, userId: number) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+    logger.log('00000000000000000000 secret', user.twoFASecret);
     return authenticator.verify({ token: twoFACode, secret: user.twoFASecret });
   }
 
@@ -143,16 +150,17 @@ export class AuthService {
     return toDataURL(text);
   }
 
-  async login2FA(userNoPsw: Partial<User>) {
-    const payload = {
-      login: userNoPsw.login,
-      is2FAAuthenticated: true,
-      is2FAEnabled: !!userNoPsw.twoFA,
-    };
-
-    return {
-      login: payload.login,
-      access_token: payload.is2FAAuthenticated,
-    };
+  async login2FA(twoFACode: string, userId: number): Promise<boolean> {
+    const isCodeValid = await this.is2FAAuthCodeValid(twoFACode, userId);
+    if (!isCodeValid) return false;
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        is2FAAuthenticated: true,
+      },
+    });
+    return isCodeValid;
   }
 }
