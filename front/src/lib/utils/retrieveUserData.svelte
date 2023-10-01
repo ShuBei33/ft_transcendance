@@ -60,7 +60,8 @@
     }
     // Discussion
     await _Discussion.all().then(({ data }) => {
-      $dataStore.discussions = data.data;
+      const discussions = data.data;
+      $dataStore.discussions = discussions;
       console.log("💬", data.data);
     });
     // .then(({ data }) => {

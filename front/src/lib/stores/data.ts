@@ -27,6 +27,10 @@ interface dataType {
   friendShips: Friendship[];
 }
 
+export const chanFocusMap = writableHook<Map<number, boolean>>({
+  initialValue: new Map(),
+});
+
 export const data = writableHook<dataType>({
   initialValue: {
     channels: [],

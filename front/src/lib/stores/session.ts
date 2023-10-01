@@ -12,6 +12,7 @@ export const token = writableHook<string>({
   },
   onUpdate(_, newValue) {
     Cookies.set(COOKIE_TOKEN_NAME, newValue, { expires: TOKEN_EXPIRATION });
+    return newValue;
   },
   onClear() {
     Cookies.remove(COOKIE_TOKEN_NAME);
@@ -19,14 +20,14 @@ export const token = writableHook<string>({
 });
 
 export type confirmBtn = {
-  label: string,
-  callback: () => void
-}
+  label: string;
+  callback: () => void;
+};
 
 export type confirm = {
-  yes: confirmBtn,
-  no: confirmBtn,
-}
+  yes: confirmBtn;
+  no: confirmBtn;
+};
 
 export interface announcement {
   id: number;
@@ -54,8 +55,8 @@ export const addAnnouncement = (data: Omit<announcement, "id">) => {
 };
 
 export const initialSocketState = new Map<string, boolean>([
-  ['chat', false],
-  ['lobby', false]
+  ["chat", false],
+  ["lobby", false],
 ]);
 
 export const socketState = writable<Map<string, boolean>>(initialSocketState);
@@ -63,4 +64,3 @@ export const socketState = writable<Map<string, boolean>>(initialSocketState);
 export const gameInvite = writable<string | undefined>(undefined);
 
 export const acceptGameInvite = writable<number | undefined>(undefined);
-
