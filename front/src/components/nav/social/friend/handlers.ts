@@ -36,10 +36,10 @@ export class handle {
       friendShipId: friendShip.id,
     })
       .then(({ data }) => {
-        console.log("accept ok !", data);
+        // console.log("accept ok !", data);
       })
       .catch((e) => {
-        console.log("error accept");
+        // console.log("error accept");
       });
   }
 
@@ -49,10 +49,10 @@ export class handle {
       friendShipId: friendShip.id,
     })
       .then(({ data }) => {
-        console.log("decline ok !", data);
+        // console.log("decline ok !", data);
       })
       .catch((e) => {
-        console.log("error decline");
+        // console.log("error decline");
       });
   }
 

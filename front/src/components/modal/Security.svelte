@@ -13,7 +13,7 @@
   const testTwoFa = async () => {
     await twoFa.generate().then((result) => {
       src = result.data;
-      console.log(result);
+      // console.log(result);
     });
   };
 

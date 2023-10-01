@@ -15,7 +15,7 @@
     const id = [discussion.userId1, discussion.userId2].filter((id) => id != $user?.id)[0];
     return $data.friends.find((value) => value.id == id);
   };
-  $: console.log($ui.chat.dm);
+  // $: console.log($ui.chat.dm);
 </script>
 
 <div class="discussion-left">

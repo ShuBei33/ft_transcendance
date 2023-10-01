@@ -42,15 +42,15 @@
       _Channel
         .updateChannelUser(channel?.id, payload)
         .then((res) => {
-          console.log("update user ok", res);
+//          console.log("update user ok", res);
         })
         .catch((e) => {
-          console.log("error happened", e);
+//          console.log("error happened", e);
         });
     } else {
       _Channel.kick(_chanUsr.chanId, _chanUsr.user.id);
     }
-    console.log(action, chanUsr);
+//    console.log(action, chanUsr);
   };
   $: chanUsr = $data.myChannels.find((chanUsr) => chanUsr.channel.id == $ui.chat.room.labelFocusId);
 

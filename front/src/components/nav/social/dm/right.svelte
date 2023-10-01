@@ -41,7 +41,7 @@
     );
   })();
   $: messages = discussion?.discussionsMsgs;
-  $: console.log("+!+! messages", messages);
+  // $: console.log("+!+! messages", messages);
 </script>
 
 <RightTemplate onSubmit={() => handleSubmit()} onChange={(_value) => (value = _value)}>

@@ -24,7 +24,7 @@
   const handleFormSubmit = () => {
     let finalPayload = { ...payload };
     if (payload.visibility != "PROTECTED") delete finalPayload.password;
-    console.log("create channel payload is: ", finalPayload);
+//    console.log("create channel payload is: ", finalPayload);
     const _Channel = new ChannelApi();
     _Channel
       .create(finalPayload)
@@ -34,10 +34,10 @@
           level: "success",
         });
         $ui.modal = "NONE";
-        console.log("created channel data: ", data);
+//        console.log("created channel data: ", data);
       })
       .catch((e) => {
-        console.log("error happened create channel", e);
+//        console.log("error happened create channel", e);
       });
   };
 </script>
@@ -49,7 +49,7 @@
       initialValue={payload.visibility}
       onChange={(value) => {
         payload["visibility"] = value;
-        console.log("slider change", value);
+//        console.log("slider change", value);
       }}
     />
   </div>

@@ -6,6 +6,6 @@ import { writableHook } from "./hooks";
 export const user = writableHook<UserExtended | undefined>({
   initialValue: undefined,
   onSet(value) {
-    console.log("👤", value);
+    // console.log("👤", value);
   },
 });

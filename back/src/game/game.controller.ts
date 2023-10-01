@@ -50,9 +50,9 @@ export class GameController {
     @Res() res: Response,
   ) {
     try {
-      console.log('FUNCTION GetHistory was called');
-      console.log('JWT User: ', user);
-      console.log('User Id Cible: ', uid_cible);
+//      console.log('FUNCTION GetHistory was called');
+//      console.log('JWT User: ', user);
+//      console.log('User Id Cible: ', uid_cible);
 
       await this.gameService.userExists(uid_cible);
       const history = await this.gameService.getHistory(uid_cible);
@@ -80,7 +80,7 @@ export class GameController {
     @Res() res: Response,
   ) {
     try {
-      console.log('FUNCTION getLeaderboard was called');
+//      console.log('FUNCTION getLeaderboard was called');
       const leaderboard = await this.gameService.getLeaderboard();
 
       return res.status(200).json({

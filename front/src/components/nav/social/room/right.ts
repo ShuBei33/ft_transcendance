@@ -63,7 +63,7 @@ export const getChannelDropDownActions = (
             status: UserStatusMSGs.BANNED,
           })
           .then((data) => {
-            console.log("ban result", data);
+            // console.log("ban result", data);
           });
       },
     },
@@ -71,7 +71,7 @@ export const getChannelDropDownActions = (
       label: "kick",
       callback: async () => {
         await _Channel.kick(writer.chanId, writer.user.id).then((data) => {
-          console.log("kick result", data);
+          // console.log("kick result", data);
         });
       },
     },
@@ -87,7 +87,7 @@ export const getChannelDropDownActions = (
           })
           .then((data) => {
             // (writer.status = UserStatusMSGs.MUTED),
-            console.log("mute result", data);
+            // console.log("mute result", data);
           });
       },
     },

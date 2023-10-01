@@ -100,8 +100,8 @@ export class FriendController {
   @ApiResponse({ status: 400, description: 'Echec de la Recuperation' })
   async getInvitation(@GetUser() user: UserLite, @Res() res: Response) {
     try {
-      console.log('FUNCTION GetInvitation Friend was called');
-      console.log('JWT User: ', user);
+//      console.log('FUNCTION GetInvitation Friend was called');
+//      console.log('JWT User: ', user);
 
       // CODE ICI
       const data = await this.friendService.getReceivedPendingInvites(user.id);

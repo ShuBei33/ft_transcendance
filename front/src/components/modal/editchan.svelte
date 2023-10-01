@@ -25,21 +25,21 @@
 
   let payload: Partial<dto.DTOUpdateChan> = {};
   const handleFormSubmit = () => {
-    console.log("!payload", payload);
+//    console.log("!payload", payload);
     if (!channel) return;
-    console.log("!payload", payload);
+//    console.log("!payload", payload);
     const _Channel = new ChannelApi(`${get(axiosConfig)?.baseURL}/chat/channel`);
     _Channel
       .updateChannelSetting(channel.id, payload)
       .then((res) => {
-        console.log("update res", res);
+//        console.log("update res", res);
       })
       .catch((e) => {
-        console.log("error happened");
+//        console.log("error happened");
       });
     payload.name = "test";
   };
-  // $: console.log(channel);
+//  // $: console.log(channel);
 </script>
 
 <div class="editchan">
@@ -49,7 +49,7 @@
     onChange={(value) => {
       if (value != channel?.visibility) payload["visibility"] = value;
       else delete payload.visibility;
-      console.log("slider change", value);
+//      console.log("slider change", value);
     }}
   />
   <Typography class="... title"

@@ -39,7 +39,7 @@ export class Game {
   }
 
   async listChroma() {
-    console.log("!uri", this.instance.getUri());
+    // console.log("!uri", this.instance.getUri());
     return await this.instance.get<{ data: Chroma[] }>("/shop/list/chroma");
   }
 

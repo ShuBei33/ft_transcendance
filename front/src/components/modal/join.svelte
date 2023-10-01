@@ -178,7 +178,7 @@
         initialValue={"ALL"}
         onChange={(value) => {
           selectedLevel = value;
-          console.log("slider change", value);
+//          console.log("slider change", value);
         }}
       />
       <Typography class="... result">{`${paginatedChannels.length} / 10`}</Typography>
