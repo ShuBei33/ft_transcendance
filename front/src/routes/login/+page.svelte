@@ -17,31 +17,6 @@
 
 <div class="landing">
   <section class="sign-in">
-    <Input
-      attributes={{
-        id: "email",
-        type: "text",
-        placeholder: "email",
-        name: "email",
-      }}
-    />
-    <Input
-      attributes={{
-        id: "password",
-        type: "password",
-        placeholder: "password",
-        name: "password",
-      }}
-    />
-    <Button
-      on:click={() => {
-        if (browser)
-          window.location.href = "http://localhost:5500/auth/signin42";
-      }}><Typography>{"Sign in"}</Typography></Button
-    >
-    <Divider>
-      <Typography slot="title">{"Continue with"}</Typography>
-    </Divider>
     <Button
       class="zero-auth-ft"
       on:click={() => {
@@ -52,18 +27,6 @@
       <div class="zero-auth-flex">
         <Typography class="typo-Regular color-black">{"Forty two"}</Typography>
         <FtLogo class="FtLogo" />
-      </div></Button
-    >
-    <Button
-      class="zero-auth-google"
-      on:click={() => {
-        if (browser)
-          window.location.href = "http://localhost:5500/auth/signin42";
-      }}
-    >
-      <div class="zero-auth-flex">
-        <Typography class="typo-Regular color-black">{"Google"}</Typography>
-        <GoogleLogo class="GoogleLogo" />
       </div></Button
     >
   </section>
