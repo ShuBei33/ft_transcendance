@@ -3,12 +3,14 @@
   import Typography from "./Typography.svelte";
   import AvatarFrame from "./nav/social/avatarFrame.svelte";
   import type { User } from "$lib/models/prismaSchema";
-  import { data, user as userStore } from "$lib/stores";
+  import { axiosConfig, data, user as userStore } from "$lib/stores";
   import { get } from "svelte/store";
   import { axiosInstance } from "$lib/stores";
   import Button from "./Button.svelte";
   import { handle } from "./nav/social/friend/handlers";
-  import { gameInvite } from "$lib/stores/session";
+  import { addAnnouncement, gameInvite, token } from "$lib/stores/session";
+  import type { CreateAxiosDefaults } from "axios";
+  import axios from "axios";
 
   const friendHandler = new handle();
   const handleInviteToPlay = (userId: string | undefined) => {
@@ -52,6 +54,44 @@
       })()) ||
     false;
   $: console.warn(JSON.stringify(user));
+
+  const configFs: CreateAxiosDefaults = {
+    baseURL: "http://localhost:5170/avatar",
+    withCredentials: true,
+    timeout: 10000,
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${$token}`,
+    },
+  };
+
+  // Image
+  let fileInput: HTMLInputElement;
+  const handleFile = async (e: any) => {
+    const image = e.target.files[0];
+    let reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onload = async (e) => {
+      let form = new FormData();
+      form.append("file", image);
+      console.log("📸 form", form.get("file"));
+      await axios
+        .create(configFs)
+        .post("upload", form)
+        .then((result) => {
+          addAnnouncement({
+            level: "success",
+            message: "Avatar updated",
+          });
+        })
+        .catch((e) => {
+          addAnnouncement({
+            level: "error",
+            message: "Make sure your avatar is a gif,jpeg or png and less than 50Mb",
+          });
+        });
+    };
+  };
 </script>
 
 {#if user}
@@ -64,7 +104,14 @@
           <Typography>{`rank ${user.rank}`}</Typography>
           <div class="actions">
             {#if $userStore?.id == user.id}
-              <Button>{"📸"}</Button>
+              <Button on:click={() => fileInput.click()}>{"📸"}</Button>
+              <input
+                id="avatar"
+                type="file"
+                accept=".jpg, .jpeg, .png"
+                on:change={async (e) => await handleFile(e)}
+                bind:this={fileInput}
+              />
             {:else}
               {#if !isFriend}
                 <Button on:click={async () => await friendHandler.AddFriend(Number(id))}
@@ -99,5 +146,8 @@
     display: flex;
     flex-direction: row;
     column-gap: 0.3em;
+  }
+  #avatar {
+    display: none;
   }
 </style>
