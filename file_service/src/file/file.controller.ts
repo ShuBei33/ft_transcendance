@@ -143,10 +143,11 @@ export class FileController {
         );
       }
 
-      const fileToSend = files.find((file) => file.split(".").reverse().pop().toString() == id);
+      let fileToSend = files.find((file) => file.split(".").reverse().pop().toString() == id);
+      if (!fileToSend || !fileToSend.length)
+        fileToSend = 'user-defaultuser-default.png';
 
-      if (fileToSend) res.sendFile(join(directoryPath, fileToSend));
-      else res.status(HttpStatus.OK).send(null);
+      res.sendFile(join(directoryPath, fileToSend));
     });
   }
 }

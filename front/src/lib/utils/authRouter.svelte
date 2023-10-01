@@ -33,6 +33,9 @@
 
     const retrivedToken = Cookies.get(COOKIE_TOKEN_NAME);
     switch (page) {
+      case "":
+        goto("/callback");
+        break;
       case "login":
         if (isAuthenticated) {
           goto(`/profile/${$user?.id}`);
