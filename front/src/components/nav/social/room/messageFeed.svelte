@@ -11,6 +11,7 @@
   import { get } from "svelte/store";
   import { onMount } from "svelte";
   import { getFollowupTimeStampString } from "$lib/utils/time/messages";
+  import UserLink from "../../../UserLink.svelte";
   interface feed {
     userId: number;
     messages: ChannelMsg[];
@@ -66,7 +67,11 @@
               />
             </div>
             <div class="rhs">
-              <Typography>{getWriter(message)?.user.pseudo}</Typography>
+              <UserLink
+                pseudo={String(getWriter(message)?.user.pseudo)}
+                userId={Number(getWriter(message)?.user.id)}
+              />
+              <!-- <Typography>{getWriter(message)?.user.pseudo}</Typography> -->
               <Typography>{message.content}</Typography>
             </div>
           </div>

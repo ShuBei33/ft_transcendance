@@ -50,9 +50,16 @@
         {#if index == 0}
           <div class="feed-initial message">
             <div class="lhs">
-              <AvatarFrame class="chat-avatar-frame" userId={String(message.userId)} />
+              <AvatarFrame
+                class="chat-avatar-frame"
+                userId={String(message.userId)}
+              />
             </div>
             <div class="rhs">
+              <UserLink
+                pseudo={String(getWriter(message)?.pseudo)}
+                userId={Number(getWriter(message)?.id)}
+              />
               <!-- <Typography>{getWriter(message)?.pseudo}</Typography> -->
               <Typography>{message.content}</Typography>
             </div>
@@ -60,7 +67,9 @@
         {:else}
           <div class="feed-followup message">
             <div class="lhs">
-              <Typography class="... timestamp">{getFollowupTimeStampString(message)}</Typography>
+              <Typography class="... timestamp"
+                >{getFollowupTimeStampString(message)}</Typography
+              >
             </div>
             <Typography class="... content">{message.content}</Typography>
           </div>
