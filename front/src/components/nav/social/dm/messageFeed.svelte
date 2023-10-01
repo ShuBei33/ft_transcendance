@@ -4,6 +4,7 @@
   import { data, user } from "$lib/stores";
   import { getFollowupTimeStampString } from "$lib/utils/time/messages";
   import Typography from "../../../Typography.svelte";
+  import UserLink from "../../../UserLink.svelte";
   import AvatarFrame from "../avatarFrame.svelte";
 
   export let messages: DiscussionMsg[] = [];
@@ -40,7 +41,6 @@
     return $data.friends.find((user) => user.id == message.userId);
   };
   $: sortedMessages = sortMessages(messages);
-  $: console.log("+@+@+@+", sortedMessages);
 </script>
 
 {#if sortMessages?.length}
@@ -50,22 +50,17 @@
         {#if index == 0}
           <div class="feed-initial message">
             <div class="lhs">
-              <AvatarFrame
-                class="chat-avatar-frame"
-                userId={String(message.userId)}
-              />
+              <AvatarFrame class="chat-avatar-frame" userId={String(message.userId)} />
             </div>
             <div class="rhs">
-              <!-- <Typography>{getWriter(message)?.user.pseudo}</Typography> -->
+              <!-- <Typography>{getWriter(message)?.pseudo}</Typography> -->
               <Typography>{message.content}</Typography>
             </div>
           </div>
         {:else}
           <div class="feed-followup message">
             <div class="lhs">
-              <Typography class="... timestamp"
-                >{getFollowupTimeStampString(message)}</Typography
-              >
+              <Typography class="... timestamp">{getFollowupTimeStampString(message)}</Typography>
             </div>
             <Typography class="... content">{message.content}</Typography>
           </div>

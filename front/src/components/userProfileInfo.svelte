@@ -3,12 +3,12 @@
   import Typography from "./Typography.svelte";
   import AvatarFrame from "./nav/social/avatarFrame.svelte";
   import type { User } from "$lib/models/prismaSchema";
-  import { axiosConfig, data, user as userStore } from "$lib/stores";
+  import { axiosConfig, data, ui, user as userStore } from "$lib/stores";
   import { get } from "svelte/store";
   import { axiosInstance } from "$lib/stores";
   import Button from "./Button.svelte";
   import { handle } from "./nav/social/friend/handlers";
-  import { addAnnouncement, gameInvite, token } from "$lib/stores/session";
+  import { addAnnouncement, gameInvite, removeAnnouncement, token } from "$lib/stores/session";
   import type { CreateAxiosDefaults } from "axios";
   import axios from "axios";
 
@@ -92,6 +92,46 @@
         });
     };
   };
+
+  const changePseudo = async (pseudo: string) => {};
+
+  const handlePseudoChange = async () => {
+    const timeOutId = addAnnouncement({
+      level: "success",
+      message: `Change your nickname`,
+      persist: true,
+      confirm: {
+        isInput: {
+          attributes: {
+            id: "pseudo",
+            type: "text",
+            placeholder: "please enter a nickname",
+            name: "pseudo",
+          },
+          onChange: (value) => ($ui.confirmInput = value),
+          onSubmit: () => {
+            (async () => {
+              await changePseudo($ui.confirmInput);
+            })();
+            $ui.confirmInput = "";
+            return "";
+          },
+        },
+        yes: {
+          label: "Submit",
+          callback: () => {
+            async () => await changePseudo($ui.confirmInput);
+            $ui.confirmInput = "";
+          },
+        },
+        no: {
+          label: "Cancel",
+          callback: (id) => removeAnnouncement(id),
+        },
+      },
+    });
+    clearTimeout(timeOutId);
+  };
 </script>
 
 {#if user}
@@ -112,6 +152,11 @@
                 on:change={async (e) => await handleFile(e)}
                 bind:this={fileInput}
               />
+              <Button on:click={async () => await handlePseudoChange()}>
+                <Typography>
+                  {"📜"}
+                </Typography>
+              </Button>
             {:else}
               {#if !isFriend}
                 <Button on:click={async () => await friendHandler.AddFriend(Number(id))}
