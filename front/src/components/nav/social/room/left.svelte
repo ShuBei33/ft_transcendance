@@ -41,6 +41,10 @@
     <Button on:click={() => ($ui.modal = "BROWSECHAN")}>
       <Typography>+</Typography>
     </Button>
+
+    <Button on:click={() => ($ui.modal = "EDITCHAN")}>
+      <Typography>{"members 👥"}</Typography>
+    </Button>
   </div>
 </div>
 

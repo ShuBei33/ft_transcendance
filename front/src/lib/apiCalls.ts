@@ -100,13 +100,13 @@ export class Channel {
 
   async create(
     data: Pick<channel.DTOUpdateChan, "name" | "visibility"> & {
-      hash?: string;
+      password?: string;
     }
   ) {
     return await this.instance.post("create", data);
   }
 
-  async join(chanId: number, data: { hash?: string }) {
+  async join(chanId: number, data: { password?: string }) {
     return this.instance.post(`join/${chanId}`, data);
   }
 

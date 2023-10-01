@@ -238,10 +238,15 @@ export class ChannelService {
       switch (channel.visibility) {
         case 'PROTECTED':
           // check that user provided correct password
-          const { hash } = joinChanDto;
-          const HashIsValid = await bcrypt.compare(hash, channel.hash);
-          if (!HashIsValid) error.notAuthorized('Password mismatch.');
-          else await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
+          const { password } = joinChanDto;
+          const HashIsValid = await bcrypt.compare(password, channel.hash);
+          if (!HashIsValid) {
+            logger.warn('Hash error', password);
+            error.notAuthorized('Password mismatch.');
+          } else {
+            logger.warn('Hash Okkkk', password);
+            await this.createChanUsr(userId, chanId, 'NORMAL', 'NORMAL');
+          }
           break;
         case 'PRIVATE':
           // check that user has been invited

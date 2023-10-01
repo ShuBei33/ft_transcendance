@@ -84,7 +84,7 @@ export class ChannelController {
     @Res() res: Response,
   ) {
     try {
-          const createdChannel = await this.channelService.createChannel(user.id, channelToCreate,);
+          const createdChannel = await this.channelService.createChannel(user.id, channelToCreate);
           return success.general(res, 'Channel created successfully', createdChannel);
     }
     catch (e: any) {

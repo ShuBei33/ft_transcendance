@@ -16,14 +16,14 @@
   const levels = ["PRIVATE", "PUBLIC", "PROTECTED"];
 
   let payload: Pick<dto.DTOUpdateChan, "name" | "visibility"> & {
-    hash?: string;
+    password?: string;
   } = {
     name: "",
     visibility: "PUBLIC",
   };
   const handleFormSubmit = () => {
     let finalPayload = { ...payload };
-    if (payload.visibility != "PROTECTED") delete finalPayload.hash;
+    if (payload.visibility != "PROTECTED") delete finalPayload.password;
     console.log("create channel payload is: ", finalPayload);
     const _Channel = new ChannelApi();
     _Channel
@@ -71,7 +71,7 @@
           placeholder: "password",
           name: "password",
         }}
-        onChange={(value) => (payload["hash"] = value)}
+        onChange={(value) => (payload["password"] = value)}
       />
     {/if}
   </div>

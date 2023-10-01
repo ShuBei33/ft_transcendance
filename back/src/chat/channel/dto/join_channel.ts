@@ -8,5 +8,5 @@ export class DTO_JoinChan {
 		examples: [ null, 'Patate2000', '123456789' ],
 		type: String,
    })
-	hash?: Channel['hash'];
+	password?: Channel['hash'];
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Channel as ChannelApi } from "$lib/apiCalls";
-  import { axiosConfig, data as dataStore } from "$lib/stores";
+  import { axiosConfig, data as dataStore, ui } from "$lib/stores";
   import { onMount } from "svelte";
   import Input from "../Input.svelte";
   import Button from "../Button.svelte";
@@ -8,6 +8,7 @@
   import type { ChannelExtended } from "$lib/models/prismaSchema";
   import Slider from "../slider.svelte";
   import { get } from "svelte/store";
+  import { addAnnouncement, removeAnnouncement } from "$lib/stores/session";
   const Channel = new ChannelApi();
   const ChatChannel = new ChannelApi(`${get(axiosConfig)?.baseURL}/chat/channel`);
   const itemsPerPage = 10;
@@ -38,14 +39,74 @@
       .catch((e) => {});
   };
 
-  const handleJoin = async (channel: ChannelExtended) => {
-    await ChatChannel.join(channel.id, {})
+  const joinChannel = async (channel: ChannelExtended, password?: string) => {
+    let data: {
+      password?: string;
+    } = {};
+    if (password) data["password"] = password;
+    await ChatChannel.join(channel.id, data)
       .then((res) => {
-        alert("ok");
+        addAnnouncement({
+          level: "success",
+          message: `You joined channel ${channel.name}`,
+        });
       })
       .catch((e) => {
-        alert("error");
+        addAnnouncement({
+          level: "error",
+          message: `Failed to join channel ${channel.name}`,
+        });
       });
+  };
+
+  const handleJoin = async (channel: ChannelExtended) => {
+    if ($dataStore.myChannels.find((chanUsr) => chanUsr.channel.id == channel.id)) {
+      addAnnouncement({
+        level: "success",
+        message: "Already member",
+      });
+      return;
+    }
+    if (channel.visibility == "PROTECTED") {
+      $ui.confirmInput = "";
+      const timeOutId = addAnnouncement({
+        level: "success",
+        message: `Channel ${channel.name} is password protected`,
+        persist: true,
+        confirm: {
+          isInput: {
+            attributes: {
+              id: "password",
+              type: "password",
+              placeholder: "password",
+              name: "password",
+            },
+            onChange: (value) => ($ui.confirmInput = value),
+            onSubmit: () => {
+              (async () => {
+                joinChannel(channel, $ui.confirmInput);
+              })();
+              $ui.confirmInput = "";
+              return "";
+            },
+          },
+          yes: {
+            label: "Submit",
+            callback: () => {
+              (async () => await joinChannel(channel, $ui.confirmInput))();
+              $ui.confirmInput = "";
+            },
+          },
+          no: {
+            label: "Cancel",
+            callback: (id) => removeAnnouncement(id),
+          },
+        },
+      });
+      clearTimeout(timeOutId);
+    } else {
+      await joinChannel(channel);
+    }
     // alert("join" + channel.id);
   };
 

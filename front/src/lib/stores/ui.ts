@@ -30,6 +30,7 @@ interface uiType {
     };
   };
   modal: "NONE" | "EDITCHAN" | "BROWSECHAN" | "CREATECHAN" | "SETTINGS";
+  confirmInput: string;
 }
 // 1 second
 export const countDownDelay = 1000 / 2;
@@ -63,6 +64,7 @@ export const uiInitialValue: uiType = {
     },
   },
   modal: "NONE",
+  confirmInput: "",
 };
 
 export const ui = writableHook<uiType>({

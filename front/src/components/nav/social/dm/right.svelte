@@ -36,7 +36,7 @@
   };
 
   $: discussion = (() => {
-    if ($ui.chat.dm.labelFocusId == -1)
+    if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length)
       $ui.chat.dm.labelFocusId = $data.discussions[0].id;
     return $data.discussions.find(
       (disc) => disc.id == $ui.chat.dm.labelFocusId
