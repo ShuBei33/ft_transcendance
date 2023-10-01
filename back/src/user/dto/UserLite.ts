@@ -8,10 +8,7 @@ import { User, UserStatus } from '@prisma/client';
 // }
 // # User
 // ## Unauthenticated
-export type UserLite = Pick<
-  User,
-  'login' | 'pseudo' | 'id' | 'status'
->;
+export type UserLite = Pick<User, 'login' | 'pseudo' | 'id' | 'status'>;
 
 export type UserLiteSelectType = {
   [K in keyof UserLite]: boolean;
@@ -27,7 +24,14 @@ export const UserLiteSelect: UserLiteSelectType = {
 // ## With Auth
 export type AuthUser = Pick<
   User,
-  'login' | 'pseudo' | 'id' | 'status' | 'twoFA' | 'is2FAAuthenticated' | 'rank'
+  | 'login'
+  | 'pseudo'
+  | 'id'
+  | 'status'
+  | 'twoFA'
+  | 'is2FAAuthenticated'
+  | 'rank'
+  | 'money'
 >;
 
 export type AuthUserSelectType = {
@@ -43,4 +47,5 @@ export const AuthUserSelect: AuthUserSelectType & { chromas: boolean } = {
   is2FAAuthenticated: true,
   rank: true,
   chromas: true,
+  money: true,
 };

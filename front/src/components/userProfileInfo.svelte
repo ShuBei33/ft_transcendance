@@ -8,7 +8,13 @@
   import { axiosInstance } from "$lib/stores";
   import Button from "./Button.svelte";
   import { handle } from "./nav/social/friend/handlers";
-  import { addAnnouncement, gameInvite, removeAnnouncement, token } from "$lib/stores/session";
+  import {
+    addAnnouncement,
+    gameInvite,
+    navigateToProfile,
+    removeAnnouncement,
+    token,
+  } from "$lib/stores/session";
   import type { CreateAxiosDefaults } from "axios";
   import axios from "axios";
 
@@ -93,7 +99,30 @@
     };
   };
 
-  const changePseudo = async (pseudo: string) => {};
+  const changePseudo = async (pseudo: string) => {
+    if (pseudo.length < 3) {
+      addAnnouncement({
+        level: "error",
+        message: "3 characters minimum",
+      });
+      return;
+    }
+    await $axiosInstance
+      .post(`/user/updateNick/${user?.id}/${pseudo}`)
+      .then((result) => {
+        addAnnouncement({
+          level: "success",
+          message: "Nickname updated",
+        });
+        if (user) user.pseudo = pseudo;
+      })
+      .catch((e) => {
+        addAnnouncement({
+          level: "error",
+          message: "Failed to update nickname",
+        });
+      });
+  };
 
   const handlePseudoChange = async () => {
     const timeOutId = addAnnouncement({
@@ -111,6 +140,7 @@
           onChange: (value) => ($ui.confirmInput = value),
           onSubmit: () => {
             (async () => {
+              // alert("submit " + $ui.confirmInput);
               await changePseudo($ui.confirmInput);
             })();
             $ui.confirmInput = "";
@@ -142,6 +172,9 @@
         <AvatarFrame userId={id} />
         <div class="rankAndActions">
           <Typography>{`rank ${user.rank}`}</Typography>
+          {#if $userStore?.id == user.id}
+            <Typography>{`money ${$userStore.money}`}</Typography>
+          {/if}
           <div class="actions">
             {#if $userStore?.id == user.id}
               <Button on:click={() => fileInput.click()}>{"📸"}</Button>

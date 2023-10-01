@@ -49,7 +49,6 @@ export class UserController {
     const userRes = await this.userService.getUserById(id, {
       select,
     });
-    new Logger('euhhh').log('shipping usr -+-+_++_+_++_+@@_+$', userRes);
     return success.general(res, 'sucess', userRes);
   }
 
