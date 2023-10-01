@@ -9,6 +9,8 @@ import {
 import {
   Controller,
   Get,
+  Post,
+  Body,
   Logger,
   ParseIntPipe,
   Res,
@@ -49,5 +51,25 @@ export class UserController {
     });
     new Logger('euhhh').log('shipping usr -+-+_++_+_++_+@@_+$', userRes);
     return success.general(res, 'sucess', userRes);
+  }
+
+  @Post('updateNick/:id/:pseudo')
+  @ApiOperation({ summary: "User can modify his/her nickname" })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 404, description: 'Failure' })
+  @ApiParam({ name: 'id', description: 'userId', type: 'number', example: 1 })
+  async updateNick(
+    @GetUser() user: UserLite,
+    @Res() res: Response,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('pseudo') pseudo: string,
+  ) {
+    try {
+      await this.userService.updateUserNick(id, pseudo);
+      return success.general(res, 'success');
+    }
+    catch (e: any) {
+      return res.status(400).json({ success: false, message: e.message });
+    }
   }
 }

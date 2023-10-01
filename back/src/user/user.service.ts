@@ -109,4 +109,23 @@ export class UserService {
       throw new Error(err.message);
     }
   }
+
+  async updateUserNick(userId: number, newNick: string): Promise<void> {
+    await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId, },
+    });
+    const alreadyUsed = await this.prisma.user.findUnique({
+      where: { pseudo: newNick }
+    })
+    if (alreadyUsed)
+      error.hasConflict("Nickname already in use.");
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        pseudo: newNick,
+      },
+    });
+  }
 }
