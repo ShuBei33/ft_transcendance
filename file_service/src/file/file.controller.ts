@@ -18,7 +18,7 @@ import {
   CallHandler,
 } from "@nestjs/common";
 
-import { readdir, readdirSync } from "fs";
+import { readdir, readdirSync, existsSync, unlinkSync } from "fs";
 import { ExecutionContext } from "@nestjs/common";
 import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -50,7 +50,21 @@ const avatarUploadOptions: MulterOptions = {
     filename: (req: any, file: any, cb: any) => {
       const extension: string = path.parse(file.originalname).ext;
       logger.log(`user -- ${JSON.stringify(req["user"])}`);
-      cb(null, `${req["user"].id}${extension}`);
+      const fileNameWithoutExt = `${req["user"].id}`;
+
+      // Get all files from the storage directory
+      const filesInDirectory = readdirSync(config.avatarStoragePath);
+
+      // Check for files with the same base name and delete them
+      for (let existingFile of filesInDirectory) {
+        const existingFileNameWithoutExt = path.parse(existingFile).name;
+        if (existingFileNameWithoutExt === fileNameWithoutExt) {
+          unlinkSync(path.join(config.avatarStoragePath, existingFile));
+        }
+      }
+
+      // Continue with multer's save process
+      cb(null, fileNameWithoutExt + extension);
     },
   }),
 };
@@ -58,10 +72,7 @@ const avatarUploadOptions: MulterOptions = {
 @Injectable()
 class UserInterceptor implements NestInterceptor {
   constructor(private readonly httpService: HttpService) {}
-  async intercept(
-    context: ExecutionContext,
-    next: CallHandler
-  ): Promise<Observable<any>> {
+  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const ctx = context.switchToHttp();
 
     const BearerHeader = ctx.getRequest().headers["authorization"];
@@ -98,10 +109,7 @@ class UserInterceptor implements NestInterceptor {
 export class FileController {
   constructor(private readonly httpService: HttpService) {}
   @Post("upload")
-  @UseInterceptors(
-    UserInterceptor,
-    FileInterceptor("file", avatarUploadOptions)
-  )
+  @UseInterceptors(UserInterceptor, FileInterceptor("file", avatarUploadOptions))
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
@@ -135,9 +143,7 @@ export class FileController {
         );
       }
 
-      const fileToSend = files.find(
-        (file) => file.split(".").reverse().pop().toString() == id
-      );
+      const fileToSend = files.find((file) => file.split(".").reverse().pop().toString() == id);
 
       if (fileToSend) res.sendFile(join(directoryPath, fileToSend));
       else res.status(HttpStatus.OK).send(null);
