@@ -8,6 +8,9 @@
   import { get } from "svelte/store";
   import type { channel as dto } from "$lib/models/dtos";
   import { ChanVisibility } from "$lib/models/prismaSchema";
+  import Input from "../Input.svelte";
+  import Typography from "../Typography.svelte";
+  import Button from "../Button.svelte";
 
   const getChannelContext = () => {
     const chanUsr = $data.myChannels.find(
@@ -25,9 +28,7 @@
     console.log("!payload", payload);
     if (!channel) return;
     console.log("!payload", payload);
-    const _Channel = new ChannelApi(
-      `${get(axiosConfig)?.baseURL}/chat/channel`
-    );
+    const _Channel = new ChannelApi(`${get(axiosConfig)?.baseURL}/chat/channel`);
     _Channel
       .updateChannelSetting(channel.id, payload)
       .then((res) => {
@@ -42,16 +43,6 @@
 </script>
 
 <div class="editchan">
-  <h1>{channel?.name}</h1>
-  <TestInput
-    attributes={{
-      id: "name",
-      type: "text",
-      placeholder: "name",
-      name: "name",
-    }}
-    onChange={(value) => (payload["name"] = value)}
-  />
   <Slider
     {levels}
     initialValue={channel?.visibility}
@@ -61,26 +52,65 @@
       console.log("slider change", value);
     }}
   />
-  {#if (payload.visibility && payload.visibility == "PROTECTED") || channel?.visibility == "PROTECTED"}
-    <TestInput
+  <Typography class="... title"
+    ><h1>
+      {channel?.name}
+    </h1></Typography
+  >
+  <div class="input-section">
+    <Input
       attributes={{
-        id: "password",
-        type: "password",
-        placeholder: "password",
-        name: "password",
+        id: "name",
+        type: "text",
+        placeholder: "name",
+        name: "name",
       }}
-      onChange={(value) => (payload["hash"] = value)}
+      onChange={(value) => (payload["name"] = value)}
     />
-  {/if}
-  <GenericButton on:click={() => handleFormSubmit()}>Confirm</GenericButton>
+    {#if (payload.visibility && payload.visibility == "PROTECTED") || channel?.visibility == "PROTECTED"}
+      <Input
+        attributes={{
+          id: "password",
+          type: "password",
+          placeholder: "password",
+          name: "password",
+        }}
+        onChange={(value) => (payload["hash"] = value)}
+      />
+    {/if}
+  </div>
+  <div class="actions">
+    <Button disabled={(payload['hash']) || payload['name'] || payload['visibility']}   variant="success" on:click={() => handleFormSubmit()}
+      ><Typography>{"Update"}</Typography></Button
+    >
+    <Button variant="error"><Typography>{"Cancel"}</Typography></Button>
+  </div>
 </div>
 
 <style lang="scss">
+  .input-section {
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
+  }
   .editchan {
-    height: 40vh;
+    height: auto;
     width: 20em;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
   }
   .modal-input {
     z-index: 99999;
+  }
+  :global(.title) {
+    display: flex;
+    justify-content: center;
+  }
+  .actions {
+    display: flex;
+    justify-content: center;
+    column-gap: 0.5em;
   }
 </style>
