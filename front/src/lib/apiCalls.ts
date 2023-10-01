@@ -106,6 +106,10 @@ export class Channel {
     return await this.instance.post("create", data);
   }
 
+  async join(chanId: number, data: { hash?: string }) {
+    return this.instance.post(`join/${chanId}`, data);
+  }
+
   async updateChannelUser(chanId: number, data: channel.DTOUpdateChanUsr) {
     return await this.instance.patch(`admin/${chanId}/user`, data);
   }

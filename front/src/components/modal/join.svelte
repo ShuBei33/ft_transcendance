@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { Channel } from "$lib/apiCalls";
-  import { data as dataStore } from "$lib/stores";
+  import { Channel as ChannelApi } from "$lib/apiCalls";
+  import { axiosConfig, data as dataStore } from "$lib/stores";
   import { onMount } from "svelte";
   import Input from "../Input.svelte";
   import Button from "../Button.svelte";
   import Typography from "../Typography.svelte";
   import type { ChannelExtended } from "$lib/models/prismaSchema";
   import Slider from "../slider.svelte";
-
-  const _Channel = new Channel();
+  import { get } from "svelte/store";
+  const Channel = new ChannelApi();
+  const ChatChannel = new ChannelApi(`${get(axiosConfig)?.baseURL}/chat/channel`);
   const itemsPerPage = 10;
   const levels = ["PROTECTED", "ALL", "PUBLIC"];
   // none, ascending, descending
@@ -32,10 +33,20 @@
   };
 
   const fetchChannel = async () => {
-    await _Channel
-      .all()
+    await Channel.all()
       .then(({ data }) => ($dataStore.channels = data.data))
       .catch((e) => {});
+  };
+
+  const handleJoin = async (channel: ChannelExtended) => {
+    await ChatChannel.join(channel.id, {})
+      .then((res) => {
+        alert("ok");
+      })
+      .catch((e) => {
+        alert("error");
+      });
+    // alert("join" + channel.id);
   };
 
   onMount(() => {
@@ -143,7 +154,7 @@
         </thead>
         <tbody>
           {#each paginatedChannels as channel (channel.id)}
-            <tr>
+            <tr on:click={async () => await handleJoin(channel)}>
               <td
                 ><Typography>
                   {channel.name}

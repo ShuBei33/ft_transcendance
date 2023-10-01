@@ -1,5 +1,7 @@
 <script>
   import { ui } from "$lib/stores";
+  import Button from "../Button.svelte";
+  import Typography from "../Typography.svelte";
   export let title = "";
   export let isOpen = false;
   export let raw = false;
@@ -20,6 +22,9 @@
 {#if isOpen}
   {#if raw}
     <div class="modal">
+      <Button on:click={closeModal} class="... closeBtn" variant="error">
+        <Typography>{"X"}</Typography>
+      </Button>
       <div class="modal-raw">
         <slot />
       </div>
@@ -50,6 +55,13 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+  }
+
+  :global(.closeBtn) {
+    position: absolute !important;
+    margin: 1em;
+    top: 0;
+    right: 0;
   }
 
   .modal-raw {
