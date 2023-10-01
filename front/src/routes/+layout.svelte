@@ -260,12 +260,10 @@
       <Button class="... chat-toggle" on:click={() => ($ui.chat.toggle = !$ui.chat.toggle)}>
         <Typography>{`Chat ${(!$ui.chat.toggle && "+") || "-"}`}</Typography>
       </Button>
-      <Button on:click={() => $ui.modal = "SETTINGS"}>
+      <Button on:click={() => ($ui.modal = "SETTINGS")}>
         <Typography>{"Settings ⚙"}</Typography>
       </Button>
     </div>
-  {:else}
-    <h1>{"Chat socket not connected."}</h1>
   {/if}
 </AuthRouter>
 

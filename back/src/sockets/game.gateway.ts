@@ -91,8 +91,18 @@ export class GameGateway
               this.gameService.chromaById(instance.chromas[0]),
               this.gameService.chromaById(instance.chromas[1]),
             ]).then((chroma) => {
-              gameSettings.playerOnePaddleFill = chroma[0].fill;
-              gameSettings.playerTwoPaddleFill = chroma[1].fill;
+              if (chroma[0]) gameSettings.playerOnePaddleFill = chroma[0].fill;
+              else
+                gameSettings.playerOnePaddleFill = JSON.stringify([
+                  { offset: 0, color: '#FFFFFF' },
+                  { offset: 1, color: '#FFFFFF' },
+                ]);
+              if (chroma[1]) gameSettings.playerTwoPaddleFill = chroma[1].fill;
+              else
+                gameSettings.playerTwoPaddleFill = JSON.stringify([
+                  { offset: 0, color: '#FFFFFF' },
+                  { offset: 1, color: '#FFFFFF' },
+                ]);
               instance.engine = new Pong(
                 {
                   onUpdate(data) {

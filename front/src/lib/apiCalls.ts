@@ -18,13 +18,6 @@ import type { channel } from "./models/dtos";
 import { user } from "./stores";
 import type { DiscussionLite } from "./models/discussion";
 
-// export class ApiTemplate {
-//   instance: AxiosInstance = axios.create();
-//   constructor(instance?: AxiosInstance) {
-//     if (instance) this.instance = instance;
-//   }
-// }
-
 export class Game {
   constructor(
     baseUrl?: string,

@@ -8,7 +8,9 @@ import type {
   User,
   UserExtended,
 } from "$lib/models/prismaSchema";
+import { get } from "svelte/store";
 import { writableHook } from "./hooks";
+import { user } from ".";
 
 interface channelFeedInfo {
   data: ChannelMsg[][];

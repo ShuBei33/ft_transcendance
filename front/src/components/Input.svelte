@@ -10,7 +10,7 @@
   });
 
   type onSubmitType = (value?: string) => string;
-  export let onChange: (value: string) => void = () => {};
+  export let onChange: (value: string) => void | string = () => {};
   export let onSubmit: onSubmitType | undefined = undefined;
   export let attributes: Omit<HTMLInputAttributes, "value"> = {};
   export let value = "";
@@ -18,7 +18,8 @@
   function handleInputChange(event: Event) {
     const target = event.target as HTMLInputElement;
     value = target.value;
-    onChange(value);
+    const result = onChange(value);
+    if (typeof result == "string") value = result;
   }
 
   function handleKeyPress(key: string) {
@@ -36,12 +37,7 @@
     on:keypress={(k) => handleKeyPress(k.key)}
   />
 {:else}
-  <input
-    class={className}
-    {...attributes}
-    bind:value
-    on:input={handleInputChange}
-  />
+  <input class={className} {...attributes} bind:value on:input={handleInputChange} />
 {/if}
 
 <style lang="scss">

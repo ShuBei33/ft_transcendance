@@ -35,13 +35,8 @@
               .get(`/user/${res.data.user.id}`)
               .then(({ data }) => {
                 const _user: UserExtended = data.data;
-
-                if (!_user.is2FAAuthenticated && _user.twoFA) {
-                  $ui.modal = "SETTINGS";
-                } else {
-                  user.set(_user);
-                  goto((redirect && redirect) || `/profile/${res.data.user.id}`);
-                }
+                user.set(_user);
+                goto((redirect && redirect) || `/profile/${res.data.user.id}`);
               })
               .catch(() => {
                 goto("/login");

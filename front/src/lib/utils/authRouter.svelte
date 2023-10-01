@@ -25,16 +25,18 @@
    * accordingly.
    */
 
-  const monitorPage = () => {
-    const currentPage = $page.url.pathname.split("/")[1];
+  $: currentPage = $page.url.pathname.split("/")[1];
+  const monitorPage = (page: string) => {
+    if (!browser) return;
 
     let isAuthenticated = $token.length && $user && $axiosConfig;
 
     const retrivedToken = Cookies.get(COOKIE_TOKEN_NAME);
-    switch (currentPage) {
+    switch (page) {
       case "login":
-        if (isAuthenticated) goto(`/profile/${$user?.id}`);
-        else if (retrivedToken) {
+        if (isAuthenticated) {
+          goto(`/profile/${$user?.id}`);
+        } else if (retrivedToken) {
           goto(`/callback?token=${retrivedToken}`)
             .then(() => (allowSlot = true))
             .catch(() => (allowSlot = false));
@@ -49,18 +51,24 @@
         break;
       default:
         if (!isAuthenticated) {
-          if (retrivedToken)
+          if (retrivedToken) {
             goto(`/callback?token=${retrivedToken}&redirect=${$page.url.pathname}`)
               .then(() => (allowSlot = true))
               .catch(() => (allowSlot = false));
-          else
+          } else
             goto("/login")
               .then(() => (allowSlot = true))
               .catch(() => (allowSlot = false));
-        } else allowSlot = true;
+        } else {
+          if ($user && $user.twoFA && !$user.is2FAAuthenticated)
+            goto(`/twoFA?token=${retrivedToken}`)
+              .then(() => (allowSlot = true))
+              .catch(() => (allowSlot = false));
+          allowSlot = true;
+        }
     }
   };
-  $: browser && monitorPage();
+  $: monitorPage(currentPage);
 
   $: getModalTitle = () => {
     switch ($ui.modal) {

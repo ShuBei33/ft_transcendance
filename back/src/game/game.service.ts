@@ -334,13 +334,12 @@ export class GameService {
   /* GAME */
   async createGame(userIds: number[]) {
     const gameId: string = String(userIds[0]) + String(userIds[1]);
-    logger.log('create game ok!!!!!!!!!!!--=-=-=', gameId);
-    // for (let i = 0; i < userIds.length; i++) {
-    //   this.chatGate.wss.emit(String(userIds[i]), {
-    //     expect: 'GAME_ID',
-    //     data: gameId,
-    //   });
-    // }
+    for (let i = 0; i < userIds.length; i++) {
+      this.chatGate.wss.emit(String(userIds[i]), {
+        expect: 'GAME_ID',
+        data: gameId,
+      });
+    }
     logger.log('Users in game' + JSON.stringify(userIds));
   }
 

@@ -19,23 +19,24 @@
     return "";
   };
 
-  $: chromaCardCn = (chroma: Chroma): ClassNamesObject => {
+  $: chromaCardCn = (chroma?: Chroma): ClassNamesObject => {
     return {
       card: true,
       selected: {
-        subClass: $ui.game.selectedChroma == chroma.id,
+        subClass: $ui.game.selectedChroma == chroma?.id || $ui.game.selectedChroma == "",
       },
     };
   };
 
   $: matchSearch = (chroma: Chroma): boolean => {
-    if (searchValue.length < 3)
-      return true;
+    if (searchValue.length < 3) return true;
     const test = chroma.id.toLowerCase().includes(searchValue.toLowerCase());
     return test;
-  }
-  $: ownedChromaIds = $user?.chromas.map(chroma => chroma.id) || [];
-  $: chromasOwned = $user?.chromas.filter(chroma => ownedChromaIds?.includes(chroma.id) && matchSearch(chroma)) || [];
+  };
+  $: ownedChromaIds = $user?.chromas.map((chroma) => chroma.id) || [];
+  $: chromasOwned =
+    $user?.chromas.filter((chroma) => ownedChromaIds?.includes(chroma.id) && matchSearch(chroma)) ||
+    [];
 </script>
 
 <main>
@@ -59,8 +60,25 @@
           onSubmit={handleSearch}
         />
       </div>
-      {#if chromasOwned.length}
         <div class="render-chromas">
+          <button
+            class={cn(chromaCardCn())}
+            on:click={() => {
+              $ui.game.selectedChroma = "";
+            }}
+          >
+            <div class="top">
+              <ChromaRender
+                stops={JSON.parse(
+                  JSON.stringify([
+                    { offset: 0, color: "#000000" },
+                    { offset: 1, color: "#000000" },
+                  ])
+                )}
+              />
+            </div>
+            <Typography class="... name">{"NONE"}</Typography>
+          </button>
           {#each chromasOwned as chroma}
             <button
               class={cn(chromaCardCn(chroma))}
@@ -75,7 +93,6 @@
             </button>
           {/each}
         </div>
-      {/if}
     </section>
   </div>
 </main>
