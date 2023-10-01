@@ -63,13 +63,17 @@
         <div class="rankAndActions">
           <Typography>{`rank ${user.rank}`}</Typography>
           <div class="actions">
-            {#if !isFriend}
-              <Button on:click={async () => await friendHandler.AddFriend(Number(id))}
-                >{"➕"}</Button
-              >
+            {#if $userStore?.id == user.id}
+              <Button>{"📸"}</Button>
+            {:else}
+              {#if !isFriend}
+                <Button on:click={async () => await friendHandler.AddFriend(Number(id))}
+                  >{"➕"}</Button
+                >
+              {/if}
+              <Button on:click={() => handleInviteToPlay(id)}>{"🏓"}</Button>
+              <Button>{"🚫"}</Button>
             {/if}
-            <Button on:click={() => handleInviteToPlay(id)}>{"🏓"}</Button>
-            <Button>{"🚫"}</Button>
           </div>
         </div>
       </div>

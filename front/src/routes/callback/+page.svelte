@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
   import { token, ui, user } from "$lib/stores";
   import type { CreateAxiosDefaults } from "axios";
-  import { axiosInstance, axiosConfig } from "$lib/stores/api";
+  import { axiosInstance, axiosConfig, axiosFsConfig } from "$lib/stores/api";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import type { UserExtended } from "$lib/models/prismaSchema";
@@ -24,7 +24,18 @@
         Authorization: `Bearer ${retrievedToken}`,
       },
     };
+
+    const configFs: CreateAxiosDefaults = {
+      baseURL: "http://file_service:5170",
+      withCredentials: true,
+      timeout: 10000,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${retrievedToken}`,
+      },
+    };
     axiosConfig.set(config);
+    axiosFsConfig.set(configFs);
     axiosInstance.subscribe((_axios) => {
       _axios
         .get("/auth/checkJWT")
