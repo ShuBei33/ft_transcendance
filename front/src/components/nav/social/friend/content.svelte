@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { data, user } from "$lib/stores";
+  import { data, ui, user } from "$lib/stores";
   import { onMount } from "svelte";
   import type { ComponentProps } from "svelte";
   import Tabs from "../tabs.svelte";
@@ -12,6 +12,7 @@
   import Button from "../../../Button.svelte";
   import { handle } from "./handlers";
   import ActionButton from "../../../ActionButton.svelte";
+  import { addAnnouncement } from "$lib/stores/session";
   const handler = new handle();
   const dropDown = class {
     friend(_friend: User): ComponentProps<ActionButton>["actions"] {
@@ -28,6 +29,21 @@
     }
   };
   const actions = new dropDown();
+
+  const sendMessage = (friend: User) => {
+    const discussion = $data.discussions.find(
+      (disc) => disc.userId1 == friend.id || disc.userId2 == friend.id
+    );
+    if (!discussion) {
+      addAnnouncement({
+        level: "error",
+        message: "An unexpected error occurred",
+      });
+      return;
+    }
+    $ui.chat.dm.labelFocusId = discussion.id;
+    $ui.chat.selected = "DM";
+  };
   // Pending
   $: pending = $data.friendShips.filter(
     (friendship) => friendship.inviteStatus == StatusInv.PENDING
@@ -35,13 +51,9 @@
   $: countReceivedInvites = pending.filter(
     (friendship) => friendship.receiverId == $user?.id
   ).length;
-  $: countSentInvites = pending.filter(
-    (friendship) => friendship.receiverId != $user?.id
-  ).length;
+  $: countSentInvites = pending.filter((friendship) => friendship.receiverId != $user?.id).length;
   // Accepted
-  $: onlineFriends = $data.friends.filter(
-    (user) => user.status == UserStatus.ONLINE
-  );
+  $: onlineFriends = $data.friends.filter((user) => user.status == UserStatus.ONLINE);
 
   // Blocked
   $: allBlocked = $data.friendShips.filter(
@@ -49,8 +61,7 @@
   );
   $: hasBlocked = allBlocked.filter((friendship) => {
     const isUserSender = friendship.senderId == $user?.id;
-    if (isUserSender)
-      return friendship.receiverIsBlocked;
+    if (isUserSender) return friendship.receiverIsBlocked;
     return friendship.senderIsBlocked;
   });
 </script>
@@ -75,16 +86,10 @@
             <div class="friend-card">
               <AvatarFrame userId={String(friendship.senderId)} />
               <div class="actions">
-                <Button
-                  variant="success"
-                  on:click={() => handler.FriendshipAccept(friendship)}
-                >
+                <Button variant="success" on:click={() => handler.FriendshipAccept(friendship)}>
                   <Typography>{"Accept"}</Typography>
                 </Button>
-                <Button
-                  variant="error"
-                  on:click={() => handler.FriendshipDecline(friendship)}
-                >
+                <Button variant="error" on:click={() => handler.FriendshipDecline(friendship)}>
                   <Typography>{"Decline"}</Typography>
                 </Button>
               </div>
@@ -104,7 +109,7 @@
           <div class="friend-card">
             <AvatarFrame userId={String(friend.id)} />
             <div class="actions">
-              <Button>
+              <Button on:click={() => sendMessage(friend)}>
                 <Typography>{"Send message"}</Typography>
               </Button>
               <ActionButton actions={actions.friend(friend)}>
@@ -125,10 +130,7 @@
           <div class="friend-card">
             <AvatarFrame userId={String(friendship.receiverId)} />
             <div class="actions">
-              <Button
-                variant="error"
-                on:click={() => handler.FriendShipUnBlock(friendship)}
-              >
+              <Button variant="error" on:click={() => handler.FriendShipUnBlock(friendship)}>
                 <Typography>{"Unblock"}</Typography>
               </Button>
             </div>
