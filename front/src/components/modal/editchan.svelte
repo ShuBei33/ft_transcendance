@@ -80,7 +80,7 @@
     {/if}
   </div>
   <div class="actions">
-    <Button disabled={(payload['hash']) || payload['name'] || payload['visibility']}   variant="success" on:click={() => handleFormSubmit()}
+    <Button variant="success" on:click={() => handleFormSubmit()}
       ><Typography>{"Update"}</Typography></Button
     >
     <Button variant="error"><Typography>{"Cancel"}</Typography></Button>
