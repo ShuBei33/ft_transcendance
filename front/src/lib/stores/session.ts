@@ -18,6 +18,7 @@ export const token = writableHook<string>({
   },
   onClear() {
     Cookies.remove(COOKIE_TOKEN_NAME);
+    goto('/login');
   },
 });
 

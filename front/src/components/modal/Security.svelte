@@ -66,6 +66,12 @@
 <Button on:click={async () => await tunrOn()}>{"turn on"}</Button>
 <Button on:click={async () => await tunrOff()}>{"turn off"}</Button>
 <Button on:click={async () => await auth()}>{"-> login"}</Button>
+<Button
+  on:click={() => {
+    $ui.modal = "NONE";
+    token.clear();
+  }}>{"X logout"}</Button
+>
 {#if src}
   <img {src} alt="qrcode" />
 {:else}
