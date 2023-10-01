@@ -14,16 +14,14 @@
     message: string;
   };
 
-  // $: (() => {
-  //   if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length)
-  //     $ui.chat.dm.labelFocusId = $data.discussions[0].id;
-  // })();
+  $: (() => {
+    if ($ui.chat.dm.labelFocusId == -1 && $data.discussions.length)
+      $ui.chat.dm.labelFocusId = $data.discussions[0].id;
+  })();
 
   $: handleSubmit = () => {
     const receiverId = String(
-      discussion?.userId1 == $user?.id
-        ? discussion?.userId2
-        : discussion?.userId1
+      discussion?.userId1 == $user?.id ? discussion?.userId2 : discussion?.userId1
     );
     const payload: emitMessageType = {
       senderId: String($user?.id),
@@ -46,9 +44,6 @@
   $: console.log("+!+! messages", messages);
 </script>
 
-<RightTemplate
-  onSubmit={() => handleSubmit()}
-  onChange={(_value) => (value = _value)}
->
+<RightTemplate onSubmit={() => handleSubmit()} onChange={(_value) => (value = _value)}>
   <MessageFeed slot="feed" {messages} />
 </RightTemplate>
