@@ -14,6 +14,7 @@
 
   let className: string | undefined = undefined;
   export let externalRef: HTMLSpanElement | undefined = undefined;
+  export let preventDefaultToggle = true;
   export { className as class };
 
   const parseClass = (className: string): string => {
@@ -29,11 +30,11 @@
 </script>
 
 {#if className}
-  <span bind:this={externalRef} on:click|preventDefault   class={parseClass(className)}><slot /></span>
+  <span bind:this={externalRef} on:click={(e) => {if(preventDefaultToggle) e.preventDefault()}}   class={parseClass(className)}><slot /></span>
 {:else if big}
-  <span bind:this={externalRef} on:click|preventDefault   class="bigTypo"><slot /></span>
+  <span bind:this={externalRef} on:click={(e) => {if(preventDefaultToggle) e.preventDefault()}}   class="bigTypo"><slot /></span>
 {:else}
-  <span bind:this={externalRef}  on:click|preventDefault     class={`typo-${weight}`}><slot /></span>
+  <span bind:this={externalRef}  on:click={(e) => {if(preventDefaultToggle) e.preventDefault()}}     class={`typo-${weight}`}><slot /></span>
 {/if}
 
 <style lang="scss">

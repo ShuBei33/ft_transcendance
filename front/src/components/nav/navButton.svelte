@@ -7,7 +7,7 @@
 
 <main>
   <a {href}
-    ><Typography big>
+    ><Typography big preventDefaultToggle={false}>
       {name}
     </Typography></a
   >
